@@ -1,0 +1,12 @@
+black==19.10b0
+bump2version==1.0.0
+pytest==5.4.1
+pytest-runner==5.2
+factory-boy==2.12
+coverage==5.1
+flake8==3.7.9
+pip==20.1
+Sphinx==3.0.3
+tox==3.14.6
+twine==3.1.1
+watchdog==0.10.2

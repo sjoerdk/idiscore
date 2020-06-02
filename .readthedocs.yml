@@ -1,0 +1,18 @@
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version: 2
+
+sphinx:
+  configuration: docs/conf.py
+
+formats: all
+
+python:
+  version: 3.8
+  install:
+    - method: pip
+      path: .
+    # TODO: Remove this requirements file once rtd fully supports dev-dependencies
+    - requirements: docs/requirements.docs.txt
+    - requirements: requirements_dev.txt
