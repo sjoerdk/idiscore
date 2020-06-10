@@ -6,14 +6,12 @@ IDIS Core
         :target: https://github.com/sjoerdk/idiscore/actions?query=workflow%3Abuild
         :alt: Build Status
 
-
 .. image:: https://img.shields.io/pypi/v/idiscore.svg
-        :target: https://pypi.python.org/pypi/idiscore
+    :target: https://pypi.python.org/pypi/idiscore
 
 .. image:: https://readthedocs.org/projects/idiscore/badge/?version=latest
         :target: https://idiscore.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
-
 
 .. image:: https://pyup.io/repos/github/sjoerdk/idiscore/shield.svg
      :target: https://pyup.io/repos/github/sjoerdk/idiscore/
