@@ -2,7 +2,8 @@ black==19.10b0
 bump2version==1.0.0
 pytest==5.4.1
 pytest-runner==5.2
-dicomgenerator==0.2.0
+dicomgenerator==0.3.0
+pydicom==2.0.0
 factory-boy==2.12
 coverage==5.1
 flake8==3.7.9
