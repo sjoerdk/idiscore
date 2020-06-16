@@ -8,8 +8,8 @@ from dicomgenerator.factory import CTDatasetFactory
 from pydicom.tag import Tag
 from pydicom.uid import UID
 
-from idiscore.idiscore import BlackOutDefinition, Core, Profile, Rule, RuleSet, \
-    SafePrivateDefinition
+from idiscore.core import PixelProcessor, Core, Profile, Rule, RuleSet, \
+    PrivateProcessor
 from idiscore.operations import Hash
 
 
@@ -22,8 +22,8 @@ def test_idiscore():
                                     RuleSet(name='test',
                                             rules={Rule(Tag('PatientID'),
                                                         Hash())})]),
-                safe_private=SafePrivateDefinition(),
-                black_out=BlackOutDefinition())
+                safe_private=PrivateProcessor(definitions=[]),
+                pixel_processor=PixelProcessor(locations=[]))
     a_dataset = CTDatasetFactory()
     deid = core.deidentify(a_dataset)
     test = 1
