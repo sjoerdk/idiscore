@@ -34,7 +34,7 @@ Features
 * Uses standard `DICOM Confidentiality options <http://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html>`_
   to define de-identification that is to be performed
 * Focus on de-identification, pydicom dataset in -> pydicom dataset out. No pipeline management, No special input and output
-handling.
+  handling.
 
 
 Credits

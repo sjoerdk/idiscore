@@ -30,7 +30,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    description="Deidentification of DICOM images using Attribute Confidentiality Profiles",
+    description="Pure-python deidentification of DICOM images using Attribute Confidentiality Profiles",
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
