@@ -85,9 +85,9 @@ IDIS verify
     Potentially also determines which
 
 Data certificate
-    A list of DICOM types which have been successfully passed through a IDIS Core instance IDIS Verify. For these DICOM
-    types the Core Instance is 'certified' to work properly. The data certificate can also be used to determine whether
-    new data can be processed or not
+    A list of DICOM examples which have been successfully passed through a IDIS Core instance IDIS Verify. For these
+    examples the Core Instance is 'certified' to work properly. The data certificate can also be used to determine
+    whether new data can be processed or not
 
 DICOM data type
     A 'kind' of DICOM data. Given the heterogeneity of DICOM this is a very tricky / impossible thing to define.

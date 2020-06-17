@@ -3,5 +3,5 @@
 """Top-level package for IDIS Core."""
 
 __author__ = """Sjoerd Kerkstra"""
-__email__ = 'sjoerd.kerkstra@radboudumcn.nl'
-__version__ = '0.1.0'
+__email__ = "sjoerd.kerkstra@radboudumcn.nl"
+__version__ = "0.1.0"

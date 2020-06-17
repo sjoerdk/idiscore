@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-from typing import Callable, List, Set, Tuple, Union
+from typing import Callable, Iterable, List, Optional, Set
 
+from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 from pydicom.tag import Tag
 from pydicom.uid import UID
 
 from idiscore.exceptions import IDISCoreException
-from idiscore.operations import Operation
+from idiscore.operations import Operation, Remove
+from idiscore.imageprocessing import CriterionException, PixelProcessor
 
 
 class Rule:
@@ -16,6 +18,9 @@ class Rule:
         self.tag = tag
         self.operation = operation
 
+    def __str__(self):
+        return f"{self.tag} - {self.operation}"
+
 
 class RuleSet:
     """Defines what to do to one or more DICOM tags
@@ -23,9 +28,33 @@ class RuleSet:
     Models part of a deidentification procedure, such as the Basic Application
     Level Confidentiality Options in DICOM (e.g. Retain Safe Private Option)
     """
-    def __init__(self, name: str, rules: Set[Rule]):
+
+    def __init__(self, rules: Iterable[Rule], name: str = "RuleSet"):
+        """
+
+        Parameters
+        ----------
+        rules: Set[Rule]
+            The rules comprising this set. Internally represented as Dict[Tag, Rule]
+            for easier lookup
+        name: str, optional
+            Human readable name. Defaults to 'RuleSet'
+
+        """
+
+        self.rules_dict = {x.tag: x for x in rules}
         self.name = name
-        self.rules = rules
+
+    @property
+    def rules(self) -> List[Rule]:
+        return list(self.rules_dict.values())
+
+    def get_rule(self, tag: Tag) -> Optional[Rule]:
+        """Return the rule for the given DICOM tag, or None if not found"""
+        return self.rules_dict.get(tag)
+
+    def __str__(self):
+        return f'Ruleset "{self.name}"'
 
 
 class Profile:
@@ -40,34 +69,52 @@ class Profile:
       tag
 
     """
-    def __init__(self, name: str, rule_sets: List[RuleSet]):
+
+    def __init__(self, rule_sets: List[RuleSet], name: str = "Profile"):
         """
 
         Parameters
         ----------
-        name: str
-            Human-readable name for this profile
         rule_sets: List[RuleSet]
             All RuleSets that should be applied. Ordering is important; if two
             RuleSets contain a rule for the same DICOM tag, the RuleSet with the
             higher index takes precedence.
+        name: str
+            Human-readable name for this profile. Defaults to 'Profile'
         """
-        self.name = name
         self.rule_sets = rule_sets
+        self.name = name
 
-    def flatten(self, extra_rule_sets: List[RuleSet] = None) -> RuleSet:
-        """Find a single rule for each DICOM tag. This means that we take
-        all rules in the first RuleSet, then look at the second. For any conflicting
-        rule the definition in the second RuleSet takes precedence
+    def __str__(self):
+        return f'Profile "{self.name}"'
+
+    def flatten(self, additional_rule_sets: List[RuleSet] = None) -> RuleSet:
+        """Collapse all rule sets into one, ensuring only one rule per DICOM tag
+        If a sets disagree, later sets (higher index in the list) take precedence.
+
+        Parameters
+        ----------
+        additional_rule_sets: List[RuleSet]
+            Append these to the existing rule sets, so they overrule them. Useful
+            for one-time additions without changing the profile itself. For example
+            when adding dataset-specific safe private rules.
 
         """
-        pass
+        if not additional_rule_sets:
+            additional_rule_sets = []
+
+        output = {}
+        for rule_set in self.rule_sets + additional_rule_sets:
+            output.update({x.tag: x for x in rule_set.rules})
+
+        return RuleSet(name="flattened", rules=set(output.values()))
 
 
 class Bouncer:
     """Inspects a dataset and either rejects it or lets it through
 
     """
+
     def inspect(self, dataset: Dataset):
         """Check given dataset, raise exception if it should be rejected
 
@@ -90,7 +137,6 @@ class Bouncer:
 
 
 class RejectKOGSPS(Bouncer):
-
     def inspect(self, dataset: Dataset):
         """ This bouncer rejects three types of DICOM objects:
         1.2.840.10008.5.1.4.1.1.11.1 - GrayscaleSoftcopyPresentationStateStorage
@@ -105,25 +151,29 @@ class RejectKOGSPS(Bouncer):
             When the dataset is one of these types
 
         """
-        black_list = [UID('1.2.840.10008.5.1.4.1.1.11.1'),
-                      UID('1.2.840.10008.5.1.4.1.1.88.59'),
-                      UID('1.2.840.10008.5.1.4.1.1.11.2')]
+        black_list = [
+            UID("1.2.840.10008.5.1.4.1.1.11.1"),
+            UID("1.2.840.10008.5.1.4.1.1.88.59"),
+            UID("1.2.840.10008.5.1.4.1.1.11.2"),
+        ]
 
         def is_annotation(ds) -> bool:
-            return ds['SeriesDescription'] == 'Annotation'
+            return ds["SeriesDescription"] == "Annotation"
 
         for uid in black_list:
-            if dataset['SopClassUID'] == uid and not is_annotation(dataset):
+            if dataset["SopClassUID"] == uid and not is_annotation(dataset):
                 raise BouncerException(
-                    f'Datasets of type {uid.name} ({uid}) are not allowed as '
-                    f'they often contain physician information')
+                    f"Datasets of type {uid.name} ({uid}) are not allowed as "
+                    f"they often contain physician information"
+                )
 
 
 class SafePrivateDefinition:
     """Defines when one or more private DICOM elements can be considered 'safe'
     Safe as in 'not containing personally identifiable information'
     """
-    def __init__(self, tags:List[Tag], criterion: Callable[[Dataset], bool]):
+
+    def __init__(self, tags: List[Tag], criterion: Callable[[Dataset], bool]):
         """
 
         Parameters
@@ -154,6 +204,7 @@ class PrivateProcessor:
     can be kept for any given dataset
 
     """
+
     def __init__(self, definitions: List[SafePrivateDefinition]):
         self.definitions = definitions
 
@@ -177,126 +228,12 @@ class PrivateProcessor:
             When rule set cannot be found properly
         """
         try:
-            return [x for x in self.definitions if x.is_safe(dataset)]
+            return RuleSet(
+                name="safe private",
+                rules={x for x in self.definitions if x.is_safe(dataset)},
+            )
         except CriterionException as e:
             raise PrivateProcessorException(e)
-
-
-class SquareArea:
-    """A 2D square in pixel coordinates
-    """
-    def __init__(self, origin_x:int, origin_y:int, width: int, height: int):
-        self.origin_x = origin_x
-        self.origin_y = origin_y
-        self.width = width
-        self.height = height
-
-
-class PIILocation:
-    """One or more areas in a DICOM image slice that might contain Personally
-    Identifiable Information (PPI)
-
-    Notes
-    -----
-    A PIILocation is 2D. Cleaning will be done on each slice individually.
-
-    Responsibilities:
-    * Holds location information. Does not alter PixelData itself
-    * Determine whether it applies to a given Dataset
-
-    """
-    def __init__(self,
-                 name: str,
-                 criterion: Callable[[Dataset], bool],
-                 areas: List[SquareArea]
-                 ):
-        """
-
-        Parameters
-        ----------
-        name: str
-            Human-readable name for this location
-        criterion: Callable[[Dataset], bool]
-            Function that return True if this PIILocation exists in the given dataset
-            May return CriterionException if a True or False answer cannot be given
-        areas: List[SquareArea]
-            The
-        """
-        self.name = name
-        self.criterion = criterion
-        self.areas = areas
-
-    def exists_in(self, dataset: Dataset) -> bool:
-        """True if the given PII location exists in the given dataset
-
-        Raises
-        ------
-        CriterionException
-            If for some reason no True or False response can be given for this
-            dataset
-        """
-        return self.criterion(dataset)
-
-
-class PixelProcessor:
-    """Finds and removes burned-in sensitive information in images
-
-    Notes
-    -----
-    Responsibilities:
-    * Checking whether a dataset needs cleaning of its pixel data
-    * Checking whether redaction can be performed
-    * Actually performing the blackout
-    """
-    def __init__(self, locations: List[PIILocation]):
-        """
-
-        Parameters
-        ----------
-        locations: List[PIILocation]
-            Information on all potentials locations containing personally
-            identifiable information
-
-        """
-        self.locations = locations
-
-    @staticmethod
-    def needs_cleaning(dataset: Dataset) -> bool:
-        """Whether this dataset should be rejected as unsafe without cleaning
-
-        Made this into a separate method as for many DICOM datasets you can
-        reasonably skip the slow redaction process all together
-        """
-        # TODO: check separate criteria for suspicion! not get PPILocations
-        return True
-
-    def get_locations(self, dataset: Dataset) -> List[PIILocation]:
-        """Get all locations with person information in the current dataset
-
-        Raises
-        ------
-        PixelDataProcessorException
-            When locations cannot be found properly
-        """
-        try:
-            return [x for x in self.locations if x.exists_in(dataset)]
-        except CriterionException as e:
-            raise PixelDataProcessorException(e)
-
-    def clean_pixel_data(self, dataset: Dataset) -> Dataset:
-        """Remove pixel data in all PII locations and mark the dataset as safe
-
-        Raises
-        ------
-        PixelDataProcessorException
-            If cleaning pixeldata fails for any reason
-
-        """
-        for location in self.get_locations(dataset):
-            #TODO: implement
-            for area in location:
-                print(f'Removing {area} in {dataset}')
-        return dataset
 
 
 class Core:
@@ -304,17 +241,38 @@ class Core:
     connections needed to do this
     """
 
-    def __init__(self, bouncers: List[Bouncer],
-                 profile: Profile,
-                 safe_private: PrivateProcessor,
-                 pixel_processor: PixelProcessor):
+    def __init__(
+        self,
+        bouncers: List[Bouncer],
+        profile: Profile,
+        safe_private: PrivateProcessor,
+        pixel_processor: PixelProcessor,
+    ):
+        """
+
+        Parameters
+        ----------
+        bouncers: List[Bouncer]
+            Inspect all incoming data and can reject if it is deemed not fit for
+            deidentification. For example rejecting encapsulated PDFs as they are
+            too difficult to deidentify.
+        profile: Profile
+            Defines what to do with each DICOM element (except PixelData)
+        safe_private: PrivateProcessor
+            Defines what to do with private DICOM elements. Some might be safe under
+            certain circumstances
+        pixel_processor: PixelProcessor
+            Defines what to do with DICOM image data (the PixelData tag). Can remove
+            or black out certain parts of an image.
+
+        """
         self.profile = profile
         self.bouncers = bouncers
         self.safe_private = safe_private
         self.pixel_processor = pixel_processor
 
     def deidentify(self, dataset: Dataset):
-        #TODO: implement
+        # TODO: implement
 
         # check all bouncers to see whether dataset should be rejected
         for bouncer in self.bouncers:
@@ -328,22 +286,27 @@ class Core:
         # generate safe private ruleset for this dataset
         safe_private = self.safe_private.get_rule_set(dataset)
 
-        # add this ruleset to profile and then flatten
+        # add safe private rules and then generate one ruleset for all
+        rule_set = self.profile.flatten(additional_rule_sets=[safe_private])
 
-        # run flattened profile (deidentify all tags)
+        # run flattened profile (deidentify all tags). Maybe use walk with callback?
+        def process_element(dataset_in: Dataset, data_element_in: DataElement):
+            # Find the rule for this DICOM element
+            rule = rule_set.get_rule(data_element_in.tag)
+
+            # Handle special cases:
+            if not rule or type(rule) == Remove:
+                # Remove all tags that have no rule. The safe option.
+                del dataset_in[data_element_in.tag]
+            else:
+                rule.operation.apply(data_element_in)
+
+        dataset.walk(process_element)
 
         return dataset
 
 
 class BouncerException(IDISCoreException):
-    pass
-
-
-class CriterionException(IDISCoreException):
-    pass
-
-
-class PixelDataProcessorException(IDISCoreException):
     pass
 
 

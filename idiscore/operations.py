@@ -24,8 +24,11 @@ class Operation:
       is needed it should be dealt with higher up the execution stack
     * Should NOT Be stateful. ElementOperation.apply(element) should return the same
       object regardless of what went before.
+    * Should NOT alter anything besides the element that is fed to it
 
     """
+
+    name = "Base Operation"
 
     def apply(self, element: DataElement) -> DataElement:
         """
@@ -39,16 +42,28 @@ class Operation:
         """
         return element
 
+    def __str__(self):
+        if self.name:
+            return self.name
+        else:
+            return super().__str__()
+
 
 class Keep(Operation):
     """Keep the given element as is. Make no changes
     """
-    pass
+
+    name = "Keep"
+
+    def apply(self, element: DataElement) -> DataElement:
+        return element
 
 
 class Remove(Operation):
     """Remove the given element completely
     """
+
+    name = "Remove"
 
     def apply(self, element: DataElement) -> DataElement:
         return None
@@ -57,6 +72,8 @@ class Remove(Operation):
 class Replace(Operation):
     """Replace element with a dummy value"""
 
+    name = "Replace"
+
     def apply(self, element: DataElement) -> DataElement:
         return DataElementFactory(tag=element.tag)
 
@@ -64,11 +81,13 @@ class Replace(Operation):
 class Hash(Operation):
     """Replace element value with an MD5 hash of that value"""
 
+    name = "Hash"
+
     def apply(self, element: DataElement) -> DataElement:
-        element.value = md5(str(element.value).encode('utf8')).hexdigest()
+        element.value = md5(str(element.value).encode("utf8")).hexdigest()
 
 
-#TODO: Implement all of these operations:
+# TODO: Implement all of these operations:
 """
 from http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html#table_E.1-1 
 
