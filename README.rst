@@ -17,6 +17,8 @@ IDIS Core
      :target: https://pyup.io/repos/github/sjoerdk/idiscore/
      :alt: Updates
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black
 
 
 Deidentification of DICOM images using Attribute Confidentiality Profiles
