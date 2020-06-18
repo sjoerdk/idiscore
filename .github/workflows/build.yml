@@ -31,6 +31,13 @@ jobs:
       run: |
         pip install pytest
         pytest
+    - name: Generate coverage report
+      run: |
+        pip install pytest
+        pip install pytest-cov
+        pytest --cov=./ --cov-report=xml
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.7
     - name: PyPI Deployment
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
       uses: casperdcl/deploy-pypi@v1
