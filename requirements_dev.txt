@@ -7,7 +7,6 @@ pydicom==2.0.0
 factory-boy==2.12
 coverage==5.1
 flake8==3.8.0
-flake8-respect-noqa==0.3
 pip==20.1
 Sphinx==3.0.3
 tox==3.14.6
