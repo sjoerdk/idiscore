@@ -24,7 +24,7 @@ IDIS Core
     :target: https://github.com/ambv/black
 
 
-Deidentification of DICOM images using Attribute Confidentiality Profiles
+Deidentification of DICOM images using Attribute Confidentiality Options
 
 
 * Free software: MIT license

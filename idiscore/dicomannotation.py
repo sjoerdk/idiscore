@@ -15,39 +15,34 @@ class Annotation:
     key = "short_key"  # for serialization, no spaces
     description = "longer description of this class"  # for humans
 
-    def __str__(self):
-        return self.description
-
-
-class ContainsPII(Annotation):
-    key = "contains_pii"
-    description = "this tag contains personally identifiable information"  # for humans
-
-
-class MustNotChange(Annotation):
-
-    CONTAINS_PII = (
-        "contains_pii"  # this tag contains personally identifiable information
-    )
-    MUST_NOT_CHANGE = "must_not_change"  # this tag
-
-    def __init__(self, reason: str = ""):
-        """Something must not change, with optional reason why.
+    def __init__(self, explanation: str = ""):
+        """A comment about about a DICOM tag, with optional explanation.
 
         Parameters
         ----------
-        reason: str, optional
+        explanation: str, optional
             Why must this not change? For example 'because this is needed for loading
             in application X'. Optional, defaults to empty string
 
         """
-        self.reason = reason
+        self.reason = explanation
 
     def __str__(self):
         output = self.description
         if self.reason:
             output += f" ({self.reason})"
         return output
+
+
+class ContainsPII(Annotation):
+    key = "contains_pii"
+    description = "this tag contains personally identifiable information"
+
+
+class MustNotChange(Annotation):
+
+    key = "contains_pii"
+    description = "This tag's value must not change"
 
 
 class DICOMExample:
