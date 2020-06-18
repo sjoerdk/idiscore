@@ -1,0 +1,24 @@
+default_language_version:
+  python: python3.8
+repos:
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v1.5.1
+    hooks:
+      - id: pyupgrade
+        language: python
+        args: [--py36-plus]
+  - repo: https://github.com/ambv/black
+    rev: 19.10b0
+    hooks:
+      - id: black
+        language: python
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.0
+    hooks:
+      - id: flake8
+        language: python
+        additional_dependencies:
+          - flake8-bugbear
+          - pep8-naming
+          - flake8-docstrings
+          - mccabe

@@ -19,10 +19,14 @@ def an_empty_core() -> Core:
 
     Fully functional, but will result in only empty
     """
-    return Core(bouncers=[],
-                profile=Profile(rule_sets=[]),
-                safe_private=PrivateProcessor(definitions=[]),
-                pixel_processor=PixelProcessor(locations=[]))
+    return Core(
+        bouncers=[],
+        profile=Profile(rule_sets=[]),
+        safe_private=PrivateProcessor(definitions=[]),
+        pixel_processor=PixelProcessor(locations=[]),
+    )
+
+
 @pytest.fixture
 def a_dataset() -> Dataset:
     """A realistic mock CT dataset"""
@@ -34,7 +38,7 @@ def test_idiscore_deidentify_basic(an_empty_core, a_dataset):
     core = an_empty_core
 
     # Have a single rule to hash the patientID
-    a_ruleset = RuleSet(rules={Rule(Tag('PatientID'), Hash())})
+    a_ruleset = RuleSet(rules={Rule(Tag("PatientID"), Hash())})
     core.profile.rule_sets.append(a_ruleset)
 
     before = a_dataset.PatientID
@@ -51,19 +55,19 @@ def test_profile_flatten():
     """A profile can have multiple rule sets, but with flatten you should end up
     with one rule per DICOM tag
     """
-    hash_ptid = Rule(Tag('PatientID'), Hash())
-    remove_ptid = Rule(Tag('PatientID'), Remove())
-    keep_ptid = Rule(Tag('PatientID'), Keep())
+    hash_ptid = Rule(Tag("PatientID"), Hash())
+    remove_ptid = Rule(Tag("PatientID"), Remove())
+    keep_ptid = Rule(Tag("PatientID"), Keep())
 
-    hash_ptname = Rule(Tag('PatientName'), Hash())
+    hash_ptname = Rule(Tag("PatientName"), Hash())
 
-    set1 = RuleSet(name='initial set', rules={hash_ptid,
-                                              hash_ptname})
+    set1 = RuleSet(name="initial set", rules={hash_ptid, hash_ptname})
 
-    set2 = RuleSet(name='second set', rules={remove_ptid,
-                                             Rule(Tag('Modality'), Remove())})
+    set2 = RuleSet(
+        name="second set", rules={remove_ptid, Rule(Tag("Modality"), Remove())}
+    )
 
-    set3 = RuleSet(name='another set', rules={keep_ptid})
+    set3 = RuleSet(name="another set", rules={keep_ptid})
 
     profile = Profile(rule_sets=[set1, set2])
 

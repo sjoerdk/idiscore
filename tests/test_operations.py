@@ -4,7 +4,7 @@
 """Tests for `idiscore` package."""
 
 import pytest
-from dicomgenerator.factory import CTDatasetFactory, DataElementFactory
+from dicomgenerator.factory import DataElementFactory
 from factory import random
 
 from idiscore.operations import Hash
@@ -13,7 +13,7 @@ from idiscore.operations import Hash
 @pytest.fixture
 def fix_random_seed():
     """Make sure tests using Faker will have reproducible results"""
-    random.reseed_random('fixed seed')
+    random.reseed_random("fixed seed")
 
 
 def test_operations():
@@ -28,6 +28,3 @@ def test_operations():
     # numeric VR element. We're not here to police currently
     element = DataElementFactory(tag="Columns")
     operation.apply(element)
-    test = 1
-
-

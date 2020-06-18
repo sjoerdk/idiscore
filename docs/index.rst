@@ -69,7 +69,7 @@ DICOM deidentification option
 
 IDIS core configuration
     All information needed by IDIS core to actually deidentify a DICOM dataset. Safe private tag definitions,
-    the Confidentiality options to use, Pixel data definitions, and any custom additional options. A configuration
+    the Confidentiality options to use, Pixel data definitions, and any custom additional options.
 
 IDIS core instance
     A specific version of the IDIS core library combined with a specific configuration. This can be deployed an used as is.
