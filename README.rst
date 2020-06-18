@@ -13,6 +13,9 @@ IDIS Core
         :target: https://idiscore.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://codecov.io/gh/sjoerdk/idiscore/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/sjoerdk/coreidis
+
 .. image:: https://pyup.io/repos/github/sjoerdk/idiscore/shield.svg
      :target: https://pyup.io/repos/github/sjoerdk/idiscore/
      :alt: Updates
