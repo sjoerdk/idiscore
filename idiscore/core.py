@@ -1,25 +1,170 @@
 # -*- coding: utf-8 -*-
-from typing import Callable, Iterable, List, Optional, Set
+from functools import total_ordering
+from typing import Callable, Iterable, List, Optional, Union
 
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 from pydicom.tag import Tag
-from pydicom.uid import UID
 
 from idiscore.exceptions import IDISCoreException
-from idiscore.operations import Operation, Remove
+from idiscore.operations import Operator, Remove
 from idiscore.imageprocessing import CriterionException, PixelProcessor
 
 
-class Rule:
-    """Defines what to do with a single DICOM element"""
+@total_ordering
+class TagIdentifier:
+    """Identifies a single DICOM tag or repeating group like (50xx,xxx)
 
-    def __init__(self, tag: Tag, operation: Operation):
+
+    Using just DICOM tags is too limited for defining deidentification. We want
+    to be able to represent for example:
+    * all curves (50xx,xxxx)
+    * a private tag with a variable group ([PrivateCreatorName]01,0010)
+    """
+
+    def matches(self, element: DataElement) -> bool:
+        """The given element matches this identifier"""
+        return False
+
+    def key(self) -> str:
+        """String used for comparison operators"""
+        return str(id(self))
+
+    #   Override comparisons to be able to compare and order different
+    #   child classes
+    def __le__(self, other):
+        """Return ``True`` if `self`  is less than or equal to `other`"""
+        return self.key() >= other.key()
+
+    def __eq__(self, other):
+        if isinstance(other, TagIdentifier):
+            return self.key() == other.key()
+        else:
+            return False
+
+    def __hash__(self):
+        # TagIdentifiers are used as dictionary keys
+        return hash(self.key())
+
+
+class SingleTag(TagIdentifier):
+    """Matches a single DICOM tag like (0010,0010) or 'PatientName'"""
+
+    def __init__(self, tag: Tag):
         self.tag = tag
+
+    def __str__(self):
+        return str(self.tag)
+
+    def matches(self, element: DataElement) -> bool:
+        """The given element matches this identifier"""
+        return element.tag == self.tag
+
+    def key(self) -> str:
+        return str(self.tag)
+
+
+class RepeatingTag:
+    """Dicom tag with x's in it to denote wildcards, like (50xx,xxxx) for curve data
+
+    See http://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.6.html
+
+    Notes
+    -----
+    I would prefer to take any pydicom way of working with repeater tags, but
+    the current version of pydicom (2.0) only offers limited lookup support
+    as far as I can see
+    """
+
+    def __init__(self, tag: str):
+        # check input
+        try:
+            self.tag = RepeatingTag.parse_tag_string(tag)
+        except ValueError as e:
+            raise ValueError(
+                f'Invalid format "{tag}":{e}. Examples of valid tag '
+                f'strings: "(0010,xx10)", "0010,xx10", "0010xx10"'
+            )
+
+    def __str__(self):
+        """Output format matches pydicom.tag.Tag.__str__()"""
+        return f"({self.tag[:4]}, {self.tag[4:]})"
+
+    @staticmethod
+    def parse_tag_string(tag: str) -> str:
+        """Cleans tag string and outputs it in standard format.
+        Raises ValueError if tag is not of the correct format like
+        (0010,10xx).
+
+        Returns
+        -------
+        str
+            standard format, 8 character hex string with 'x' for wildcard bytes.
+            like 0010xx10 or 75f300xx
+        """
+        # remove potential brackets and comma. Make lower case to reduce clutter
+        tag = tag.replace("(", "").replace(")", "").replace(",", "").lower()
+        if len(tag) != 8:
+            raise ValueError(f"Tag should be 8 characters long")
+        # check whether this is a valid hex string if you discount the x's
+        try:
+            int(f'0x{tag.replace("x","0")}', 0)
+        except ValueError:
+            raise ValueError(f'Non "x" parts of this tag are not hexadecimal')
+
+        return tag
+
+    def as_mask(self) -> int:
+        """Byte mask that can remove the byte positions that have value 'x'
+
+        RepeatingTag('0010,xx10').as_mask() -> 0xffff00ff
+        RepeatingTag('50xx,xxxx').as_mask() -> 0xff000000
+        """
+        hex_string = f"0x{''.join(map(lambda x: '0' if x=='x' else 'f', self.tag))}"
+        return int(hex_string, 0)
+
+    def static_component(self) -> int:
+        """The int value of all bytes of this tag that are not 'x'
+        RepeatingTag('0010,xx10').static_component() -> 0x00100010
+        RepeatingTag('50xx,xxxx').static_component() -> 0x50000000
+        """
+        return int(f'0x{self.tag.replace("x", "0")}', 0)
+
+
+class RepeatingGroup(TagIdentifier):
+    """A DICOM tag where not all elements are filled. Like (50xx,xxxx)"""
+
+    def __init__(self, tag: Union[str, RepeatingTag]):
+        if isinstance(tag, str):
+            tag = RepeatingTag(tag)
+        self.tag = tag
+
+    def __str__(self):
+        return str(self.tag)
+
+    def matches(self, element: DataElement) -> bool:
+        """True if the element's tag matches the tag string, ignoring any part
+        of the tag_string where there are x marks
+        """
+        # Following pydicom in using byte operations for this
+        return element.tag & self.tag.as_mask() == self.tag.static_component()
+
+    def key(self) -> str:
+        """For sane sorting, make sure this matches the key format of other
+        identifiers
+        """
+        return str(self.tag)
+
+
+class Rule:
+    """Defines what to do with a single DICOM element or single group of elements"""
+
+    def __init__(self, identifier: TagIdentifier, operation: Operator):
+        self.identifier = identifier
         self.operation = operation
 
     def __str__(self):
-        return f"{self.tag} - {self.operation}"
+        return f"{self.identifier} - {self.operation}"
 
 
 class RuleSet:
@@ -42,7 +187,7 @@ class RuleSet:
 
         """
 
-        self.rules_dict = {x.tag: x for x in rules}
+        self.rules_dict = {x.identifier: x for x in rules}
         self.name = name
 
     @property
@@ -105,15 +250,13 @@ class Profile:
 
         output = {}
         for rule_set in self.rule_sets + additional_rule_sets:
-            output.update({x.tag: x for x in rule_set.rules})
+            output.update({x.identifier: x for x in rule_set.rules})
 
         return RuleSet(name="flattened", rules=set(output.values()))
 
 
 class Bouncer:
-    """Inspects a dataset and either rejects it or lets it through
-
-    """
+    """Inspects a dataset and either rejects it or lets it through"""
 
     def inspect(self, dataset: Dataset):
         """Check given dataset, raise exception if it should be rejected
@@ -134,38 +277,6 @@ class Bouncer:
 
         """
         pass
-
-
-class RejectKOGSPS(Bouncer):
-    def inspect(self, dataset: Dataset):
-        """ This bouncer rejects three types of DICOM objects:
-        1.2.840.10008.5.1.4.1.1.11.1 - GrayscaleSoftcopyPresentationStateStorage
-        1.2.840.10008.5.1.4.1.1.88.59 - KeyObjectSelectionDocument
-        1.2.840.10008.5.1.4.1.1.11.2 - ColorSoftcopyPresentationStateStorage
-        These often contain ids and physician names in their SeriesDescription.
-        See ticket #8465
-
-        Raises
-        ------
-        BouncerException
-            When the dataset is one of these types
-
-        """
-        black_list = [
-            UID("1.2.840.10008.5.1.4.1.1.11.1"),
-            UID("1.2.840.10008.5.1.4.1.1.88.59"),
-            UID("1.2.840.10008.5.1.4.1.1.11.2"),
-        ]
-
-        def is_annotation(ds) -> bool:
-            return ds["SeriesDescription"] == "Annotation"
-
-        for uid in black_list:
-            if dataset["SopClassUID"] == uid and not is_annotation(dataset):
-                raise BouncerException(
-                    f"Datasets of type {uid.name} ({uid}) are not allowed as "
-                    f"they often contain physician information"
-                )
 
 
 class SafePrivateDefinition:
@@ -272,7 +383,6 @@ class Core:
         self.pixel_processor = pixel_processor
 
     def deidentify(self, dataset: Dataset):
-        # TODO: implement
 
         # check all bouncers to see whether dataset should be rejected
         for bouncer in self.bouncers:

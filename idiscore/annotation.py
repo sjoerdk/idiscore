@@ -104,6 +104,8 @@ class EmptyAnnotation(Annotation):
 
 
 class AnnotationTypes:
+    """Lists all annotation types. Helps with serialization"""
+
     ALL = {
         MustNotChange.key: MustNotChange,
         ContainsPII.key: ContainsPII,

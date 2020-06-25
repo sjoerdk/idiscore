@@ -1,29 +1,31 @@
 from hashlib import md5
 
+from dicomgenerator.dicom import VRs
 from dicomgenerator.factory import DataElementFactory
 from pydicom.dataelem import DataElement
 
 
-class Operation:
-    """Base class for any operation on a DICOM data element
+class Operator:
+    """Base class for something that can change a DICOM data element.
 
-    Like changing the tag value, or removing it, hashing, etc.
+    Like changing the value, hashing it, removing the entire element, etc.
     Takes care of input validation, raising exceptions when needed
 
     Notes
     -----
-    Responsibilties
+    Responsibilities
 
-    An ElementOperation
+    An Operator
 
-    * Can change a single DICOM data element
+    * Can change a single DICOM data element that is fed to it
     * Can use the content or value representation of the input argument
-    * Can take init arguments
+    * Can take init arguments and connect to external resources if needed
 
     * Should NOT Depend on the value of other DataElements. If more complicated logic
       is needed it should be dealt with higher up the execution stack
     * Should NOT Be stateful. ElementOperation.apply(element) should return the same
-      object regardless of what went before.
+      object regardless of what went before. It CAN however rely on external sources
+      like a pseudonymization service.
     * Should NOT alter anything besides the element that is fed to it
 
     """
@@ -49,9 +51,8 @@ class Operation:
             return super().__str__()
 
 
-class Keep(Operation):
-    """Keep the given element as is. Make no changes
-    """
+class Keep(Operator):
+    """Keep the given element as is. Make no changes"""
 
     name = "Keep"
 
@@ -59,9 +60,8 @@ class Keep(Operation):
         return element
 
 
-class Remove(Operation):
-    """Remove the given element completely
-    """
+class Remove(Operator):
+    """Remove the given element completely"""
 
     name = "Remove"
 
@@ -69,7 +69,38 @@ class Remove(Operation):
         return None
 
 
-class Replace(Operation):
+class Empty(Operator):
+    """Make the content of element empty"""
+
+    name = "Empty"
+
+    def apply(self, element: DataElement) -> DataElement:
+        return DataElementFactory(tag=element.tag, value=None)
+
+
+class Clean(Operator):
+    """Replace with values of similar meaning known not to contain identifying
+    information and consistent with the VR
+
+    'similar meaning' is open to interpretation.
+    """
+
+    name = "Clean"
+
+    def apply(self, element: DataElement) -> DataElement:
+        vr = VRs.short_name_to_vr(element.VR)
+        if vr in VRs.date_like:
+            # maybe something can be done for dates. For now just return a random one
+            return DataElementFactory(tag=element.tag)
+        else:
+            # too difficult. Cannot do it
+            raise ValueError(
+                f"Cannot clean {element}. I don't know how to handle "
+                f"tags of type '{vr}'"
+            )
+
+
+class Replace(Operator):
     """Replace element with a dummy value"""
 
     name = "Replace"
@@ -78,30 +109,20 @@ class Replace(Operation):
         return DataElementFactory(tag=element.tag)
 
 
-class Hash(Operation):
+class GenerateUID(Operator):
+    """Replace element with a valid UID"""
+
+    name = "Replace"
+
+    def apply(self, element: DataElement) -> DataElement:
+        # not so pretty, but works
+        element.value = DataElementFactory(tag="PatientID").value
+
+
+class Hash(Operator):
     """Replace element value with an MD5 hash of that value"""
 
     name = "Hash"
 
     def apply(self, element: DataElement) -> DataElement:
         element.value = md5(str(element.value).encode("utf8")).hexdigest()
-
-
-# TODO: Implement all of these operations:
-"""
-from http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html#table_E.1-1 
-
-D - replace with a non-zero length value that may be a dummy value and consistent with the VR
-Z - replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR
-X - remove
-K - keep (unchanged for non-sequence attributes, cleaned for sequences)
-C - clean, that is replace with values of similar meaning known not to contain identifying information and consistent with the VR
-U - replace with a non-zero length UID that is internally consistent within a set of Instances
-Z/D - Z unless D is required to maintain IOD conformance (Type 2 versus Type 1)
-X/Z - X unless Z is required to maintain IOD conformance (Type 3 versus Type 2)
-X/D - X unless D is required to maintain IOD conformance (Type 3 versus Type 1)
-X/Z/D - X unless Z or D is required to maintain IOD conformance (Type 3 versus Type 2 versus Type 1)
-X/Z/U* - X unless Z or replacement of contained instance UIDs (U) is required to maintain IOD conformance (Type 3 versus Type 2 versus Type 1 sequences containing UID references)
-
-
-"""

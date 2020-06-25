@@ -3,7 +3,7 @@ import json
 
 from dicomgenerator.factory import CTDatasetFactory, DataElementFactory
 
-from idiscore.dicomannotation import (
+from idiscore.annotation import (
     Annotation,
     AnnotatedDataset,
     ContainsPII,

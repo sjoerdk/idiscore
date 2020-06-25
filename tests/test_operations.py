@@ -7,7 +7,7 @@ import pytest
 from dicomgenerator.factory import DataElementFactory
 from factory import random
 
-from idiscore.operations import Hash
+from idiscore.operations import Clean, Hash
 
 
 @pytest.fixture
@@ -28,3 +28,16 @@ def test_operations():
     # numeric VR element. We're not here to police currently
     element = DataElementFactory(tag="Columns")
     operation.apply(element)
+
+
+def test_clean():
+    """Tricky operation, this clean. Test some cases"""
+    clean = Clean()
+    element = DataElementFactory(tag="AcquisitionDate")
+    before = element.value
+    result = clean.apply(DataElementFactory(tag="AcquisitionDate"))
+    assert result.value != before
+
+    # Other VRs cannot be cleaned currently
+    with pytest.raises(ValueError):
+        clean.apply(DataElementFactory(tag="Allergies"))
