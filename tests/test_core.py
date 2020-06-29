@@ -8,13 +8,11 @@ from dicomgenerator.factory import CTDatasetFactory, DataElementFactory
 from idiscore.core import (
     Core,
     Profile,
-    RepeatingTag,
     Rule,
-    RuleSet,
+    RuleList,
     PrivateProcessor,
-    SingleTag,
-    RepeatingGroup,
 )
+from idiscore.identifiers import RepeatingGroup, RepeatingTag, SingleTag
 from idiscore.imageprocessing import PixelProcessor
 from idiscore.operations import Hash, Keep, Remove
 from pydicom.dataset import Dataset
@@ -47,7 +45,7 @@ def test_idiscore_deidentify_basic(an_empty_core, a_dataset):
     core = an_empty_core
 
     # Have a single rule to hash the patientID
-    a_ruleset = RuleSet(rules={Rule(Tag("PatientID"), Hash())})
+    a_ruleset = RuleList(rules={Rule(Tag("PatientID"), Hash())})
     core.profile.rule_sets.append(a_ruleset)
 
     before = a_dataset.PatientID
@@ -76,9 +74,9 @@ def test_profile_flatten(some_pid_rules):
     hash_name = Rule(SingleTag("PatientName"), Hash())
 
     # initial set
-    set1 = RuleSet(rules={some_pid_rules[0], hash_name})
+    set1 = RuleList(rules={some_pid_rules[0], hash_name})
     # set with a different rule for PatientID
-    set2 = RuleSet(rules={some_pid_rules[1], Rule(SingleTag("Modality"), Remove())})
+    set2 = RuleList(rules={some_pid_rules[1], Rule(SingleTag("Modality"), Remove())})
 
     profile = Profile(rule_sets=[set1, set2])
 
@@ -87,7 +85,7 @@ def test_profile_flatten(some_pid_rules):
     assert some_pid_rules[0] not in profile.flatten().rules
 
     # if another set is added, the rules from this should overrule earlier
-    set3 = RuleSet(name="another set", rules={some_pid_rules[2]})
+    set3 = RuleList(name="another set", rules={some_pid_rules[2]})
     assert some_pid_rules[2] in profile.flatten(additional_rule_sets=[set3]).rules
     # but any original rule that was not overwritten should still be present
     assert hash_name in profile.flatten(additional_rule_sets=[set3]).rules
