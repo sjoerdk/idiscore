@@ -42,6 +42,6 @@ class RejectKOGSPS(Bouncer):
         for uid in black_list:
             if dataset["SopClassUID"] == uid and not is_annotation(dataset):
                 raise BouncerException(
-                    f"Datasets of type {uid.name} ({uid}) are not allowed as "
+                    f"Data sets of type {uid.name} ({uid}) are not allowed as "
                     f"they often contain physician information"
                 )

@@ -2,9 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `idiscore` package."""
+from typing import List
+
 import pytest
 
 from dicomgenerator.factory import CTDatasetFactory, DataElementFactory
+from pydicom.tag import Tag
+
 from idiscore.core import (
     Core,
     Profile,
@@ -12,11 +16,10 @@ from idiscore.core import (
     RuleList,
     PrivateProcessor,
 )
-from idiscore.identifiers import RepeatingGroup, RepeatingTag, SingleTag
+from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.imageprocessing import PixelProcessor
 from idiscore.operations import Hash, Keep, Remove
 from pydicom.dataset import Dataset
-from pydicom.tag import Tag
 
 
 @pytest.fixture
@@ -24,7 +27,7 @@ def an_empty_core() -> Core:
     """A deidentification core instance that is empty in all respects. Contains
     a profile with no rule sets, PrivateProcessor with no defintions etc
 
-    Fully functional, but will result in only empty
+    Fully functional, but will not change any element
     """
     return Core(
         bouncers=[],
@@ -36,26 +39,58 @@ def an_empty_core() -> Core:
 
 @pytest.fixture
 def a_dataset() -> Dataset:
-    """A realistic mock CT dataset"""
+    """A realistic CT DICOM dataset"""
     return CTDatasetFactory()
 
 
-def test_idiscore_deidentify_basic(an_empty_core, a_dataset):
-    """Some basic integration test-like operations"""
+@pytest.fixture
+def some_rules() -> List[Rule]:
+    """Different types of Rules"""
+    return [
+        Rule(SingleTag("PatientID"), Hash()),
+        Rule(RepeatingGroup("50xx,xxxx"), Remove()),
+        Rule(PrivateTags(), Remove()),
+    ]
+
+
+def test_idiscore_deidentify_basic(a_dataset, some_rules):
+    """Send a dataset trough a full Core instance"""
     core = an_empty_core
 
-    # Have a single rule to hash the patientID
-    a_ruleset = RuleList(rules={Rule(Tag("PatientID"), Hash())})
-    core.profile.rule_sets.append(a_ruleset)
+    # a dataset
+    a_dataset = Dataset()
+    a_dataset.add(DataElementFactory(tag="PatientID", value="12345"))
+    a_dataset.add(DataElementFactory(tag="Modality", value="CT"))
+    a_dataset.add(DataElementFactory(tag="PatientName", value="Martha"))
+    a_dataset.add(DataElementFactory(tag=(0x5010, 0x3000), value="Sensitive data"))
+    a_dataset.add(DataElementFactory(tag=(0x1013, 0x0001), value="private tag"))
 
-    before = a_dataset.PatientID
-    assert len(a_dataset.items()) != 1  # dataset has many elements
+    # Some rules
+    a_ruleset = RuleList(
+        rules=[
+            Rule(SingleTag("PatientName"), Hash()),
+            Rule(RepeatingGroup("50xx,xxxx"), Remove()),
+            Rule(PrivateTags(), Remove()),
+        ]
+    )
 
-    core.deidentify(a_dataset)
-    # now the patientID should have been changed
-    assert a_dataset.PatientID != before
-    # and all other elements should have been removed
-    assert len(a_dataset.items()) == 1
+    # check before processing
+    assert Tag(0x5010, 0x3000) in a_dataset
+    assert Tag(0x1013, 0x0001) in a_dataset
+    assert a_dataset.PatientID == "12345"
+    assert a_dataset.PatientName == "Martha"
+    assert len(a_dataset.items()) == 5
+
+    # now apply the rules to the dataset
+    core = Core(profile=Profile(rule_sets=[a_ruleset]))
+    deidentified = core.deidentify(a_dataset)
+
+    # check whether that worked as expected
+    assert Tag(0x5010, 0x3000) not in deidentified  # removed by 50xx,xxxx rule
+    assert Tag(0x1013, 0x0001) not in deidentified  # removed by PrivateTags() rule
+    assert deidentified.PatientID == "12345"  # not touched. No rule for this
+    assert deidentified.PatientName != "Martha"  # should have been hashed
+    assert len(deidentified.items()) == 3
 
 
 @pytest.fixture
@@ -74,9 +109,9 @@ def test_profile_flatten(some_pid_rules):
     hash_name = Rule(SingleTag("PatientName"), Hash())
 
     # initial set
-    set1 = RuleList(rules={some_pid_rules[0], hash_name})
+    set1 = RuleList(rules=[some_pid_rules[0], hash_name])
     # set with a different rule for PatientID
-    set2 = RuleList(rules={some_pid_rules[1], Rule(SingleTag("Modality"), Remove())})
+    set2 = RuleList(rules=[some_pid_rules[1], Rule(SingleTag("Modality"), Remove())])
 
     profile = Profile(rule_sets=[set1, set2])
 
@@ -85,80 +120,50 @@ def test_profile_flatten(some_pid_rules):
     assert some_pid_rules[0] not in profile.flatten().rules
 
     # if another set is added, the rules from this should overrule earlier
-    set3 = RuleList(name="another set", rules={some_pid_rules[2]})
+    set3 = RuleList(name="another set", rules=[some_pid_rules[2]])
     assert some_pid_rules[2] in profile.flatten(additional_rule_sets=[set3]).rules
     # but any original rule that was not overwritten should still be present
     assert hash_name in profile.flatten(additional_rule_sets=[set3]).rules
 
 
-def test_identifier_comparison():
-    """Tag Identifiers are hashable and should be sortable as well"""
-    # these should equal each other
-    assert SingleTag(tag=Tag("PatientID")) == SingleTag(tag=Tag("PatientID"))
-    # You can use any initialization that pydicom.tag.Tag allows, still equal
-    assert SingleTag(tag=Tag(0x0010, 0x0020)) == SingleTag(tag=Tag("PatientID"))
+def test_rule_list():
+    """Rule list should be able to find the proper rules for tags"""
 
-    assert RepeatingGroup(tag="0010,10xx") == RepeatingGroup(tag="0010,10xx")
+    # some rules
+    rule1 = Rule(SingleTag("PatientName"), Hash())
+    rule2 = Rule(RepeatingGroup("50xx,xxxx"), Remove())
+    rule3 = Rule(PrivateTags(), Remove())
+    rules = RuleList(rules=[rule1, rule2, rule3])
 
-    # it should be possible to sort them as well
-    taglist = [
-        SingleTag(tag=Tag("0020000e")),
-        SingleTag(tag=Tag("00100020")),
-        RepeatingGroup(tag="001010xx"),
-    ]
-
-    taglist.sort(reverse=True)
-    assert str(taglist[1]) == "(0010, 10xx)"
+    assert rules.get_rule(Tag("PatientName")) == rule1
+    assert rules.get_rule(Tag("Modality")) is None  # This rule is not defined
+    assert rules.get_rule(Tag((0x5000, 0x0001))) == rule2  # try a repeating rule
+    assert rules.get_rule(Tag((0x1301, 0x0001))) == rule3  # try a private tag rule
 
 
-def test_identifier_matching():
+def test_rule_precedence():
+    """Rules are applied in order of generality - most specific first. Verify"""
 
-    repeater = RepeatingGroup("50xx,xxxx")
-    assert repeater.matches(DataElementFactory(tag="50100040"))
-    assert repeater.matches(DataElementFactory(tag="50ef3340", VR="LO"))
-    assert not repeater.matches(DataElementFactory(tag="51ef3340", VR="LO"))
+    # Some rules with a potentially ambivalent order
+    rule_a = Rule(PrivateTags(), Remove())  # Remove all private tags
+    rule_b = Rule(Tag(0x1301, 0x0000), Keep())  # but keep this private tag
+    rule_c = Rule(RepeatingGroup("50xx,xxxx"), Hash())  # match all these
+    rule_d = Rule(Tag(0x5002, 0x0002), Keep())  # but specifically remove this
+    rule_e = Rule(SingleTag("PatientName"), Hash())  # and one regular rule
+    rules = RuleList(rules=[rule_a, rule_b, rule_c, rule_d, rule_e])
 
-    repeater2 = RepeatingGroup("0010,10xx")
-    assert repeater2.matches(DataElementFactory(tag="00101000"))
-    assert repeater2.matches(DataElementFactory(tag="001010ef", VR="LO"))
-    assert not repeater2.matches(DataElementFactory(tag="001011ef", VR="LO"))
+    # now in all these cases, the most specific rule should be returned:
+    assert rules.get_rule(Tag(0x1301, 0x0000)) == rule_b  # also matches a
+    assert rules.get_rule(Tag(0x5002, 0x0002)) == rule_d  # also matches c
+    assert rules.get_rule(Tag(0x5002, 0x0001)) == rule_c
+    assert rules.get_rule(Tag(0x5001, 0x0001)) == rule_c  # also matches a
+    assert rules.get_rule(Tag(0x0010, 0x0010)) == rule_e
+    assert rules.get_rule(Tag("Modality")) is None
 
+    # For rules with identical generality, just keep the order of input
+    rule_1 = Rule(RepeatingGroup("50xx,xxxx"), Hash())
+    rule_2 = Rule(RepeatingGroup("xx10,xxxx"), Hash())
+    rules = RuleList(rules=[rule_1, rule_2])
 
-@pytest.mark.parametrize(
-    "tag_string",
-    [
-        "50xx,xxxx",
-        "50xxxxxx",  # comma is optional
-        "(50xx,xxxx)",  # so are parenthesis
-        "100e,10xx",  # characters hex or 'x'
-        "FF10,XXXX",  # case does not matter
-    ],
-)
-def test_repeating_tag_format(tag_string):
-    """Valid string for initializing a RepeatingTag"""
-    RepeatingTag(tag_string)
-
-
-@pytest.mark.parametrize(
-    "tag_string",
-    [
-        "50xx,xxxxx",  # too long
-        "50xx,xxx",  # too short
-        "50xRxxxx",  # strange characters
-    ],
-)
-def test_repeating_tag_format_exceptions(tag_string):
-    """Invalid string for initializing a RepeatingTag. These should not work"""
-    with pytest.raises(ValueError):
-        RepeatingTag(tag_string)
-
-
-def test_repeating_tag_masks():
-    """Just checking the byte fiddling that RepeatingTag does"""
-    assert hex(RepeatingTag("00xx,23e3").as_mask()) == hex(0xFF00FFFF)
-    assert hex(RepeatingTag("(00xx,23e3)").as_mask()) == hex(0xFF00FFFF)
-    assert hex(RepeatingTag("(0034,23e3)").as_mask()) == hex(0xFFFFFFFF)
-    assert hex(RepeatingTag("(50xx,xxxx)").as_mask()) == hex(0xFF000000)
-
-    assert hex(RepeatingTag("00xx,23e3").static_component()) == hex(0x000023E3)
-    assert hex(RepeatingTag("50xx,xxxx").static_component()) == hex(0x50000000)
+    assert rules.get_rule(Tag(0x5010, 0x0000)) == rule_1  # also matches a
+    assert rules.get_rule(Tag(0x5110, 0x0000)) == rule_2  # also matches a

@@ -4,10 +4,10 @@ definitely not be touched?
 
 Design requirements
 ===================
-* 1 example = Self contained file. A DICOM example should have the full dicom contents
- and annotations. This makes it possible to easily add examples to a repository and
+* 1 example = Self contained file. An AnnotatedDataset should contain all data
+ and annotations. This makes it easy to add examples to a repository and
  to denote which examples a certain test uses.
-* Annotations can be made by text editor. DICOM files that still contain PII are
+* Annotations can be edited by text editor. DICOM files that still contain PII are
   often encountered on servers where a terminal is the only communication channel.
   It should be possible to annotate directly, and not face tricky hurdles to adding
   an example to an example library
@@ -17,7 +17,7 @@ from typing import Dict, Type
 
 from dicomgenerator.importer import to_json
 from pydicom.dataset import Dataset
-from pydicom.tag import Tag
+from pydicom.tag import BaseTag, Tag
 
 from idiscore.exceptions import IDISCoreException
 
@@ -29,7 +29,7 @@ class Annotation:
     description = "A basic annotation"  # for humans
 
     def __init__(
-        self, tag: Tag, tag_info: str, explanation: str = "",
+        self, tag: BaseTag, tag_info: str, explanation: str = "",
     ):
         """A comment about about a DICOM tag, with optional explanation.
 

@@ -1,12 +1,16 @@
 """Ways to designate a DICOM tag or a group of dicom tags"""
 
 from functools import total_ordering
-from typing import Union
+from typing import Tuple, Union
 
 from pydicom._dicom_dict import RepeatersDictionary
 from pydicom.datadict import dictionary_keyword, mask_match
-from pydicom.dataelem import DataElement
-from pydicom.tag import Tag
+from pydicom.tag import BaseTag, Tag
+
+
+def clean_tag_string(x):
+    """Remove common clutter from pydicom Tag.__str__() output"""
+    return x.replace("(", "").replace(",", "").replace(" ", "").replace(")", "")
 
 
 @total_ordering
@@ -20,17 +24,29 @@ class TagIdentifier:
     * a private tag with a variable group ([PrivateCreatorName]01,0010)
     """
 
-    def matches(self, element: DataElement) -> bool:
-        """The given element matches this identifier"""
+    def matches(self, element: Tag) -> bool:
+        """The given tag matches this identifier"""
         return False
 
     def key(self) -> str:
-        """String used for comparison operators"""
+        """String used in comparison operators
+
+        Also. A key should contain all information needed to recreate an instance.
+        if 'tag' is a TagIdentifier instance, the following should hold:
+        >>> tag(tag.key()) == tag
+        """
         return str(id(self))
 
     def name(self) -> str:
         """Human readable name for this tag"""
         return "BaseTagIdentifier"
+
+    def number_of_matchable_tags(self) -> int:
+        """The number of distinct tags that this identifier could match
+
+        Used to determine order of matching (specific -> general)
+        """
+        return 0  # this is a base class that matches nothing
 
     #   Override comparisons to be able to compare and order different
     #   child classes
@@ -52,8 +68,16 @@ class TagIdentifier:
 class SingleTag(TagIdentifier):
     """Matches a single DICOM tag like (0010,0010) or 'PatientName'"""
 
-    def __init__(self, tag: Tag):
-        self.tag = tag
+    def __init__(self, tag: Union[BaseTag, str, Tuple[int, int]]):
+        """
+
+        Parameters
+        ----------
+        tag: Union[Tag, str]
+            Tag instance or string representing tag. Anything that Tag init accepts
+            for example: (0x1100,0x0012), '11000012', 'PatientID', Tag('PatientID')
+        """
+        self.tag = Tag(tag)
 
     def __str__(self):
         return str(self.tag)
@@ -62,12 +86,16 @@ class SingleTag(TagIdentifier):
         """Human readable name for this tag"""
         return dictionary_keyword(self.tag)
 
-    def matches(self, element: DataElement) -> bool:
+    def matches(self, tag: BaseTag) -> bool:
         """The given element matches this identifier"""
-        return element.tag == self.tag
+        return tag == self.tag
 
     def key(self) -> str:
-        return str(self.tag)
+        """Return a valid Tag() string argument"""
+        return clean_tag_string(str(self.tag))
+
+    def number_of_matchable_tags(self) -> int:
+        return 1
 
     def as_python(self) -> str:
         """For special export. Python code that recreates this instance"""
@@ -118,7 +146,7 @@ class RepeatingTag:
             like 0010xx10 or 75f300xx
         """
         # remove potential brackets and comma. Make lower case to reduce clutter
-        tag = tag.replace("(", "").replace(")", "").replace(",", "").lower()
+        tag = clean_tag_string(tag).lower()
         if len(tag) != 8:
             raise ValueError(f"Tag should be 8 characters long")
         # check whether this is a valid hex string if you discount the x's
@@ -136,6 +164,10 @@ class RepeatingTag:
             return RepeatersDictionary[key][4]  # 4th item in tuple is no-space name
         else:
             return f"Unknown Repeater tag {self.tag}"
+
+    def number_of_wildcard_positions(self) -> int:
+        """Number of x's in this wildcard"""
+        return self.tag.count("x")
 
     def as_mask(self) -> int:
         """Byte mask that can remove the byte positions that have value 'x'
@@ -165,22 +197,24 @@ class RepeatingGroup(TagIdentifier):
     def __str__(self):
         return str(self.tag)
 
-    def matches(self, element: DataElement) -> bool:
-        """True if the element's tag matches the tag string, ignoring any part
-        of the tag_string where there are x marks
-        """
+    def matches(self, tag: BaseTag) -> bool:
+        """True if the tag values match this repeater in all places without an 'x'"""
         # Following pydicom in using byte operations for this
-        return element.tag & self.tag.as_mask() == self.tag.static_component()
+        return tag & self.tag.as_mask() == self.tag.static_component()
 
     def key(self) -> str:
         """For sane sorting, make sure this matches the key format of other
         identifiers
+
         """
-        return str(self.tag)
+        return clean_tag_string(str(self.tag))
 
     def name(self) -> str:
         """Human readable name for this tag"""
         return self.tag.name()
+
+    def number_of_matchable_tags(self) -> int:
+        return 16 ** self.tag.number_of_wildcard_positions()
 
     def as_python(self) -> str:
         """For special export. Python code that recreates this instance"""
@@ -193,14 +227,19 @@ class PrivateTags(TagIdentifier):
     def __str__(self):
         return self.key()
 
-    def matches(self, element: DataElement) -> bool:
-        return element.tag.is_private()
+    def matches(self, tag: BaseTag) -> bool:
+        return tag.is_private
 
     def key(self) -> str:
         return "PrivateAttributes"
 
     def name(self) -> str:
         return "Private Attributes"
+
+    def number_of_matchable_tags(self) -> int:
+        # Private tags have an odd group number. So this identifier matches every
+        # other possible tag
+        return 2147483648  # ((16**8)/2)
 
     @staticmethod
     def as_python() -> str:

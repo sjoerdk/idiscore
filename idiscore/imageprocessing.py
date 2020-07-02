@@ -1,19 +1,19 @@
 """Classes and methods for working with image part of a DICOM dataset"""
+from dataclasses import dataclass
 
 from idiscore.exceptions import IDISCoreException
 from pydicom.dataset import Dataset
 from typing import Callable, List
 
 
+@dataclass(frozen=True)
 class SquareArea:
-    """A 2D square in pixel coordinates
-    """
+    """A 2D square in pixel coordinates"""
 
-    def __init__(self, origin_x: int, origin_y: int, width: int, height: int):
-        self.origin_x = origin_x
-        self.origin_y = origin_y
-        self.width = width
-        self.height = height
+    origin_x: int
+    origin_y: int
+    width: int
+    height: int
 
 
 class PIILocation:

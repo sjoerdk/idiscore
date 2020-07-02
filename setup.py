@@ -11,7 +11,7 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ["pydicom==2.*"]
+requirements = ["pydicom==2.*", "dicomgenerator"]
 
 setup_requirements = [
     "pytest-runner",

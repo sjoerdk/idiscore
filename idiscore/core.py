@@ -1,26 +1,40 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
-from pydicom.tag import Tag
+from pydicom.tag import BaseTag, Tag
 
 from idiscore.exceptions import IDISCoreException
-from idiscore.identifiers import TagIdentifier
+from idiscore.identifiers import SingleTag, TagIdentifier
 from idiscore.operations import Operator, Remove
-from idiscore.imageprocessing import CriterionException, PixelProcessor
+from idiscore.imageprocessing import (
+    CriterionException,
+    PixelDataProcessorException,
+    PixelProcessor,
+)
 
 
 class Rule:
     """Defines what to do with a single DICOM element or single group of elements"""
 
-    def __init__(self, identifier: TagIdentifier, operation: Operator):
+    def __init__(self, identifier: Union[TagIdentifier, BaseTag], operation: Operator):
+        # allow pydicom Tag object for less clutter in Rule init
+        if isinstance(identifier, BaseTag):
+            identifier = SingleTag(identifier)
         self.identifier = identifier
         self.operation = operation
 
     def __str__(self):
         return f"{self.identifier} - {self.operation}"
+
+    def number_of_matchable_tags(self) -> int:
+        """The number of distinct DICOM tags that this rule could match"""
+        return self.identifier.number_of_matchable_tags()
+
+    def matches(self, tag: BaseTag) -> bool:
+        """True if this rule matches the given DICOM tag"""
+        return self.identifier.matches(tag)
 
 
 class RuleList:
@@ -41,15 +55,36 @@ class RuleList:
             Human readable name. Defaults to 'RuleSet'
         """
 
-        self.rules_dict = OrderedDict((x.identifier, x) for x in rules)
+        # keep wildcard rule separately for more efficient matching
+        self._single_tag_rules_dict = {
+            str(x.identifier): x for x in rules if self.is_single_tag_rule(x)
+        }
+
+        self._group_rules = [x for x in rules if not self.is_single_tag_rule(x)]
+        # Try to match most specific group rules first
+        self._group_rules.sort(key=lambda x: x.number_of_matchable_tags())
+
         self.name = name
 
     @property
     def rules(self) -> List[Rule]:
-        return list(self.rules_dict.values())
+        """All rules in this list"""
+        return list(self._single_tag_rules_dict.values()) + self._group_rules
 
-    def get_rule(self, tag: Tag) -> Optional[Rule]:
+    @staticmethod
+    def is_single_tag_rule(rule: Rule) -> bool:
+        """Targets only a single DICOM tag"""
+        return isinstance(rule.identifier, SingleTag)
+
+    def get_rule(self, tag: BaseTag) -> Optional[Rule]:
         """Return the most specific rule for the given DICOM tag, or None if not found
+
+        Returns
+        -------
+        Rule
+            Most specific rule for the given DICOM tag
+        None
+            If no rule matches the given DICOM tag
 
         Notes
         -----
@@ -61,8 +96,18 @@ class RuleList:
         * A rule for (0010,xx10) is preferred over (xxxx,0010)
 
         """
-        raise NotImplementedError("TODO: incorporate repeater tags")
-        # return self.rules_dict.get(tag)
+        # On single tags we can do efficient dictionary lookup
+
+        if rule := self._single_tag_rules_dict.get(str(tag)):
+            return rule
+
+        #  found no specific rule for this tag. Try wildcard tags
+        for group_rule in self._group_rules:
+            if group_rule.matches(tag):
+                return group_rule
+
+        # nothing matches. There is no rule
+        return None
 
     def __str__(self):
         return f'Ruleset "{self.name}"'
@@ -220,61 +265,73 @@ class Core:
 
     def __init__(
         self,
-        bouncers: List[Bouncer],
         profile: Profile,
-        safe_private: PrivateProcessor,
-        pixel_processor: PixelProcessor,
+        bouncers: List[Bouncer] = None,
+        safe_private: Optional[PrivateProcessor] = None,
+        pixel_processor: Optional[PixelProcessor] = None,
     ):
         """
 
         Parameters
         ----------
-        bouncers: List[Bouncer]
-            Inspect all incoming data and can reject if it is deemed not fit for
-            deidentification. For example rejecting encapsulated PDFs as they are
-            too difficult to deidentify.
         profile: Profile
             Defines what to do with each DICOM element (except PixelData)
-        safe_private: PrivateProcessor
+        bouncers: List[Bouncer], optional
+            Inspect all incoming data and can reject if it is deemed not fit for
+            deidentification. For example rejecting encapsulated PDFs as they are
+            too difficult to deidentify. Defaults to empty list (all data allowed)
+        safe_private: Optional[PrivateProcessor],
             Defines what to do with private DICOM elements. Some might be safe under
-            certain circumstances
-        pixel_processor: PixelProcessor
+            certain circumstances. Defaults to None
+        pixel_processor: Optional[PrivateProcessor],
             Defines what to do with DICOM image data (the PixelData tag). Can remove
-            or black out certain parts of an image.
+            or black out certain parts of an image. Defaults to None
 
         """
         self.profile = profile
+        if not bouncers:
+            bouncers = []
         self.bouncers = bouncers
         self.safe_private = safe_private
         self.pixel_processor = pixel_processor
 
-    def deidentify(self, dataset: Dataset):
+    def deidentify(self, dataset: Dataset) -> Dataset:
+        """Try to remove identifiable information from dataset
 
-        # check all bouncers to see whether dataset should be rejected
-        for bouncer in self.bouncers:
-            bouncer.inspect(dataset)
+        Raises
+        ------
+        DeidentificationException
+            If deidentification fails for any reason
 
-        # check whether blackout is needed, then check whether a blackout is possible
-        # run blackout if required
-        if self.pixel_processor.needs_cleaning(dataset):
-            dataset = self.pixel_processor.clean_pixel_data(dataset)
+        Notes
+        -----
+        Input dataset is passed by reference so will be modified. The output
+        of this function is the same object as the input
+        >>> original_dataset
+        >>> deidentified = core.deidentify(original_dataset)
+        >>> original_dataset == deidentified  # True
 
-        # All private tags are deleted by default. Are there any exceptions for this
-        # dataset?
-        safe_private = self.safe_private.get_rule_set(dataset)
+        """
+        # apply processors
+        self.apply_bouncers(dataset)
+        dataset = self.apply_pixel_processor(dataset)
 
-        # add safe private rules and then flatten all sets into one
-        rule_set = self.profile.flatten(additional_rule_sets=[safe_private])
+        # add safe private rules and then flatten to get one rule per tag/group
+        rules = self.profile.flatten(
+            additional_rule_sets=self.get_safe_private_rules(dataset)
+        )
 
-        # run flattened profile (deidentify all tags).
+        # define a function for walk() below
         def process_element(dataset_in: Dataset, data_element_in: DataElement):
+            """Process element according to the rules in the outer scope"""
+
             # Find the rule to apply for this DICOM element
-            rule = rule_set.get_rule(data_element_in.tag)
+            rule = rules.get_rule(data_element_in.tag)
 
             if not rule:
                 #  Keep tags for which there is no rule. Important decision
-                pass
-            elif type(rule) == Remove:
+                return
+            elif type(rule.operation) == Remove:
                 del dataset_in[data_element_in.tag]
             else:
                 rule.operation.apply(data_element_in)
@@ -283,10 +340,44 @@ class Core:
 
         return dataset
 
+    def get_safe_private_rules(self, dataset) -> Optional[RuleList]:
+        """Find any specific exceptions to the default 'remove all private tags'"""
+
+        if self.safe_private:
+            try:
+                return self.safe_private.get_rule_set(dataset)
+            except PrivateProcessorException as e:
+                raise DeidentificationException(e)
+        else:
+            return None
+
+    def apply_pixel_processor(self, dataset):
+        """Put blackouts in image data if required"""
+
+        if self.pixel_processor and self.pixel_processor.needs_cleaning(dataset):
+            try:
+                dataset = self.pixel_processor.clean_pixel_data(dataset)
+            except PixelDataProcessorException as e:
+                raise DeidentificationException(e)
+        return dataset
+
+    def apply_bouncers(self, dataset):
+        """Check all bouncers to see whether dataset should be rejected"""
+
+        for bouncer in self.bouncers:
+            try:
+                bouncer.inspect(dataset)
+            except BouncerException as e:
+                raise DeidentificationException(e)
+
 
 class BouncerException(IDISCoreException):
     pass
 
 
 class PrivateProcessorException(IDISCoreException):
+    pass
+
+
+class DeidentificationException(IDISCoreException):
     pass

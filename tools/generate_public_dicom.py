@@ -2,8 +2,7 @@
 table E.1-1 here:
 http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html
 
-and convert them to idiscore python code that generates the basic profile
-and all profile options
+and convert them to python that can be saved in public_dicom.py
 """
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple

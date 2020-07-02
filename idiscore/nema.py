@@ -8,7 +8,7 @@ such as default implementations for the action codes should be put in 'profiles.
 from collections import namedtuple
 from typing import Dict, List, Tuple
 
-from build.lib.idiscore.core import Rule, RuleSet
+from idiscore.core import Rule, RuleList
 from idiscore.exceptions import IDISCoreException
 from idiscore.identifiers import TagIdentifier
 from idiscore.operations import Operator
@@ -132,7 +132,7 @@ class RawNemaRuleList:
         self.rules = rules
         self.name = name
 
-    def compile(self, action_mapping: Dict[ActionCode, Operator]) -> RuleSet:
+    def compile(self, action_mapping: Dict[ActionCode, Operator]) -> RuleList:
         """Replace each action code (string) with actual operator (function)"""
 
         compiled = []
@@ -144,6 +144,6 @@ class RawNemaRuleList:
                     f'Unknown actioncode "{actioncode}" I do'
                     f" not know which operation add here"
                 )
-            compiled.append(Rule(tag=identifier, operation=operation))
+            compiled.append(Rule(identifier=identifier, operation=operation))
 
-        return RuleSet(rules=compiled, name=self.name)
+        return RuleList(rules=compiled, name=self.name)

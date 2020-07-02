@@ -6,7 +6,7 @@ from idiscore.operations import Clean, Remove
 def test_raw_nema_rule_list():
     raw_list = RawNemaRuleList(
         rules=(
-            (SingleTag("patientID"), ActionCodes.REMOVE),
+            (SingleTag("PatientID"), ActionCodes.REMOVE),
             (PrivateTags(), ActionCodes.CLEAN),
         )
     )
