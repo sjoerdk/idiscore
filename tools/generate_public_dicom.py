@@ -251,6 +251,7 @@ from idiscore.identifiers import SingleTag, RepeatingGroup, PrivateTags
 profile_template_text = """
 {{profile_name}} = \\
     RawNemaRuleList(
+        name="{{ profile_verbose_name }}",
         rules=[{% for rule in rules %}
                ({{rule.0}}, {{rule.1}}){% if not loop.last %},{% endif%}{% endfor %}]
     )
@@ -268,6 +269,7 @@ for profile in E1_1_HEADER_NAMES:
 
     content += profile_template.render(
         profile_name=profile.short_name,
+        profile_verbose_name=profile.full_name,
         rules=[(x.as_python(), f"ActionCodes.{y.var_name}") for x, y in raw_list.rules],
     )
 

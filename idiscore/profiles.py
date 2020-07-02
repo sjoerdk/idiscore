@@ -5,7 +5,19 @@ options. Also some useful additions to this.
 """
 from typing import Dict
 
-from idiscore._public_dicom import basic_profile
+from idiscore._public_dicom import (
+    basic_profile,
+    clean_descriptors,
+    clean_graphics,
+    clean_structured_content,
+    retain_device_id,
+    retain_full_dates,
+    retain_institution_id,
+    retain_modified_dates,
+    retain_patient_characteristics,
+    retain_safe_private,
+    retain_uid,
+)
 from idiscore.nema import ActionCode, ActionCodes
 from idiscore.operations import (
     Clean,
@@ -17,6 +29,7 @@ from idiscore.operations import (
     Replace,
 )
 
+# Maps action code in DICOM table E1-1 with actual python function
 DEFAULT_MAPPING = {
     ActionCodes.DUMMY: Replace(),
     ActionCodes.EMPTY: Empty(),
@@ -42,3 +55,15 @@ class DICOMProfiles:
             mapping = DEFAULT_MAPPING
 
         self.basic_profile = basic_profile.compile(mapping)
+        self.retain_safe_private = retain_safe_private.compile(mapping)
+        self.retain_uid = retain_uid.compile(mapping)
+        self.retain_device_id = retain_device_id.compile(mapping)
+        self.retain_institution_id = retain_institution_id.compile(mapping)
+        self.retain_patient_characteristics = retain_patient_characteristics.compile(
+            mapping
+        )
+        self.retain_full_dates = retain_full_dates.compile(mapping)
+        self.retain_modified_dates = retain_modified_dates.compile(mapping)
+        self.clean_descriptors = clean_descriptors.compile(mapping)
+        self.clean_structured_content = clean_structured_content.compile(mapping)
+        self.clean_graphics = clean_graphics.compile(mapping)
