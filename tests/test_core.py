@@ -13,7 +13,7 @@ from idiscore.core import (
     Core,
     Profile,
     Rule,
-    RuleList,
+    RuleSet,
     PrivateProcessor,
 )
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
@@ -66,7 +66,7 @@ def test_idiscore_deidentify_basic(a_dataset, some_rules):
     a_dataset.add(DataElementFactory(tag=(0x1013, 0x0001), value="private tag"))
 
     # Some rules
-    a_ruleset = RuleList(
+    a_ruleset = RuleSet(
         rules=[
             Rule(SingleTag("PatientName"), Hash()),
             Rule(RepeatingGroup("50xx,xxxx"), Remove()),
@@ -109,9 +109,9 @@ def test_profile_flatten(some_pid_rules):
     hash_name = Rule(SingleTag("PatientName"), Hash())
 
     # initial set
-    set1 = RuleList(rules=[some_pid_rules[0], hash_name])
+    set1 = RuleSet(rules=[some_pid_rules[0], hash_name])
     # set with a different rule for PatientID
-    set2 = RuleList(rules=[some_pid_rules[1], Rule(SingleTag("Modality"), Remove())])
+    set2 = RuleSet(rules=[some_pid_rules[1], Rule(SingleTag("Modality"), Remove())])
 
     profile = Profile(rule_sets=[set1, set2])
 
@@ -120,7 +120,7 @@ def test_profile_flatten(some_pid_rules):
     assert some_pid_rules[0] not in profile.flatten().rules
 
     # if another set is added, the rules from this should overrule earlier
-    set3 = RuleList(name="another set", rules=[some_pid_rules[2]])
+    set3 = RuleSet(name="another set", rules=[some_pid_rules[2]])
     assert some_pid_rules[2] in profile.flatten(additional_rule_sets=[set3]).rules
     # but any original rule that was not overwritten should still be present
     assert hash_name in profile.flatten(additional_rule_sets=[set3]).rules
@@ -133,7 +133,7 @@ def test_rule_list():
     rule1 = Rule(SingleTag("PatientName"), Hash())
     rule2 = Rule(RepeatingGroup("50xx,xxxx"), Remove())
     rule3 = Rule(PrivateTags(), Remove())
-    rules = RuleList(rules=[rule1, rule2, rule3])
+    rules = RuleSet(rules=[rule1, rule2, rule3])
 
     assert rules.get_rule(Tag("PatientName")) == rule1
     assert rules.get_rule(Tag("Modality")) is None  # This rule is not defined
@@ -150,7 +150,7 @@ def test_rule_precedence():
     rule_c = Rule(RepeatingGroup("50xx,xxxx"), Hash())  # match all these
     rule_d = Rule(Tag(0x5002, 0x0002), Keep())  # but specifically remove this
     rule_e = Rule(SingleTag("PatientName"), Hash())  # and one regular rule
-    rules = RuleList(rules=[rule_a, rule_b, rule_c, rule_d, rule_e])
+    rules = RuleSet(rules=[rule_a, rule_b, rule_c, rule_d, rule_e])
 
     # now in all these cases, the most specific rule should be returned:
     assert rules.get_rule(Tag(0x1301, 0x0000)) == rule_b  # also matches a
@@ -163,7 +163,7 @@ def test_rule_precedence():
     # For rules with identical generality, just keep the order of input
     rule_1 = Rule(RepeatingGroup("50xx,xxxx"), Hash())
     rule_2 = Rule(RepeatingGroup("xx10,xxxx"), Hash())
-    rules = RuleList(rules=[rule_1, rule_2])
+    rules = RuleSet(rules=[rule_1, rule_2])
 
     assert rules.get_rule(Tag(0x5010, 0x0000)) == rule_1  # also matches a
     assert rules.get_rule(Tag(0x5110, 0x0000)) == rule_2  # also matches a

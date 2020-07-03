@@ -8,7 +8,7 @@ such as default implementations for the action codes should be put in 'profiles.
 from collections import namedtuple
 from typing import Dict, List, Tuple
 
-from idiscore.core import Rule, RuleList
+from idiscore.core import Rule, RuleSet
 from idiscore.exceptions import IDISCoreException
 from idiscore.identifiers import TagIdentifier
 from idiscore.operations import Operator
@@ -74,52 +74,54 @@ class ActionCodes:
 
 # The header name in table E1-1 for basic profile and options
 # format: <header name>, <profile or option name>, <short_name>
-NemaProfile = namedtuple("NemaProfile", ["table_header", "full_name", "short_name"])
+NemaRuleSetInfo = namedtuple("NemaProfile", ["table_header", "full_name", "short_name"])
 
 E1_1_HEADER_NAMES = [
-    NemaProfile(
+    NemaRuleSetInfo(
         "Basic Prof.",
         "Basic Application Level Confidentiality Profile",
         "basic_profile",
     ),
-    NemaProfile(
+    NemaRuleSetInfo(
         "Rtn. Safe Priv. Opt.", "Retain Safe Private Option", "retain_safe_private"
     ),
-    NemaProfile("Rtn. UIDs Opt.", "Retain UIDs", "retain_uid"),
-    NemaProfile(
+    NemaRuleSetInfo("Rtn. UIDs Opt.", "Retain UIDs", "retain_uid"),
+    NemaRuleSetInfo(
         "Rtn. Dev. Id. Opt.", "Retain Device Identity Option", "retain_device_id"
     ),
-    NemaProfile(
+    NemaRuleSetInfo(
         "Rtn. Inst. Id. Opt.",
         "Retain Institution Identity Option",
         "retain_institution_id",
     ),
-    NemaProfile(
+    NemaRuleSetInfo(
         "Rtn. Pat. Chars. Opt.",
         "Retain Patient Characteristics Option",
         "retain_patient_characteristics",
     ),
-    NemaProfile(
+    NemaRuleSetInfo(
         "Rtn. Long. Full Dates Opt.",
         "Retain Longitudinal Temporal Information with Full Dates Option",
         "retain_full_dates",
     ),
-    NemaProfile(
+    NemaRuleSetInfo(
         "Rtn. Long. Modif. Dates Opt.",
         "Retain Longitudinal Temporal Information with Modified Dates Option",
         "retain_modified_dates",
     ),
-    NemaProfile("Clean Desc. Opt.", "Clean Descriptors Option", "clean_descriptors"),
-    NemaProfile(
+    NemaRuleSetInfo(
+        "Clean Desc. Opt.", "Clean Descriptors Option", "clean_descriptors"
+    ),
+    NemaRuleSetInfo(
         "Clean Struct. Cont. Opt.",
         "Clean Structured Content Option",
         "clean_structured_content",
     ),
-    NemaProfile("Clean Graph. Opt.", "Clean Graphics Option", "clean_graphics"),
+    NemaRuleSetInfo("Clean Graph. Opt.", "Clean Graphics Option", "clean_graphics"),
 ]
 
 
-class RawNemaRuleList:
+class RawNemaRuleSet:
     """Defines the action code from table E1-1 for each DICOM identifier
 
     'raw' because an action code is just a string and cannot be applied to a tag.
@@ -132,7 +134,7 @@ class RawNemaRuleList:
         self.rules = rules
         self.name = name
 
-    def compile(self, action_mapping: Dict[ActionCode, Operator]) -> RuleList:
+    def compile(self, action_mapping: Dict[ActionCode, Operator]) -> RuleSet:
         """Replace each action code (string) with actual operator (function)"""
 
         compiled = []
@@ -146,4 +148,4 @@ class RawNemaRuleList:
                 )
             compiled.append(Rule(identifier=identifier, operation=operation))
 
-        return RuleList(rules=compiled, name=self.name)
+        return RuleSet(rules=compiled, name=self.name)

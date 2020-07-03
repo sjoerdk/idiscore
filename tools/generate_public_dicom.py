@@ -20,7 +20,7 @@ from idiscore.identifiers import (
     SingleTag,
     TagIdentifier,
 )
-from idiscore.nema import ActionCode, ActionCodes, E1_1_HEADER_NAMES, RawNemaRuleList
+from idiscore.nema import ActionCode, ActionCodes, E1_1_HEADER_NAMES, RawNemaRuleSet
 
 
 class Table:
@@ -244,13 +244,13 @@ heading = """
 Information from official dicom tag descriptions, tables etc.
 \"\"\"
 
-from idiscore.nema import ActionCodes, RawNemaRuleList
+from idiscore.nema import ActionCodes, RawNemaRuleSet
 from idiscore.identifiers import SingleTag, RepeatingGroup, PrivateTags
 """
 
 profile_template_text = """
 {{profile_name}} = \\
-    RawNemaRuleList(
+    RawNemaRuleSet(
         name="{{ profile_verbose_name }}",
         rules=[{% for rule in rules %}
                ({{rule.0}}, {{rule.1}}){% if not loop.last %},{% endif%}{% endfor %}]
@@ -262,7 +262,7 @@ profile_template = Template(profile_template_text)
 content = heading
 
 for profile in E1_1_HEADER_NAMES:
-    raw_list = RawNemaRuleList(
+    raw_list = RawNemaRuleSet(
         name=profile.full_name,
         rules=extract_actions(table=table, column_name=profile.table_header),
     )

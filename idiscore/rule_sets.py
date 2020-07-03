@@ -1,9 +1,9 @@
-"""Profiles and rule sets to deidentify many dicom tags at once
+"""Common sets of rules to deidentify multiple dicom elements
 
 Contains default implementations of the DICOM standard deidentification profiles and
-options. Also some useful additions to this.
+options and other useful sets
 """
-from typing import Dict
+from typing import Dict, Optional
 
 from idiscore._public_dicom import (
     basic_profile,
@@ -29,7 +29,8 @@ from idiscore.operations import (
     Replace,
 )
 
-# Maps action code in DICOM table E1-1 with actual python function
+# Dict[ActionCode, Operator]
+# Determines what function apply for each of the action codes in DICOM table E1-1
 DEFAULT_MAPPING = {
     ActionCodes.DUMMY: Replace(),
     ActionCodes.EMPTY: Empty(),
@@ -45,12 +46,35 @@ DEFAULT_MAPPING = {
 }
 
 
-class DICOMProfiles:
-    """Holds the DICOM deidentification profiles and options"""
+class DICOMRuleSets:
+    """Holds the rule sets for DICOM deidentification basic profile and options
 
-    def __init__(self, action_mapping: Dict[ActionCode, Operator] = None):
+    These are lists of rules that implement the actions designated in table E3
+
+    Notes
+    -----
+    More information on profile and options found here:
+    http://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html
+    """
+
+    def __init__(self, action_mapping: Optional[Dict[ActionCode, Operator]] = None):
+        """
+
+        Parameters
+        ----------
+        action_mapping: Optional[Dict[ActionCode, Operator]]
+            Overrule the default Operator for each given action code. For example:
+
+            >>> p = DICOMRuleSets(action_mapping={ActionCodes.CLEAN, MyCleaner()})
+            >>> p.clean_descriptors.rules
+            00 = {Rule} (0018, 4000) - MyCleaningOperator
+            01 = {Rule} (0018, 1400) - MyCleaningOperator
+            ...
+
+        """
         if action_mapping:
-            mapping = DEFAULT_MAPPING.update(action_mapping)
+            mapping = DEFAULT_MAPPING.copy()  # don't alter the original dict
+            mapping.update(action_mapping)
         else:
             mapping = DEFAULT_MAPPING
 

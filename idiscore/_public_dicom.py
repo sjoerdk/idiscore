@@ -3,10 +3,10 @@
 Information from official dicom tag descriptions, tables etc.
 """
 
-from idiscore.nema import ActionCodes, RawNemaRuleList
+from idiscore.nema import ActionCodes, RawNemaRuleSet
 from idiscore.identifiers import SingleTag, RepeatingGroup, PrivateTags
 
-basic_profile = RawNemaRuleList(
+basic_profile = RawNemaRuleSet(
     name="Basic Application Level Confidentiality Profile",
     rules=[
         (SingleTag("00080050"), ActionCodes.EMPTY),
@@ -444,11 +444,11 @@ basic_profile = RawNemaRuleList(
     ],
 )
 
-retain_safe_private = RawNemaRuleList(
+retain_safe_private = RawNemaRuleSet(
     name="Retain Safe Private Option", rules=[(PrivateTags(), ActionCodes.CLEAN)]
 )
 
-retain_uid = RawNemaRuleList(
+retain_uid = RawNemaRuleSet(
     name="Retain UIDs",
     rules=[
         (SingleTag("00001000"), ActionCodes.KEEP),
@@ -506,7 +506,7 @@ retain_uid = RawNemaRuleList(
     ],
 )
 
-retain_device_id = RawNemaRuleList(
+retain_device_id = RawNemaRuleSet(
     name="Retain Device Identity Option",
     rules=[
         (SingleTag("00181007"), ActionCodes.KEEP),
@@ -547,7 +547,7 @@ retain_device_id = RawNemaRuleList(
     ],
 )
 
-retain_institution_id = RawNemaRuleList(
+retain_institution_id = RawNemaRuleSet(
     name="Retain Institution Identity Option",
     rules=[
         (SingleTag("00120060"), ActionCodes.KEEP),
@@ -562,7 +562,7 @@ retain_institution_id = RawNemaRuleList(
     ],
 )
 
-retain_patient_characteristics = RawNemaRuleList(
+retain_patient_characteristics = RawNemaRuleSet(
     name="Retain Patient Characteristics Option",
     rules=[
         (SingleTag("00102110"), ActionCodes.CLEAN),
@@ -580,7 +580,7 @@ retain_patient_characteristics = RawNemaRuleList(
     ],
 )
 
-retain_full_dates = RawNemaRuleList(
+retain_full_dates = RawNemaRuleSet(
     name="Retain Longitudinal Temporal Information with Full Dates Option",
     rules=[
         (SingleTag("00080022"), ActionCodes.KEEP),
@@ -635,7 +635,7 @@ retain_full_dates = RawNemaRuleList(
     ],
 )
 
-retain_modified_dates = RawNemaRuleList(
+retain_modified_dates = RawNemaRuleSet(
     name="Retain Longitudinal Temporal Information with Modified Dates Option",
     rules=[
         (SingleTag("00080022"), ActionCodes.CLEAN),
@@ -690,7 +690,7 @@ retain_modified_dates = RawNemaRuleList(
     ],
 )
 
-clean_descriptors = RawNemaRuleList(
+clean_descriptors = RawNemaRuleSet(
     name="Clean Descriptors Option",
     rules=[
         (SingleTag("00184000"), ActionCodes.CLEAN),
@@ -788,7 +788,7 @@ clean_descriptors = RawNemaRuleList(
     ],
 )
 
-clean_structured_content = RawNemaRuleList(
+clean_structured_content = RawNemaRuleSet(
     name="Clean Structured Content Option",
     rules=[
         (SingleTag("00400555"), ActionCodes.CLEAN),
@@ -797,7 +797,7 @@ clean_structured_content = RawNemaRuleList(
     ],
 )
 
-clean_graphics = RawNemaRuleList(
+clean_graphics = RawNemaRuleSet(
     name="Clean Graphics Option",
     rules=[
         (RepeatingGroup("50xxxxxx"), ActionCodes.CLEAN),

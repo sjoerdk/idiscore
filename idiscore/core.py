@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Callable, List, Optional, Union
+from typing import Callable, Dict, Iterable, List, Optional, Set, Union
 
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
@@ -37,19 +37,19 @@ class Rule:
         return self.identifier.matches(tag)
 
 
-class RuleList:
+class RuleSet:
     """Defines what to do to one or more DICOM tags
 
     Models part of a deidentification procedure, such as the Basic Application
     Level Confidentiality Options in DICOM (e.g. Retain Safe Private Option)
     """
 
-    def __init__(self, rules: List[Rule], name: str = "RuleSet"):
+    def __init__(self, rules: Iterable[Rule], name: str = "RuleSet"):
         """
 
         Parameters
         ----------
-        rules: List[Rule]
+        rules: Iterable[Rule]
             The rules comprising this set
         name: str, optional
             Human readable name. Defaults to 'RuleSet'
@@ -67,9 +67,12 @@ class RuleList:
         self.name = name
 
     @property
-    def rules(self) -> List[Rule]:
+    def rules(self) -> Set[Rule]:
         """All rules in this list"""
-        return list(self._single_tag_rules_dict.values()) + self._group_rules
+        return set(self._single_tag_rules_dict.values()) | set(self._group_rules)
+
+    def as_dict(self) -> Dict[TagIdentifier, Rule]:
+        return {x.identifier: x for x in self.rules}
 
     @staticmethod
     def is_single_tag_rule(rule: Rule) -> bool:
@@ -110,7 +113,7 @@ class RuleList:
         return None
 
     def __str__(self):
-        return f'Ruleset "{self.name}"'
+        return f'RuleSet "{self.name}"'
 
 
 class Profile:
@@ -126,12 +129,12 @@ class Profile:
 
     """
 
-    def __init__(self, rule_sets: List[RuleList], name: str = "Profile"):
+    def __init__(self, rule_sets: List[RuleSet], name: str = "Profile"):
         """
 
         Parameters
         ----------
-        rule_sets: List[RuleList]
+        rule_sets: List[RuleSet]
             All RuleSets that should be applied. Ordering is important; if two
             RuleSets contain a rule for the same DICOM tag, the RuleSet with the
             higher index takes precedence.
@@ -144,13 +147,13 @@ class Profile:
     def __str__(self):
         return f'Profile "{self.name}"'
 
-    def flatten(self, additional_rule_sets: List[RuleList] = None) -> RuleList:
+    def flatten(self, additional_rule_sets: List[RuleSet] = None) -> RuleSet:
         """Collapse all rule sets into one, ensuring only one rule per DICOM tag
         If a sets disagree, later sets (higher index in the list) take precedence.
 
         Parameters
         ----------
-        additional_rule_sets: List[RuleList]
+        additional_rule_sets: List[RuleSet]
             Append these to the existing rule sets, so they overrule them. Useful
             for one-time additions without changing the profile itself. For example
             when adding dataset-specific safe private rules.
@@ -163,7 +166,7 @@ class Profile:
         for rule_set in self.rule_sets + additional_rule_sets:
             output.update({x.identifier: x for x in rule_set.rules})
 
-        return RuleList(name="flattened", rules=set(output.values()))
+        return RuleSet(name="flattened", rules=set(output.values()))
 
 
 class Bouncer:
@@ -230,7 +233,7 @@ class PrivateProcessor:
     def __init__(self, definitions: List[SafePrivateDefinition]):
         self.definitions = definitions
 
-    def get_rule_set(self, dataset: Dataset) -> RuleList:
+    def get_rule_set(self, dataset: Dataset) -> RuleSet:
         """Given this dataset, which private elements can be kept?
 
         Parameters
@@ -240,7 +243,7 @@ class PrivateProcessor:
 
         Returns
         -------
-        RuleList
+        RuleSet
             Rules for all private DICOM elements that are safe for the
             given dataset
 
@@ -250,7 +253,7 @@ class PrivateProcessor:
             When rule set cannot be found properly
         """
         try:
-            return RuleList(
+            return RuleSet(
                 name="safe private",
                 rules={x for x in self.definitions if x.is_safe(dataset)},
             )
@@ -340,7 +343,7 @@ class Core:
 
         return dataset
 
-    def get_safe_private_rules(self, dataset) -> Optional[RuleList]:
+    def get_safe_private_rules(self, dataset) -> Optional[RuleSet]:
         """Find any specific exceptions to the default 'remove all private tags'"""
 
         if self.safe_private:
