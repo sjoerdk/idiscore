@@ -126,8 +126,8 @@ def test_profile_flatten(some_pid_rules):
     assert hash_name in profile.flatten(additional_rule_sets=[set3]).rules
 
 
-def test_rule_list():
-    """Rule list should be able to find the proper rules for tags"""
+def test_rule_set():
+    """Rule set should be able to find the proper rules for tags"""
 
     # some rules
     rule1 = Rule(SingleTag("PatientName"), Hash())
@@ -167,3 +167,10 @@ def test_rule_precedence():
 
     assert rules.get_rule(Tag(0x5010, 0x0000)) == rule_1  # also matches a
     assert rules.get_rule(Tag(0x5110, 0x0000)) == rule_2  # also matches a
+
+
+def test_rule_set_human_readable(some_rules):
+
+    as_string = RuleSet(some_rules).as_human_readable_list()
+    assert "PatientID - (0010, 0020)" in as_string
+    assert "Unknown Repeater tag" in as_string

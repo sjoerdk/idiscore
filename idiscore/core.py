@@ -7,7 +7,7 @@ from pydicom.tag import BaseTag, Tag
 
 from idiscore.exceptions import IDISCoreException
 from idiscore.identifiers import SingleTag, TagIdentifier
-from idiscore.operations import Operator, Remove
+from idiscore.operations import ElementShouldBeRemoved, Operator, Remove
 from idiscore.imageprocessing import (
     CriterionException,
     PixelDataProcessorException,
@@ -27,6 +27,9 @@ class Rule:
 
     def __str__(self):
         return f"{self.identifier} - {self.operation}"
+
+    def as_human_readable(self) -> str:
+        return f"{self.identifier.name()} - {self.identifier} - {self.operation}"
 
     def number_of_matchable_tags(self) -> int:
         """The number of distinct DICOM tags that this rule could match"""
@@ -111,6 +114,10 @@ class RuleSet:
 
         # nothing matches. There is no rule
         return None
+
+    def as_human_readable_list(self) -> str:
+        """All rules in this set sorted by tag name"""
+        return "\n".join(sorted([x.as_human_readable() for x in self.rules]))
 
     def __str__(self):
         return f'RuleSet "{self.name}"'
@@ -315,9 +322,8 @@ class Core:
         >>> original_dataset == deidentified  # True
 
         """
-        # apply processors
-        self.apply_bouncers(dataset)
-        dataset = self.apply_pixel_processor(dataset)
+        self.apply_bouncers(dataset)  # should this dataset be rejected outright?
+        dataset = self.apply_pixel_processor(dataset)  # clean image data if needed
 
         # add safe private rules and then flatten to get one rule per tag/group
         rules = self.profile.flatten(
@@ -332,12 +338,18 @@ class Core:
             rule = rules.get_rule(data_element_in.tag)
 
             if not rule:
-                #  Keep tags for which there is no rule. Important decision
+                #  Keep elements for which there is no rule
                 return
             elif type(rule.operation) == Remove:
                 del dataset_in[data_element_in.tag]
             else:
-                rule.operation.apply(data_element_in)
+                try:
+                    if replacement := rule.operation.apply(data_element_in):
+                        dataset_in[data_element_in.tag] = replacement
+                    # if no replacement, the element has been modified in place
+                except ElementShouldBeRemoved:
+                    # clean() operation can signal removal like this.
+                    del dataset_in[data_element_in.tag]
 
         dataset.walk(process_element)
 

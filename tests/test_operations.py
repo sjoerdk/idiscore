@@ -4,6 +4,7 @@
 """Tests for `idiscore` package."""
 
 import pytest
+from dicomgenerator.dicom import VRs
 from dicomgenerator.factory import DataElementFactory
 from factory import random
 
@@ -40,4 +41,4 @@ def test_clean():
 
     # Other VRs cannot be cleaned currently
     with pytest.raises(ValueError):
-        clean.apply(DataElementFactory(tag="Allergies"))
+        clean.apply(DataElementFactory(tag="(00ee,e324)", VR=VRs.Unknown))

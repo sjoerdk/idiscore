@@ -1,6 +1,9 @@
+from copy import deepcopy
+
+from dicomgenerator.factory import CTDatasetFactory
 from pydicom.tag import Tag
 
-from idiscore.core import Profile
+from idiscore.core import Core, Profile
 from idiscore.nema import ActionCodes
 from idiscore.operations import Clean
 from idiscore.rule_sets import DICOMRuleSets
@@ -42,4 +45,10 @@ def test_realistic_profile():
 
     final_set = profile.flatten()
     assert len(final_set.rules) == 432
-    # TODO: Extend this. Actually anonymize a dataset
+
+    core = Core(profile=profile)
+    dataset = CTDatasetFactory()
+    original = deepcopy(dataset)
+    deidentified = core.deidentify(dataset)
+
+    assert original.PatientID != deidentified.PatientID
