@@ -20,7 +20,7 @@ from idiscore.identifiers import (
     SingleTag,
     TagIdentifier,
 )
-from idiscore.nema import ActionCode, ActionCodes, E1_1_HEADER_NAMES, RawNemaRuleSet
+from idiscore.nema import ActionCode, ActionCodes, E1_1_METHOD_INFO, RawNemaRuleSet
 
 
 class Table:
@@ -241,7 +241,8 @@ table = parse_nema_dicom_table(get_html_cached(force_refresh=False))
 heading = """
 \"\"\"Public DICOM information auto-generated from generate_public_dicom.py
 
-Information from official dicom tag descriptions, tables etc.
+Information from table E.1-1 here:
+http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html
 \"\"\"
 
 from idiscore.nema import ActionCodes, RawNemaRuleSet
@@ -252,6 +253,7 @@ profile_template_text = """
 {{profile_name}} = \\
     RawNemaRuleSet(
         name="{{ profile_verbose_name }}",
+        code="{{ profile_code }}",
         rules=[{% for rule in rules %}
                ({{rule.0}}, {{rule.1}}){% if not loop.last %},{% endif%}{% endfor %}]
     )
@@ -261,15 +263,19 @@ profile_template = Template(profile_template_text)
 
 content = heading
 
-for profile in E1_1_HEADER_NAMES:
+for profile in E1_1_METHOD_INFO:
+    if profile.table_header is None:
+        continue  # Options like 'clean Pixel data' are not in table. skip.
     raw_list = RawNemaRuleSet(
         name=profile.full_name,
+        code=profile.code,
         rules=extract_actions(table=table, column_name=profile.table_header),
     )
 
     content += profile_template.render(
         profile_name=profile.short_name,
         profile_verbose_name=profile.full_name,
+        profile_code=profile.code,
         rules=[(x.as_python(), f"ActionCodes.{y.var_name}") for x, y in raw_list.rules],
     )
 

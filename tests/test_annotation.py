@@ -1,12 +1,16 @@
 # test saving an example as json
 import json
 
+from tests import RESOURCE_PATH
+
 from dicomgenerator.factory import CTDatasetFactory, DataElementFactory
+from pydicom.tag import Tag
 
 from idiscore.annotation import (
     Annotation,
     AnnotatedDataset,
     ContainsPII,
+    MustNotChange,
 )
 
 
@@ -46,13 +50,26 @@ def test_annotated_dataset_serialization():
 
     annotated = AnnotatedDataset(
         dataset=dataset,
-        annotations={},
+        annotations=[
+            MustNotChange(
+                tag=Tag("PatientID"), explanation="PatientID contains essential info"
+            )
+        ],
         description="a CT dataset with test annotations",
     )
 
     as_dict = annotated.to_dict()
 
     loaded = AnnotatedDataset.from_dict(as_dict)
-    assert annotated.annotations == loaded.annotations
+    assert annotated.annotations[0].explanation == loaded.annotations[0].explanation
     assert annotated.description == loaded.description
     assert annotated.dataset == loaded.dataset
+
+
+def test_annotated_dataset_load_save():
+    """Test loading from file"""
+
+    loaded = AnnotatedDataset.from_path(RESOURCE_PATH / "annotated_example.json")
+
+    assert len(loaded.dataset) == 108
+    assert loaded.annotations[0].key == "contains_pii"

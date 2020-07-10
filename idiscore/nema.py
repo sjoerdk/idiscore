@@ -73,51 +73,77 @@ class ActionCodes:
 
 
 # The header name in table E1-1 for basic profile and options
-# format: <header name>, <profile or option name>, <short_name>
-NemaRuleSetInfo = namedtuple("NemaProfile", ["table_header", "full_name", "short_name"])
+# with codes from Table CID 7050 in PS3.16
+# format: <header name>, <profile or option name>, <short_name>, <code>
+NemaDeidMethodInfo = namedtuple(
+    "NemaProfile", ["table_header", "full_name", "short_name", "code"]
+)
 
-E1_1_HEADER_NAMES = [
-    NemaRuleSetInfo(
+E1_1_METHOD_INFO = [
+    NemaDeidMethodInfo(
         "Basic Prof.",
         "Basic Application Level Confidentiality Profile",
         "basic_profile",
+        "113100",
     ),
-    NemaRuleSetInfo(
-        "Rtn. Safe Priv. Opt.", "Retain Safe Private Option", "retain_safe_private"
+    NemaDeidMethodInfo(
+        "Rtn. Safe Priv. Opt.",
+        "Retain Safe Private Option",
+        "retain_safe_private",
+        "113111",
     ),
-    NemaRuleSetInfo("Rtn. UIDs Opt.", "Retain UIDs", "retain_uid"),
-    NemaRuleSetInfo(
-        "Rtn. Dev. Id. Opt.", "Retain Device Identity Option", "retain_device_id"
+    NemaDeidMethodInfo("Rtn. UIDs Opt.", "Retain UIDs", "retain_uid", "113110"),
+    NemaDeidMethodInfo(
+        "Rtn. Dev. Id. Opt.",
+        "Retain Device Identity Option",
+        "retain_device_id",
+        "113109",
     ),
-    NemaRuleSetInfo(
+    NemaDeidMethodInfo(
         "Rtn. Inst. Id. Opt.",
         "Retain Institution Identity Option",
         "retain_institution_id",
+        "113112",
     ),
-    NemaRuleSetInfo(
+    NemaDeidMethodInfo(
         "Rtn. Pat. Chars. Opt.",
         "Retain Patient Characteristics Option",
         "retain_patient_characteristics",
+        "113108",
     ),
-    NemaRuleSetInfo(
+    NemaDeidMethodInfo(
         "Rtn. Long. Full Dates Opt.",
         "Retain Longitudinal Temporal Information with Full Dates Option",
         "retain_full_dates",
+        "113106",
     ),
-    NemaRuleSetInfo(
+    NemaDeidMethodInfo(
         "Rtn. Long. Modif. Dates Opt.",
         "Retain Longitudinal Temporal Information with Modified Dates Option",
         "retain_modified_dates",
+        "113107",
     ),
-    NemaRuleSetInfo(
-        "Clean Desc. Opt.", "Clean Descriptors Option", "clean_descriptors"
+    NemaDeidMethodInfo(
+        "Clean Desc. Opt.", "Clean Descriptors Option", "clean_descriptors", "113105"
     ),
-    NemaRuleSetInfo(
+    NemaDeidMethodInfo(
         "Clean Struct. Cont. Opt.",
         "Clean Structured Content Option",
         "clean_structured_content",
+        "113104",
     ),
-    NemaRuleSetInfo("Clean Graph. Opt.", "Clean Graphics Option", "clean_graphics"),
+    NemaDeidMethodInfo(
+        "Clean Graph. Opt.", "Clean Graphics Option", "clean_graphics", "113103"
+    ),
+    NemaDeidMethodInfo(  # This method is not in table E1-1, so no header name
+        None, "Clean Pixel Data Option", "clean_pixeldata", "113101"
+    ),
+    NemaDeidMethodInfo(  # This method is not in table E1-1, so no header name
+        None,
+        "Clean Recognizable Visual Features Option",
+        "clean_visual_features",
+        "113102",
+    ),
 ]
 
 
@@ -130,9 +156,12 @@ class RawNemaRuleSet:
     been assigned
     """
 
-    def __init__(self, rules=List[Tuple[TagIdentifier, ActionCode]], name: str = ""):
+    def __init__(
+        self, rules: List[Tuple[TagIdentifier, ActionCode]], name: str, code: str
+    ):
         self.rules = rules
         self.name = name
+        self.code = code
 
     def compile(self, action_mapping: Dict[ActionCode, Operator]) -> RuleSet:
         """Replace each action code (string) with actual operator (function)"""

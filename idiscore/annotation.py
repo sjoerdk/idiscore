@@ -13,7 +13,8 @@ Design requirements
   an example to an example library
 """
 import json
-from typing import Dict, Type
+from os import PathLike
+from typing import Dict, List, Type
 
 from dicomgenerator.importer import to_json
 from pydicom.dataset import Dataset
@@ -29,12 +30,18 @@ class Annotation:
     description = "A basic annotation"  # for humans
 
     def __init__(
-        self, tag: BaseTag, tag_info: str, explanation: str = "",
+        self, tag: BaseTag, tag_info: str = "", explanation: str = "",
     ):
-        """A comment about about a DICOM tag, with optional explanation.
+        """A comment about about a DICOM tag.
 
         Parameters
         ----------
+        tag: BaseTag
+            The tag that this annotation is for
+        tag_info: str, optional
+            Human readable information about this tag. For example its value
+            in the current dataset. Makes the serialized version of this annotation
+            easier to annotated
         explanation: str, optional
             Why is this annotation like this? For example for a MUST_NOT_CHANGE
             annotation: 'because this is needed for loading in application X'.
@@ -132,12 +139,14 @@ class AnnotatedDataset:
     * Serialised, should be readable / editable in a text editor. It should
       be possible to create an a DICOM example from a command prompt
 
+
+
     """
 
     def __init__(
         self,
         dataset: Dataset,
-        annotations: Dict[Tag, Annotation],
+        annotations: List[Annotation],
         description="No description",
     ):
         self.dataset = dataset
@@ -150,18 +159,16 @@ class AnnotatedDataset:
         annotations can easily be added in a text editor
 
         """
-        annotations_dict = {}
+        annotations_dict = {x.tag: x.to_dict() for x in self.annotations}
         for element in self.dataset:
-            if element.tag in self.annotations:
-                annotation = annotations_dict[element.tag]
-            else:
+            if element.tag not in annotations_dict:
                 # No annotation for this tag. Add an empty one to help json editors
                 annotation = EmptyAnnotation(tag=element.tag, tag_info=str(element))
-            annotations_dict[annotation.tag_key] = annotation.to_dict()
+                annotations_dict[annotation.tag_key] = annotation.to_dict()
 
         return {
-            "dataset": to_json(dataset=self.dataset),
-            "annotations": annotations_dict,
+            "dataset": to_json(self.dataset),
+            "annotations": list(annotations_dict.values()),
             "description": self.description,
         }
 
@@ -172,18 +179,27 @@ class AnnotatedDataset:
         Will disregard any NO_ANNOTATION type annotations
         """
 
-        annotations = {}
-        for key, value in dict_in["annotations"].items():
-            if value["annotation_type"] == EmptyAnnotation.key:
-                pass  # do not load NO_ANNOTATION, only useful in json representation
+        annotations = []
+        for annotation_dict in dict_in["annotations"]:
+
+            if annotation_dict["annotation_type"] == EmptyAnnotation.key:
+                # do not load NO_ANNOTATION, only useful in json representation
+                pass
             else:
-                annotations[key] = Annotation.from_dict(value)
+                annotations.append(Annotation.from_dict(annotation_dict))
 
         return AnnotatedDataset(
             dataset=Dataset.from_json(dict_in["dataset"]),
             annotations=annotations,
             description=dict_in["description"],
         )
+
+    @classmethod
+    def from_path(cls, path: PathLike) -> "AnnotatedDataset":
+        """Load AnnotatedDataset from a json file"""
+
+        with open(path, "r") as f:
+            return AnnotatedDataset.from_dict(json.loads(f.read()))
 
     def to_json(self):
         return to_json(self.dataset)

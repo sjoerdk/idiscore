@@ -44,7 +44,7 @@ def test_realistic_profile():
     )
 
     final_set = profile.flatten()
-    assert len(final_set.rules) == 432
+    assert len(final_set.rules) == 442
 
     core = Core(profile=profile)
     dataset = CTDatasetFactory()

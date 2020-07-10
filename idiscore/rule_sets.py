@@ -67,8 +67,9 @@ class DICOMRuleSets:
 
             >>> p = DICOMRuleSets(action_mapping={ActionCodes.CLEAN, MyCleaner()})
             >>> p.clean_descriptors.rules
-            00 = {Rule} (0018, 4000) - MyCleaningOperator
-            01 = {Rule} (0018, 1400) - MyCleaningOperator
+            ...
+            00 = {Rule} (0018, 4000) - MyCleaner
+            01 = {Rule} (0018, 1400) - MyCleaner
             ...
 
         """

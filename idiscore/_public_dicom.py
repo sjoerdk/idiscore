@@ -1,6 +1,7 @@
 """Public DICOM information auto-generated from generate_public_dicom.py
 
-Information from official dicom tag descriptions, tables etc.
+Information from table E.1-1 here:
+http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html
 """
 
 from idiscore.nema import ActionCodes, RawNemaRuleSet
@@ -8,6 +9,7 @@ from idiscore.identifiers import SingleTag, RepeatingGroup, PrivateTags
 
 basic_profile = RawNemaRuleSet(
     name="Basic Application Level Confidentiality Profile",
+    code="113100",
     rules=[
         (SingleTag("00080050"), ActionCodes.EMPTY),
         (SingleTag("00184000"), ActionCodes.REMOVE),
@@ -156,6 +158,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00204000"), ActionCodes.REMOVE),
         (SingleTag("00284000"), ActionCodes.REMOVE),
         (SingleTag("00402400"), ActionCodes.REMOVE),
+        (SingleTag("003a0314"), ActionCodes.DUMMY),
         (SingleTag("40080300"), ActionCodes.REMOVE),
         (SingleTag("00080015"), ActionCodes.REMOVE),
         (SingleTag("00080014"), ActionCodes.UID),
@@ -169,6 +172,9 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("3010004d"), ActionCodes.REMOVE_OR_DUMMY),
         (SingleTag("3010004c"), ActionCodes.REMOVE_OR_DUMMY),
         (SingleTag("00401011"), ActionCodes.REMOVE),
+        (SingleTag("300a0741"), ActionCodes.DUMMY),
+        (SingleTag("300a0742"), ActionCodes.DUMMY),
+        (SingleTag("300a0783"), ActionCodes.DUMMY),
         (SingleTag("40080111"), ActionCodes.REMOVE),
         (SingleTag("4008010c"), ActionCodes.REMOVE),
         (SingleTag("40080115"), ActionCodes.REMOVE),
@@ -205,6 +211,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00203401"), ActionCodes.REMOVE),
         (SingleTag("30080056"), ActionCodes.REMOVE_OR_DUMMY),
         (SingleTag("0018937b"), ActionCodes.REMOVE),
+        (SingleTag("003a0310"), ActionCodes.UID),
         (SingleTag("00081060"), ActionCodes.REMOVE),
         (SingleTag("00401010"), ActionCodes.REMOVE),
         (SingleTag("0040a192"), ActionCodes.REMOVE),
@@ -226,6 +233,7 @@ basic_profile = RawNemaRuleSet(
         (RepeatingGroup("60xx3000"), ActionCodes.REMOVE),
         (SingleTag("00080024"), ActionCodes.REMOVE),
         (SingleTag("00080034"), ActionCodes.REMOVE),
+        (SingleTag("300a0760"), ActionCodes.DUMMY),
         (SingleTag("00281199"), ActionCodes.UID),
         (SingleTag("0040a07a"), ActionCodes.REMOVE),
         (SingleTag("00101040"), ActionCodes.REMOVE),
@@ -300,6 +308,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00401002"), ActionCodes.REMOVE),
         (SingleTag("00321066"), ActionCodes.REMOVE),
         (SingleTag("00321067"), ActionCodes.REMOVE),
+        (SingleTag("300a073a"), ActionCodes.DUMMY),
         (SingleTag("3010000b"), ActionCodes.UID),
         (SingleTag("04000402"), ActionCodes.REMOVE),
         (SingleTag("300a0083"), ActionCodes.UID),
@@ -423,9 +432,12 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("300a00b2"), ActionCodes.REMOVE),
         (SingleTag("300a0608"), ActionCodes.DUMMY),
         (SingleTag("300a0609"), ActionCodes.UID),
+        (SingleTag("300a0700"), ActionCodes.UID),
         (SingleTag("30100077"), ActionCodes.DUMMY),
         (SingleTag("3010007a"), ActionCodes.EMPTY),
         (SingleTag("30080251"), ActionCodes.REMOVE_OR_DUMMY),
+        (SingleTag("300a0736"), ActionCodes.DUMMY),
+        (SingleTag("300a0734"), ActionCodes.DUMMY),
         (SingleTag("0018100a"), ActionCodes.REMOVE),
         (SingleTag("0040a124"), ActionCodes.UID),
         (SingleTag("00181009"), ActionCodes.REMOVE),
@@ -445,11 +457,14 @@ basic_profile = RawNemaRuleSet(
 )
 
 retain_safe_private = RawNemaRuleSet(
-    name="Retain Safe Private Option", rules=[(PrivateTags(), ActionCodes.CLEAN)]
+    name="Retain Safe Private Option",
+    code="113111",
+    rules=[(PrivateTags(), ActionCodes.CLEAN)],
 )
 
 retain_uid = RawNemaRuleSet(
     name="Retain UIDs",
+    code="113110",
     rules=[
         (SingleTag("00001000"), ActionCodes.KEEP),
         (SingleTag("00209161"), ActionCodes.KEEP),
@@ -467,6 +482,7 @@ retain_uid = RawNemaRuleSet(
         (SingleTag("00281214"), ActionCodes.KEEP),
         (SingleTag("0018100b"), ActionCodes.KEEP),
         (SingleTag("00020003"), ActionCodes.KEEP),
+        (SingleTag("003a0310"), ActionCodes.KEEP),
         (SingleTag("0040a402"), ActionCodes.KEEP),
         (SingleTag("0040a171"), ActionCodes.KEEP),
         (SingleTag("00281199"), ActionCodes.KEEP),
@@ -503,11 +519,13 @@ retain_uid = RawNemaRuleSet(
         (SingleTag("00620021"), ActionCodes.KEEP),
         (SingleTag("00081195"), ActionCodes.KEEP),
         (SingleTag("300a0609"), ActionCodes.KEEP),
+        (SingleTag("300a0700"), ActionCodes.KEEP),
     ],
 )
 
 retain_device_id = RawNemaRuleSet(
     name="Retain Device Identity Option",
+    code="113109",
     rules=[
         (SingleTag("00181007"), ActionCodes.KEEP),
         (SingleTag("0018700a"), ActionCodes.KEEP),
@@ -549,6 +567,7 @@ retain_device_id = RawNemaRuleSet(
 
 retain_institution_id = RawNemaRuleSet(
     name="Retain Institution Identity Option",
+    code="113112",
     rules=[
         (SingleTag("00120060"), ActionCodes.KEEP),
         (SingleTag("00120081"), ActionCodes.KEEP),
@@ -564,6 +583,7 @@ retain_institution_id = RawNemaRuleSet(
 
 retain_patient_characteristics = RawNemaRuleSet(
     name="Retain Patient Characteristics Option",
+    code="113108",
     rules=[
         (SingleTag("00102110"), ActionCodes.CLEAN),
         (SingleTag("00102160"), ActionCodes.KEEP),
@@ -582,6 +602,7 @@ retain_patient_characteristics = RawNemaRuleSet(
 
 retain_full_dates = RawNemaRuleSet(
     name="Retain Longitudinal Temporal Information with Full Dates Option",
+    code="113106",
     rules=[
         (SingleTag("00080022"), ActionCodes.KEEP),
         (SingleTag("0008002a"), ActionCodes.KEEP),
@@ -597,15 +618,18 @@ retain_full_dates = RawNemaRuleSet(
         (SingleTag("30080054"), ActionCodes.KEEP),
         (SingleTag("00340007"), ActionCodes.KEEP),
         (SingleTag("0016008d"), ActionCodes.KEEP),
+        (SingleTag("003a0314"), ActionCodes.KEEP),
         (SingleTag("00080015"), ActionCodes.KEEP),
         (SingleTag("3010004d"), ActionCodes.KEEP),
         (SingleTag("3010004c"), ActionCodes.KEEP),
+        (SingleTag("300a0741"), ActionCodes.KEEP),
         (SingleTag("001021d0"), ActionCodes.KEEP),
         (SingleTag("30080056"), ActionCodes.KEEP),
         (SingleTag("0040a192"), ActionCodes.KEEP),
         (SingleTag("0040a193"), ActionCodes.KEEP),
         (SingleTag("00080024"), ActionCodes.KEEP),
         (SingleTag("00080034"), ActionCodes.KEEP),
+        (SingleTag("300a0760"), ActionCodes.KEEP),
         (SingleTag("00400250"), ActionCodes.KEEP),
         (SingleTag("00404051"), ActionCodes.KEEP),
         (SingleTag("00400251"), ActionCodes.KEEP),
@@ -613,6 +637,7 @@ retain_full_dates = RawNemaRuleSet(
         (SingleTag("00404050"), ActionCodes.KEEP),
         (SingleTag("00400245"), ActionCodes.KEEP),
         (SingleTag("00404052"), ActionCodes.KEEP),
+        (SingleTag("300a073a"), ActionCodes.KEEP),
         (SingleTag("300a0006"), ActionCodes.KEEP),
         (SingleTag("300a0007"), ActionCodes.KEEP),
         (SingleTag("00400004"), ActionCodes.KEEP),
@@ -632,11 +657,13 @@ retain_full_dates = RawNemaRuleSet(
         (SingleTag("00080201"), ActionCodes.KEEP),
         (SingleTag("30080250"), ActionCodes.KEEP),
         (SingleTag("30080251"), ActionCodes.KEEP),
+        (SingleTag("300a0736"), ActionCodes.KEEP),
     ],
 )
 
 retain_modified_dates = RawNemaRuleSet(
     name="Retain Longitudinal Temporal Information with Modified Dates Option",
+    code="113107",
     rules=[
         (SingleTag("00080022"), ActionCodes.CLEAN),
         (SingleTag("0008002a"), ActionCodes.CLEAN),
@@ -652,15 +679,18 @@ retain_modified_dates = RawNemaRuleSet(
         (SingleTag("30080054"), ActionCodes.CLEAN),
         (SingleTag("00340007"), ActionCodes.CLEAN),
         (SingleTag("0016008d"), ActionCodes.CLEAN),
+        (SingleTag("003a0314"), ActionCodes.CLEAN),
         (SingleTag("00080015"), ActionCodes.CLEAN),
         (SingleTag("3010004d"), ActionCodes.CLEAN),
         (SingleTag("3010004c"), ActionCodes.CLEAN),
+        (SingleTag("300a0741"), ActionCodes.CLEAN),
         (SingleTag("001021d0"), ActionCodes.CLEAN),
         (SingleTag("30080056"), ActionCodes.CLEAN),
         (SingleTag("0040a192"), ActionCodes.CLEAN),
         (SingleTag("0040a193"), ActionCodes.CLEAN),
         (SingleTag("00080024"), ActionCodes.CLEAN),
         (SingleTag("00080034"), ActionCodes.CLEAN),
+        (SingleTag("300a0760"), ActionCodes.CLEAN),
         (SingleTag("00400250"), ActionCodes.CLEAN),
         (SingleTag("00404051"), ActionCodes.CLEAN),
         (SingleTag("00400251"), ActionCodes.CLEAN),
@@ -668,6 +698,7 @@ retain_modified_dates = RawNemaRuleSet(
         (SingleTag("00404050"), ActionCodes.CLEAN),
         (SingleTag("00400245"), ActionCodes.CLEAN),
         (SingleTag("00404052"), ActionCodes.CLEAN),
+        (SingleTag("300a073a"), ActionCodes.CLEAN),
         (SingleTag("300a0006"), ActionCodes.CLEAN),
         (SingleTag("300a0007"), ActionCodes.CLEAN),
         (SingleTag("00400004"), ActionCodes.CLEAN),
@@ -687,11 +718,13 @@ retain_modified_dates = RawNemaRuleSet(
         (SingleTag("00080201"), ActionCodes.CLEAN),
         (SingleTag("30080250"), ActionCodes.CLEAN),
         (SingleTag("30080251"), ActionCodes.CLEAN),
+        (SingleTag("300a0736"), ActionCodes.CLEAN),
     ],
 )
 
 clean_descriptors = RawNemaRuleSet(
     name="Clean Descriptors Option",
+    code="113105",
     rules=[
         (SingleTag("00184000"), ActionCodes.CLEAN),
         (SingleTag("00181400"), ActionCodes.CLEAN),
@@ -729,6 +762,8 @@ clean_descriptors = RawNemaRuleSet(
         (SingleTag("00204000"), ActionCodes.CLEAN),
         (SingleTag("00402400"), ActionCodes.CLEAN),
         (SingleTag("40080300"), ActionCodes.CLEAN),
+        (SingleTag("300a0742"), ActionCodes.CLEAN),
+        (SingleTag("300a0783"), ActionCodes.CLEAN),
         (SingleTag("40080115"), ActionCodes.CLEAN),
         (SingleTag("4008010b"), ActionCodes.CLEAN),
         (SingleTag("22000002"), ActionCodes.CLEAN),
@@ -782,6 +817,7 @@ clean_descriptors = RawNemaRuleSet(
         (SingleTag("300a0608"), ActionCodes.CLEAN),
         (SingleTag("30100077"), ActionCodes.CLEAN),
         (SingleTag("3010007a"), ActionCodes.CLEAN),
+        (SingleTag("300a0734"), ActionCodes.CLEAN),
         (SingleTag("30100033"), ActionCodes.CLEAN),
         (SingleTag("30100034"), ActionCodes.CLEAN),
         (SingleTag("00384000"), ActionCodes.CLEAN),
@@ -790,6 +826,7 @@ clean_descriptors = RawNemaRuleSet(
 
 clean_structured_content = RawNemaRuleSet(
     name="Clean Structured Content Option",
+    code="113104",
     rules=[
         (SingleTag("00400555"), ActionCodes.CLEAN),
         (SingleTag("0040a730"), ActionCodes.CLEAN),
@@ -799,6 +836,7 @@ clean_structured_content = RawNemaRuleSet(
 
 clean_graphics = RawNemaRuleSet(
     name="Clean Graphics Option",
+    code="113103",
     rules=[
         (RepeatingGroup("50xxxxxx"), ActionCodes.CLEAN),
         (SingleTag("00700001"), ActionCodes.CLEAN),

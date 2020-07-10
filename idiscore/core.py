@@ -13,6 +13,7 @@ from idiscore.imageprocessing import (
     PixelDataProcessorException,
     PixelProcessor,
 )
+from idiscore.validation import Deidentifier
 
 
 class Rule:
@@ -129,7 +130,7 @@ class Profile:
     Models the complete deidentification of all DICOM elements except for pixel data
 
     Rules:
-    * DICOM tags that are not mentioned explicitly in the profile are removed
+    * DICOM tags that are not mentioned explicitly in the profile are kept
     * A Profile holds a list of RuleSets. Later Rules overrule earlier
     * A profile's RuleSets can be 'collapsed' to have one operation for each
       tag
@@ -268,7 +269,7 @@ class PrivateProcessor:
             raise PrivateProcessorException(e)
 
 
-class Core:
+class Core(Deidentifier):
     """Can deidentify a DICOM dataset. Holds all configuration, filters and
     connections needed to do this
     """
@@ -276,6 +277,7 @@ class Core:
     def __init__(
         self,
         profile: Profile,
+        insertions: List[DataElement] = None,
         bouncers: List[Bouncer] = None,
         safe_private: Optional[PrivateProcessor] = None,
         pixel_processor: Optional[PixelProcessor] = None,
@@ -286,6 +288,8 @@ class Core:
         ----------
         profile: Profile
             Defines what to do with each DICOM element (except PixelData)
+        insertions: List[DataElement]
+            DICOM elements to insert into each deidentified dataset
         bouncers: List[Bouncer], optional
             Inspect all incoming data and can reject if it is deemed not fit for
             deidentification. For example rejecting encapsulated PDFs as they are
@@ -299,9 +303,8 @@ class Core:
 
         """
         self.profile = profile
-        if not bouncers:
-            bouncers = []
-        self.bouncers = bouncers
+        self.insertions = insertions if insertions else []  # convert default None
+        self.bouncers = bouncers if bouncers else []
         self.safe_private = safe_private
         self.pixel_processor = pixel_processor
 

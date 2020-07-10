@@ -5,10 +5,12 @@ from idiscore.operations import Clean, Remove
 
 def test_raw_nema_rule_list():
     raw_list = RawNemaRuleSet(
-        rules=(
+        name="test",
+        code="1",
+        rules=[
             (SingleTag("PatientID"), ActionCodes.REMOVE),
             (PrivateTags(), ActionCodes.CLEAN),
-        )
+        ],
     )
 
     rule_set = raw_list.compile(

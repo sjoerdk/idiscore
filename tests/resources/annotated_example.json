@@ -1,0 +1,654 @@
+{
+  "dataset": "{\"00080005\": {\"Value\": [\"ISO_IR 192\"], \"vr\": \"CS\"}, \"00080008\": {\"Value\": [\"ORIGINAL\", \"PRIMARY\", \"LOCALIZER\"], \"vr\": \"CS\"}, \"00080016\": {\"Value\": [\"1.2.840.10008.5.1.4.1.1.2\"], \"vr\": \"UI\"}, \"00080018\": {\"Value\": [\"1.2.826.0.1.3680043.10.404.9524639338561678409497219697270707979\"], \"vr\": \"UI\"}, \"00080020\": {\"Value\": [\"20100623\"], \"vr\": \"DA\"}, \"00080021\": {\"Value\": [\"20100623\"], \"vr\": \"DA\"}, \"00080022\": {\"Value\": [\"20100623\"], \"vr\": \"DA\"}, \"00080023\": {\"Value\": [\"20100623\"], \"vr\": \"DA\"}, \"00080030\": {\"Value\": [\"170404.315\"], \"vr\": \"TM\"}, \"00080031\": {\"Value\": [\"170404.315\"], \"vr\": \"TM\"}, \"00080032\": {\"Value\": [\"170404.315\"], \"vr\": \"TM\"}, \"00080033\": {\"Value\": [\"170404.315\"], \"vr\": \"TM\"}, \"00080050\": {\"Value\": [\"1234\"], \"vr\": \"SH\"}, \"00080060\": {\"Value\": [\"CT\"], \"vr\": \"CS\"}, \"00080070\": {\"Value\": [\"TOSHIBA\"], \"vr\": \"LO\"}, \"00080090\": {\"Value\": [{\"Alphabetic\": \" \"}], \"vr\": \"PN\"}, \"00081010\": {\"Value\": [\"AQUILIONCXL\"], \"vr\": \"SH\"}, \"00081030\": {\"Value\": [\"CT THORAX + ABDOMEN I.V. CONTRAST\"], \"vr\": \"LO\"}, \"00081032\": {\"Value\": [{\"00080100\": {\"Value\": [\"RADCT044\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"AGFEAP\"], \"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"CT THORAX + ABDOMEN I.V. CONTRAST\"], \"vr\": \"LO\"}}], \"vr\": \"SQ\"}, \"0008103E\": {\"Value\": [\"2.0\"], \"vr\": \"LO\"}, \"00081090\": {\"Value\": [\"Aquilion\"], \"vr\": \"LO\"}, \"00081110\": {\"Value\": [{\"00081150\": {\"Value\": [\"1.2.840.10008.3.1.2.3.1\"], \"vr\": \"UI\"}, \"00081155\": {\"Value\": [\"1.3.6.1.4.1.14519.5.2.1.9999.9999.117193533672909197771321743072\"], \"vr\": \"UI\"}}], \"vr\": \"SQ\"}, \"00100010\": {\"Value\": [{\"Alphabetic\": \"Haengreve^Annemijn\"}], \"vr\": \"PN\"}, \"00100020\": {\"Value\": [\"3100910591\"], \"vr\": \"LO\"}, \"00100030\": {\"vr\": \"DA\"}, \"00100040\": {\"vr\": \"CS\"}, \"001021B0\": {\"Value\": [\"CT THORAX + ABDOMEN I.V. CONTRAST\"], \"vr\": \"LT\"}, \"00120062\": {\"Value\": [\"NO\"], \"vr\": \"CS\"}, \"00120063\": {\"Value\": [\"Per DICOM PS 3.15 AnnexE. Details in 0012,0064\"], \"vr\": \"LO\"}, \"00120064\": {\"Value\": [{\"00080100\": {\"Value\": [\"113100\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"DCM\"], \"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"Basic Application Confidentiality Profile\"], \"vr\": \"LO\"}}, {\"00080100\": {\"Value\": [\"113101\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"DCM\"], \"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"Clean Pixel Data Option\"], \"vr\": \"LO\"}}, {\"00080100\": {\"Value\": [\"113105\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"DCM\"], \"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"Clean Descriptors Option\"], \"vr\": \"LO\"}}, {\"00080100\": {\"Value\": [\"113106\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"DCM\"], \"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"Retain Longitudinal Temporal Information Full Dates Option\"], \"vr\": \"LO\"}}, {\"00080100\": {\"Value\": [\"113109\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"DCM\"], \"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"Retain Device Identity Option\"], \"vr\": \"LO\"}}, {\"00080100\": {\"Value\": [\"113111\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"DCM\"], \"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"Retain Safe Private Option\"], \"vr\": \"LO\"}}], \"vr\": \"SQ\"}, \"00180022\": {\"Value\": [\"SCANOSCOPE\"], \"vr\": \"CS\"}, \"00180050\": {\"Value\": [2.0], \"vr\": \"DS\"}, \"00180060\": {\"Value\": [120.0], \"vr\": \"DS\"}, \"00180090\": {\"Value\": [1000.0], \"vr\": \"DS\"}, \"00181000\": {\"Value\": [\"TCA1242003\"], \"vr\": \"LO\"}, \"00181020\": {\"Value\": [\"V4.78ER007\"], \"vr\": \"LO\"}, \"00181030\": {\"Value\": [\"CT Thorax Abdomen i.v. contrast\"], \"vr\": \"LO\"}, \"00181100\": {\"Value\": [1000.0], \"vr\": \"DS\"}, \"00181120\": {\"Value\": [0.0], \"vr\": \"DS\"}, \"00181130\": {\"Value\": [94.0], \"vr\": \"DS\"}, \"00181140\": {\"Value\": [\"CW\"], \"vr\": \"CS\"}, \"00181150\": {\"Value\": [7780], \"vr\": \"IS\"}, \"00181151\": {\"Value\": [50], \"vr\": \"IS\"}, \"00181152\": {\"Value\": [350], \"vr\": \"IS\"}, \"00181160\": {\"Value\": [\"LARGE\"], \"vr\": \"SH\"}, \"00181170\": {\"Value\": [6], \"vr\": \"IS\"}, \"00181190\": {\"Value\": [1.6, 1.4], \"vr\": \"DS\"}, \"00181210\": {\"Value\": [\"FL03\"], \"vr\": \"SH\"}, \"00185100\": {\"Value\": [\"FFS\"], \"vr\": \"CS\"}, \"0020000D\": {\"Value\": [\"1.2.826.0.1.3680043.10.404.9618596998927357234241356060493756769\"], \"vr\": \"UI\"}, \"0020000E\": {\"Value\": [\"1.2.826.0.1.3680043.10.404.1172749602490957175313260291911251739\"], \"vr\": \"UI\"}, \"00200010\": {\"vr\": \"SH\"}, \"00200011\": {\"Value\": [1], \"vr\": \"IS\"}, \"00200012\": {\"Value\": [1], \"vr\": \"IS\"}, \"00200013\": {\"Value\": [1], \"vr\": \"IS\"}, \"00200020\": {\"Value\": [\"L\", \"F\"], \"vr\": \"CS\"}, \"00200032\": {\"Value\": [-512.0, 0.00017, 2144.0], \"vr\": \"DS\"}, \"00200037\": {\"Value\": [1.0, 0.0, 0.0, 0.0, 0.0, -1.0], \"vr\": \"DS\"}, \"00200052\": {\"Value\": [\"1.2.826.0.1.3680043.10.404.1232849391245143717456912779706249889\"], \"vr\": \"UI\"}, \"00201040\": {\"vr\": \"LO\"}, \"00201041\": {\"Value\": [251.5], \"vr\": \"DS\"}, \"00280002\": {\"Value\": [1], \"vr\": \"US\"}, \"00280004\": {\"Value\": [\"MONOCHROME2\"], \"vr\": \"CS\"}, \"00280010\": {\"Value\": [25], \"vr\": \"US\"}, \"00280011\": {\"Value\": [34], \"vr\": \"US\"}, \"00280030\": {\"Value\": [2.0, 2.0], \"vr\": \"DS\"}, \"00280100\": {\"Value\": [16], \"vr\": \"US\"}, \"00280101\": {\"Value\": [16], \"vr\": \"US\"}, \"00280102\": {\"Value\": [15], \"vr\": \"US\"}, \"00280103\": {\"Value\": [1], \"vr\": \"US\"}, \"00280303\": {\"Value\": [\"UNMODIFIED\"], \"vr\": \"CS\"}, \"00281050\": {\"Value\": [130.0], \"vr\": \"DS\"}, \"00281051\": {\"Value\": [170.0], \"vr\": \"DS\"}, \"00281052\": {\"Value\": [0.0], \"vr\": \"DS\"}, \"00281053\": {\"Value\": [1.0], \"vr\": \"DS\"}, \"00290010\": {\"Value\": [\"MITRA PRESENTATION 1.0\"], \"vr\": \"LO\"}, \"00310010\": {\"Value\": [\"MITRA LINKED ATTRIBUTES 1.0\"], \"vr\": \"LO\"}, \"00310011\": {\"Value\": [\"AGFA PACS Archive Mirroring 1.0\"], \"vr\": \"LO\"}, \"0032000A\": {\"Value\": [\"READ\"], \"vr\": \"CS\"}, \"0032000C\": {\"Value\": [\"MED\"], \"vr\": \"CS\"}, \"00321030\": {\"Value\": [\"CT THORAX + ABDOMEN I.V. CONTRAST\"], \"vr\": \"LO\"}, \"00330010\": {\"Value\": [\"MITRA OBJECT UTF8 ATTRIBUTES 1.0\"], \"vr\": \"LO\"}, \"00400002\": {\"Value\": [\"20100623\"], \"vr\": \"DA\"}, \"00400003\": {\"Value\": [\"170129.461\"], \"vr\": \"TM\"}, \"00400004\": {\"Value\": [\"20100623\"], \"vr\": \"DA\"}, \"00400005\": {\"Value\": [\"232840.556\"], \"vr\": \"TM\"}, \"00400244\": {\"Value\": [\"20191220\"], \"vr\": \"DA\"}, \"00400245\": {\"Value\": [\"114429.000\"], \"vr\": \"TM\"}, \"00400250\": {\"Value\": [\"20100623\"], \"vr\": \"DA\"}, \"00400251\": {\"Value\": [\"170404.315\"], \"vr\": \"TM\"}, \"00400260\": {\"Value\": [{\"00080100\": {\"Value\": [\"RADCT044\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"AGFEAP\"], \"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"CT THORAX + ABDOMEN I.V. CONTRAST\"], \"vr\": \"LO\"}}], \"vr\": \"SQ\"}, \"00400275\": {\"Value\": [{\"00080050\": {\"Value\": [\"2415095731761158\"], \"vr\": \"SH\"}, \"00081110\": {\"Value\": [{\"00081150\": {\"Value\": [\"1.2.840.10008.3.1.2.3.1\"], \"vr\": \"UI\"}, \"00081155\": {\"Value\": [\"1.3.6.1.4.1.45.45.6.9999.117193533672909197771321743072\"], \"vr\": \"UI\"}}], \"vr\": \"SQ\"}, \"0020000D\": {\"Value\": [\"1.3.840.114145.2.357.2.798268.2.578934757.1\"], \"vr\": \"UI\"}, \"00321060\": {\"Value\": [\"CT THORAX + ABDOMEN I.V. CONTRAST\"], \"vr\": \"LO\"}, \"00321064\": {\"Value\": [{\"00080100\": {\"Value\": [\"RADCT044\"], \"vr\": \"SH\"}, \"00080102\": {\"Value\": [\"AGFEAP\"], \"vr\": \"SH\"}, \"00080103\": {\"vr\": \"SH\"}, \"00080104\": {\"Value\": [\"CT THORAX + ABDOMEN I.V. CONTRAST\"], \"vr\": \"LO\"}}], \"vr\": \"SQ\"}}], \"vr\": \"SQ\"}, \"00430010\": {\"Value\": [\"dcm4che/archive\"], \"vr\": \"LO\"}, \"00750010\": {\"Value\": [\"RADBOUDUMCANONYMIZER\"], \"vr\": \"LO\"}, \"00751000\": {\"Value\": [\"3100910591\"], \"vr\": \"LO\"}, \"00751001\": {\"Value\": [\"3100910591\"], \"vr\": \"LO\"}, \"00751004\": {\"Value\": [{\"Alphabetic\": \"YES\"}], \"vr\": \"PN\"}, \"00751005\": {\"Value\": [\"YES\"], \"vr\": \"LO\"}, \"00751027\": {\"Value\": [\"55909\"], \"vr\": \"LO\"}, \"00751028\": {\"Value\": [\"55908\"], \"vr\": \"LO\"}, \"00751082\": {\"Value\": [\"YES\"], \"vr\": \"CS\"}, \"00880130\": {\"vr\": \"SH\"}, \"00880140\": {\"Value\": [\"1.3.7.1.4.1.14319.5.2.1.235366.281949368444412648962353322266\"], \"vr\": \"UI\"}, \"70050010\": {\"Value\": [\"TOSHIBA_MEC_CT3\"], \"vr\": \"LO\"}, \"7005100B\": {\"InlineBinary\": \"T1JHIA==\", \"vr\": \"UN\"}, \"7005101B\": {\"InlineBinary\": \"RkwwMw==\", \"vr\": \"UN\"}, \"7FD90010\": {\"Value\": [\"agfa/preservedItems\"], \"vr\": \"LO\"}, \"7FE00010\": {\"InlineBinary\": \"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\", \"vr\": \"OW\"}}",
+  "annotations": [
+    {
+      "tag": "00100010",
+      "tag_info": "",
+      "annotation_type": "contains_pii",
+      "explanation": "This contains an actual name"
+    },
+    {
+      "tag": "00080005",
+      "tag_info": "(0008, 0005) Specific Character Set              CS: 'ISO_IR 192'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080008",
+      "tag_info": "(0008, 0008) Image Type                          CS: ['ORIGINAL', 'PRIMARY', 'LOCALIZER']",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080016",
+      "tag_info": "(0008, 0016) SOP Class UID                       UI: CT Image Storage",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080018",
+      "tag_info": "(0008, 0018) SOP Instance UID                    UI: 1.2.826.0.1.3680043.10.404.9524639338561678409497219697270707979",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080020",
+      "tag_info": "(0008, 0020) Study Date                          DA: '20100623'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080021",
+      "tag_info": "(0008, 0021) Series Date                         DA: '20100623'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080022",
+      "tag_info": "(0008, 0022) Acquisition Date                    DA: '20100623'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080023",
+      "tag_info": "(0008, 0023) Content Date                        DA: '20100623'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080030",
+      "tag_info": "(0008, 0030) Study Time                          TM: '170404.315'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080031",
+      "tag_info": "(0008, 0031) Series Time                         TM: '170404.315'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080032",
+      "tag_info": "(0008, 0032) Acquisition Time                    TM: '170404.315'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080033",
+      "tag_info": "(0008, 0033) Content Time                        TM: '170404.315'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080050",
+      "tag_info": "(0008, 0050) Accession Number                    SH: '1234'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080060",
+      "tag_info": "(0008, 0060) Modality                            CS: 'CT'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080070",
+      "tag_info": "(0008, 0070) Manufacturer                        LO: 'TOSHIBA'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00080090",
+      "tag_info": "(0008, 0090) Referring Physician's Name          PN: ' '",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00081010",
+      "tag_info": "(0008, 1010) Station Name                        SH: 'AQUILIONCXL'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00081030",
+      "tag_info": "(0008, 1030) Study Description                   LO: 'CT THORAX + ABDOMEN I.V. CONTRAST'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00081032",
+      "tag_info": "(0008, 1032) Procedure Code Sequence             SQ: <Sequence, length 1>",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "0008103E",
+      "tag_info": "(0008, 103e) Series Description                  LO: '2.0'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00081090",
+      "tag_info": "(0008, 1090) Manufacturer's Model Name           LO: 'Aquilion'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00081110",
+      "tag_info": "(0008, 1110) Referenced Study Sequence           SQ: <Sequence, length 1>",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00100020",
+      "tag_info": "(0010, 0020) Patient ID                          LO: '3100910591'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00100030",
+      "tag_info": "(0010, 0030) Patient's Birth Date                DA: ''",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00100040",
+      "tag_info": "(0010, 0040) Patient's Sex                       CS: ''",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "001021B0",
+      "tag_info": "(0010, 21b0) Additional Patient History          LT: 'CT THORAX + ABDOMEN I.V. CONTRAST'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00120062",
+      "tag_info": "(0012, 0062) Patient Identity Removed            CS: 'NO'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00120063",
+      "tag_info": "(0012, 0063) De-identification Method            LO: 'Per DICOM PS 3.15 AnnexE. Details in 0012,0064'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00120064",
+      "tag_info": "(0012, 0064) De-identification Method Code Seque SQ: <Sequence, length 6>",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00180022",
+      "tag_info": "(0018, 0022) Scan Options                        CS: 'SCANOSCOPE'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00180050",
+      "tag_info": "(0018, 0050) Slice Thickness                     DS: \"2.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00180060",
+      "tag_info": "(0018, 0060) KVP                                 DS: \"120.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00180090",
+      "tag_info": "(0018, 0090) Data Collection Diameter            DS: \"1000.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181000",
+      "tag_info": "(0018, 1000) Device Serial Number                LO: 'TCA1242003'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181020",
+      "tag_info": "(0018, 1020) Software Versions                   LO: 'V4.78ER007'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181030",
+      "tag_info": "(0018, 1030) Protocol Name                       LO: 'CT Thorax Abdomen i.v. contrast'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181100",
+      "tag_info": "(0018, 1100) Reconstruction Diameter             DS: \"1000.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181120",
+      "tag_info": "(0018, 1120) Gantry/Detector Tilt                DS: \"0.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181130",
+      "tag_info": "(0018, 1130) Table Height                        DS: \"94.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181140",
+      "tag_info": "(0018, 1140) Rotation Direction                  CS: 'CW'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181150",
+      "tag_info": "(0018, 1150) Exposure Time                       IS: \"7780\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181151",
+      "tag_info": "(0018, 1151) X-Ray Tube Current                  IS: \"50\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181152",
+      "tag_info": "(0018, 1152) Exposure                            IS: \"350\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181160",
+      "tag_info": "(0018, 1160) Filter Type                         SH: 'LARGE'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181170",
+      "tag_info": "(0018, 1170) Generator Power                     IS: \"6\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181190",
+      "tag_info": "(0018, 1190) Focal Spot(s)                       DS: [1.6, 1.4]",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00181210",
+      "tag_info": "(0018, 1210) Convolution Kernel                  SH: 'FL03'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00185100",
+      "tag_info": "(0018, 5100) Patient Position                    CS: 'FFS'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "0020000D",
+      "tag_info": "(0020, 000d) Study Instance UID                  UI: 1.2.826.0.1.3680043.10.404.9618596998927357234241356060493756769",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "0020000E",
+      "tag_info": "(0020, 000e) Series Instance UID                 UI: 1.2.826.0.1.3680043.10.404.1172749602490957175313260291911251739",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00200010",
+      "tag_info": "(0020, 0010) Study ID                            SH: ''",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00200011",
+      "tag_info": "(0020, 0011) Series Number                       IS: \"1\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00200012",
+      "tag_info": "(0020, 0012) Acquisition Number                  IS: \"1\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00200013",
+      "tag_info": "(0020, 0013) Instance Number                     IS: \"1\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00200020",
+      "tag_info": "(0020, 0020) Patient Orientation                 CS: ['L', 'F']",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00200032",
+      "tag_info": "(0020, 0032) Image Position (Patient)            DS: [-512.0, 0.00017, 2144.0]",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00200037",
+      "tag_info": "(0020, 0037) Image Orientation (Patient)         DS: [1.0, 0.0, 0.0, 0.0, 0.0, -1.0]",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00200052",
+      "tag_info": "(0020, 0052) Frame of Reference UID              UI: 1.2.826.0.1.3680043.10.404.1232849391245143717456912779706249889",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00201040",
+      "tag_info": "(0020, 1040) Position Reference Indicator        LO: ''",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00201041",
+      "tag_info": "(0020, 1041) Slice Location                      DS: \"251.5\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280002",
+      "tag_info": "(0028, 0002) Samples per Pixel                   US: 1",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280004",
+      "tag_info": "(0028, 0004) Photometric Interpretation          CS: 'MONOCHROME2'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280010",
+      "tag_info": "(0028, 0010) Rows                                US: 25",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280011",
+      "tag_info": "(0028, 0011) Columns                             US: 34",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280030",
+      "tag_info": "(0028, 0030) Pixel Spacing                       DS: [2.0, 2.0]",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280100",
+      "tag_info": "(0028, 0100) Bits Allocated                      US: 16",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280101",
+      "tag_info": "(0028, 0101) Bits Stored                         US: 16",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280102",
+      "tag_info": "(0028, 0102) High Bit                            US: 15",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280103",
+      "tag_info": "(0028, 0103) Pixel Representation                US: 1",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00280303",
+      "tag_info": "(0028, 0303) Longitudinal Temporal Information M CS: 'UNMODIFIED'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00281050",
+      "tag_info": "(0028, 1050) Window Center                       DS: \"130.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00281051",
+      "tag_info": "(0028, 1051) Window Width                        DS: \"170.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00281052",
+      "tag_info": "(0028, 1052) Rescale Intercept                   DS: \"0.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00281053",
+      "tag_info": "(0028, 1053) Rescale Slope                       DS: \"1.0\"",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00290010",
+      "tag_info": "(0029, 0010) Private Creator                     LO: 'MITRA PRESENTATION 1.0'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00310010",
+      "tag_info": "(0031, 0010) Private Creator                     LO: 'MITRA LINKED ATTRIBUTES 1.0'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00310011",
+      "tag_info": "(0031, 0011) Private Creator                     LO: 'AGFA PACS Archive Mirroring 1.0'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "0032000A",
+      "tag_info": "(0032, 000a) Study Status ID                     CS: 'READ'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "0032000C",
+      "tag_info": "(0032, 000c) Study Priority ID                   CS: 'MED'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00321030",
+      "tag_info": "(0032, 1030) Reason for Study                    LO: 'CT THORAX + ABDOMEN I.V. CONTRAST'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00330010",
+      "tag_info": "(0033, 0010) Private Creator                     LO: 'MITRA OBJECT UTF8 ATTRIBUTES 1.0'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400002",
+      "tag_info": "(0040, 0002) Scheduled Procedure Step Start Date DA: '20100623'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400003",
+      "tag_info": "(0040, 0003) Scheduled Procedure Step Start Time TM: '170129.461'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400004",
+      "tag_info": "(0040, 0004) Scheduled Procedure Step End Date   DA: '20100623'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400005",
+      "tag_info": "(0040, 0005) Scheduled Procedure Step End Time   TM: '232840.556'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400244",
+      "tag_info": "(0040, 0244) Performed Procedure Step Start Date DA: '20191220'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400245",
+      "tag_info": "(0040, 0245) Performed Procedure Step Start Time TM: '114429.000'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400250",
+      "tag_info": "(0040, 0250) Performed Procedure Step End Date   DA: '20100623'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400251",
+      "tag_info": "(0040, 0251) Performed Procedure Step End Time   TM: '170404.315'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400260",
+      "tag_info": "(0040, 0260) Performed Protocol Code Sequence    SQ: <Sequence, length 1>",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00400275",
+      "tag_info": "(0040, 0275) Request Attributes Sequence         SQ: <Sequence, length 1>",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00430010",
+      "tag_info": "(0043, 0010) Private Creator                     LO: 'dcm4che/archive'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00750010",
+      "tag_info": "(0075, 0010) Private Creator                     LO: 'RADBOUDUMCANONYMIZER'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00751000",
+      "tag_info": "(0075, 1000) Private tag data                    LO: '3100910591'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00751001",
+      "tag_info": "(0075, 1001) Private tag data                    LO: '3100910591'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00751004",
+      "tag_info": "(0075, 1004) Private tag data                    PN: 'YES'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00751005",
+      "tag_info": "(0075, 1005) Private tag data                    LO: 'YES'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00751027",
+      "tag_info": "(0075, 1027) Private tag data                    LO: '55909'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00751028",
+      "tag_info": "(0075, 1028) Private tag data                    LO: '55908'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00751082",
+      "tag_info": "(0075, 1082) Private tag data                    CS: 'YES'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00880130",
+      "tag_info": "(0088, 0130) Storage Media File-set ID           SH: ''",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "00880140",
+      "tag_info": "(0088, 0140) Storage Media File-set UID          UI: 1.3.7.1.4.1.14319.5.2.1.235366.281949368444412648962353322266",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "70050010",
+      "tag_info": "(7005, 0010) Private Creator                     LO: 'TOSHIBA_MEC_CT3'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "7005100B",
+      "tag_info": "(7005, 100b) [Filter]                            UN: b'ORG '",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "7005101B",
+      "tag_info": "(7005, 101b) [Convolution Kernel]                UN: b'FL03'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "7FD90010",
+      "tag_info": "(7fd9, 0010) Private Creator                     LO: 'agfa/preservedItems'",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    },
+    {
+      "tag": "7FE00010",
+      "tag_info": "(7fe0, 0010) Pixel Data                          OW: Array of 1700 elements",
+      "annotation_type": "no_annotation",
+      "explanation": ""
+    }
+  ],
+  "description": "No description"
+}

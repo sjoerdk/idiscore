@@ -2,77 +2,22 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `idiscore` package."""
-from typing import List
 
 import pytest
 
-from dicomgenerator.factory import CTDatasetFactory, DataElementFactory
 from pydicom.tag import Tag
 
 from idiscore.core import (
-    Core,
     Profile,
     Rule,
     RuleSet,
-    PrivateProcessor,
 )
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
-from idiscore.imageprocessing import PixelProcessor
 from idiscore.operations import Hash, Keep, Remove
-from pydicom.dataset import Dataset
 
 
-@pytest.fixture
-def an_empty_core() -> Core:
-    """A deidentification core instance that is empty in all respects. Contains
-    a profile with no rule sets, PrivateProcessor with no defintions etc
-
-    Fully functional, but will not change any element
-    """
-    return Core(
-        bouncers=[],
-        profile=Profile(rule_sets=[]),
-        safe_private=PrivateProcessor(definitions=[]),
-        pixel_processor=PixelProcessor(locations=[]),
-    )
-
-
-@pytest.fixture
-def a_dataset() -> Dataset:
-    """A realistic CT DICOM dataset"""
-    return CTDatasetFactory()
-
-
-@pytest.fixture
-def some_rules() -> List[Rule]:
-    """Different types of Rules"""
-    return [
-        Rule(SingleTag("PatientID"), Hash()),
-        Rule(RepeatingGroup("50xx,xxxx"), Remove()),
-        Rule(PrivateTags(), Remove()),
-    ]
-
-
-def test_idiscore_deidentify_basic(a_dataset, some_rules):
+def test_idiscore_deidentify_basic(a_dataset, a_core_with_some_rules):
     """Send a dataset trough a full Core instance"""
-    core = an_empty_core
-
-    # a dataset
-    a_dataset = Dataset()
-    a_dataset.add(DataElementFactory(tag="PatientID", value="12345"))
-    a_dataset.add(DataElementFactory(tag="Modality", value="CT"))
-    a_dataset.add(DataElementFactory(tag="PatientName", value="Martha"))
-    a_dataset.add(DataElementFactory(tag=(0x5010, 0x3000), value="Sensitive data"))
-    a_dataset.add(DataElementFactory(tag=(0x1013, 0x0001), value="private tag"))
-
-    # Some rules
-    a_ruleset = RuleSet(
-        rules=[
-            Rule(SingleTag("PatientName"), Hash()),
-            Rule(RepeatingGroup("50xx,xxxx"), Remove()),
-            Rule(PrivateTags(), Remove()),
-        ]
-    )
 
     # check before processing
     assert Tag(0x5010, 0x3000) in a_dataset
@@ -82,7 +27,7 @@ def test_idiscore_deidentify_basic(a_dataset, some_rules):
     assert len(a_dataset.items()) == 5
 
     # now apply the rules to the dataset
-    core = Core(profile=Profile(rule_sets=[a_ruleset]))
+    core = a_core_with_some_rules
     deidentified = core.deidentify(a_dataset)
 
     # check whether that worked as expected
@@ -172,5 +117,5 @@ def test_rule_precedence():
 def test_rule_set_human_readable(some_rules):
 
     as_string = RuleSet(some_rules).as_human_readable_list()
-    assert "PatientID - (0010, 0020)" in as_string
+    assert "PatientName - (0010, 0010)" in as_string
     assert "Unknown Repeater tag" in as_string
