@@ -1,6 +1,6 @@
 import pytest
 
-from idiscore.insertions import get_idis_code_sequence
+from idiscore.insertions import get_deidentification_method, get_idis_code_sequence
 from idiscore.rule_sets import DICOMRuleSets
 
 
@@ -19,9 +19,11 @@ def test_get_code_sequence(official_rule_sets):
             official_rule_sets.retain_safe_private.name,
         ]
     )
+    elements = [x for x in sequence]
+    assert len(elements) == 2
 
-    assert sequence.value[0] == "113100"  # should be values from Table CID 7050
-    assert sequence.value[1] == "113111"
+    assert elements[0].CodeValue == "113100"  # should be values from Table CID 7050
+    assert elements[1].CodeValue == "113111"
 
 
 def test_get_code_sequence_exceptions(official_rule_sets):
@@ -32,3 +34,8 @@ def test_get_code_sequence_exceptions(official_rule_sets):
             [official_rule_sets.basic_profile.name, "unknown option"]
         )
     assert "Could not find" in str(e)
+
+
+def test_get_deidentification_method():
+    method = get_deidentification_method(method="testmethod")
+    assert method.value == "testmethod"
