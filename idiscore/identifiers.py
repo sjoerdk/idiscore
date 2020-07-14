@@ -245,3 +245,52 @@ class PrivateTags(TagIdentifier):
     def as_python() -> str:
         """For special export. Python code that recreates this instance"""
         return f"PrivateTags()"
+
+
+class PrivateBlockTagIdentifier(TagIdentifier):
+    """A private DICOM tag with a private creator. Like '0013,[MyCompany]01)
+
+    In this example [MyCompany] refers whatever block was reserved by private
+    creator identifier 'MyCompany'
+
+    For more info on private blocks, see DICOM standard part 5,
+    section 7.8.1 ('Private Data Elements')
+    """
+
+    def __init__(self, tag: str):
+
+        self.tag = self.parse_input_string(tag)
+
+    def __str__(self):
+        return str(self.tag)
+
+    @staticmethod
+    def parse_input_string(
+        private_block_tag_string,
+    ) -> Tuple[
+        str,
+    ]:
+        return None
+
+    def matches(self, tag: BaseTag) -> bool:
+        """True if the tag values match this repeater in all places without an 'x'"""
+        # Following pydicom in using byte operations for this
+        return tag & self.tag.as_mask() == self.tag.static_component()
+
+    def key(self) -> str:
+        """For sane sorting, make sure this matches the key format of other
+        identifiers
+
+        """
+        return clean_tag_string(str(self.tag))
+
+    def name(self) -> str:
+        """Human readable name for this tag"""
+        return self.tag.name()
+
+    def number_of_matchable_tags(self) -> int:
+        return 16 ** self.tag.number_of_wildcard_positions()
+
+    def as_python(self) -> str:
+        """For special export. Python code that recreates this instance"""
+        return f"RepeatingGroup('{self.key()}')"

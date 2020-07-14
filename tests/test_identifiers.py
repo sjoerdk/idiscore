@@ -1,7 +1,8 @@
 import pytest
-
+from dicomgenerator.factory import CTDatasetFactory
 
 from idiscore.identifiers import (
+    PrivateBlockTagIdentifier,
     PrivateTags,
     RepeatingGroup,
     RepeatingTag,
@@ -112,3 +113,9 @@ def test_identifier_keys(tag_identifier_instance: TagIdentifier):
 
     instance = tag_identifier_instance
     assert instance == type(instance)(instance.key())
+
+
+def test_private_block_identifier():
+    dataset = CTDatasetFactory()
+    tag_to_match = dataset[(0x0075, 0x1000)]
+    tag = PrivateBlockTagIdentifier("0075,[MyCompany]01")

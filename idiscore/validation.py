@@ -241,6 +241,10 @@ class Delta:
         """Has changed or has been removed after deidentification"""
         return self.before != self.after
 
+    def full_description(self) -> str:
+        """Full human-readable description of the change that happened"""
+        return f"{self.tag} - {self.status}: {self.before} -> {self.after}"
+
 
 def extract_signature(deidentifier: Deidentifier, dataset: Dataset) -> List[Delta]:
     """Specify exactly what happens to each tag when deidentifying
@@ -254,7 +258,7 @@ def extract_signature(deidentifier: Deidentifier, dataset: Dataset) -> List[Delt
     after = deidentifier.deidentify(dataset=dataset)
 
     deltas = []
-    for element in before:
+    for element in before:  # go over all original elements to find changes
         tag = element.tag
         val_before = element.value
         if tag_after := after.get(tag):
@@ -262,6 +266,12 @@ def extract_signature(deidentifier: Deidentifier, dataset: Dataset) -> List[Delt
         else:
             val_after = None  # element was removed
         deltas.append(Delta(tag=tag, before=val_before, after=val_after))
+
+    # find tags that might have been inserted
+    inserted_tags = {x.tag for x in after} - {x.tag for x in before}
+    for tag in inserted_tags:
+        deltas.append(Delta(tag=tag, before=None, after=after[tag]))
+
     return deltas
 
 

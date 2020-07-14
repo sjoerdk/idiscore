@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-from typing import Callable, Dict, Iterable, List, Optional, Set, Union
+from typing import Dict, Iterable, List, Optional, Set, Union
 
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
-from pydicom.tag import BaseTag, Tag
+from pydicom.tag import BaseTag
 
-from idiscore.exceptions import IDISCoreException
+from idiscore.exceptions import IDISCoreException, PrivateProcessorException
 from idiscore.identifiers import SingleTag, TagIdentifier
 from idiscore.operations import ElementShouldBeRemoved, Operator, Remove
 from idiscore.imageprocessing import (
-    CriterionException,
     PixelDataProcessorException,
     PixelProcessor,
 )
@@ -104,7 +103,6 @@ class RuleSet:
 
         """
         # On single tags we can do efficient dictionary lookup
-
         if rule := self._single_tag_rules_dict.get(str(tag)):
             return rule
 
@@ -201,74 +199,6 @@ class Bouncer:
         pass
 
 
-class SafePrivateDefinition:
-    """Defines when one or more private DICOM elements can be considered 'safe'
-    Safe as in 'not containing personally identifiable information'
-    """
-
-    def __init__(self, tags: List[Tag], criterion: Callable[[Dataset], bool]):
-        """
-
-        Parameters
-        ----------
-        tags: List[Tag]
-            One ore more Tags of private DICOM elements
-        criterion: Callable[[Dataset], bool]
-            Function that returns True if these private Elements are safe to keep
-            in the given dataset. May return CriterionException if a True or
-            False answer cannot be given
-        """
-        self.tags = tags
-        self.criterion = criterion
-
-    def is_safe(self, dataset: Dataset) -> bool:
-        """These private tags are safe to keep in the given dataset
-
-        Raises
-        ------
-        CriterionException
-            If no True or False response can be given for this dataset
-        """
-        return self.criterion(dataset)
-
-
-class PrivateProcessor:
-    """Uses SafePrivateDefinitions to determine all private DICOM elements that
-    can be kept for any given dataset
-
-    """
-
-    def __init__(self, definitions: List[SafePrivateDefinition]):
-        self.definitions = definitions
-
-    def get_rule_set(self, dataset: Dataset) -> RuleSet:
-        """Given this dataset, which private elements can be kept?
-
-        Parameters
-        ----------
-        dataset: Dataset
-            The DICOM dataset to inspect
-
-        Returns
-        -------
-        RuleSet
-            Rules for all private DICOM elements that are safe for the
-            given dataset
-
-        Raises
-        ------
-        PrivateProcessorException
-            When rule set cannot be found properly
-        """
-        try:
-            return RuleSet(
-                name="safe private",
-                rules={x for x in self.definitions if x.is_safe(dataset)},
-            )
-        except CriterionException as e:
-            raise PrivateProcessorException(e)
-
-
 class Core(Deidentifier):
     """Can deidentify a DICOM dataset. Holds all configuration, filters and
     connections needed to do this
@@ -279,7 +209,7 @@ class Core(Deidentifier):
         profile: Profile,
         insertions: List[DataElement] = None,
         bouncers: List[Bouncer] = None,
-        safe_private: Optional[PrivateProcessor] = None,
+        safe_private: Optional["PrivateProcessor"] = None,
         pixel_processor: Optional[PixelProcessor] = None,
     ):
         """
@@ -356,6 +286,9 @@ class Core(Deidentifier):
 
         dataset.walk(process_element)
 
+        for element in self.insertions:
+            dataset.add(element)
+
         return dataset
 
     def get_safe_private_rules(self, dataset) -> Optional[RuleSet]:
@@ -390,10 +323,6 @@ class Core(Deidentifier):
 
 
 class BouncerException(IDISCoreException):
-    pass
-
-
-class PrivateProcessorException(IDISCoreException):
     pass
 
 

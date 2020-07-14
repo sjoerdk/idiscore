@@ -1,7 +1,9 @@
 import pytest
+from dicomgenerator.factory import CTDatasetFactory
 from pydicom.tag import Tag
 
 from idiscore.annotation import AnnotatedDataset, ContainsPII, MustNotChange
+from idiscore.insertions import PATIENT_IDENTITY_REMOVED
 from idiscore.validation import (
     Delta,
     DeltaStatusCodes,
@@ -10,9 +12,16 @@ from idiscore.validation import (
 )
 
 
-def test_validate(a_core_with_some_rules, a_dataset):
+@pytest.fixture
+def a_core(a_core_with_some_rules):
+    """A dummy core with some rules and a tag insertion"""
+    a_core_with_some_rules.insertions.append(PATIENT_IDENTITY_REMOVED)
+    return a_core_with_some_rules
 
-    core_instance = a_core_with_some_rules
+
+def test_validate(a_core, a_dataset):
+
+    core_instance = a_core
     # create an example dataset with annotation that PatientName is bad
     example = AnnotatedDataset(
         description="example1",
@@ -54,16 +63,23 @@ def test_validate(a_core_with_some_rules, a_dataset):
     assert "2/3 failed" in summary
 
 
-def test_signature(a_core_with_some_rules, a_dataset):
+def test_signature(a_core, a_dataset):
 
-    deltas = extract_signature(a_core_with_some_rules, a_dataset)
+    deltas = extract_signature(a_core, a_dataset)
     assert [x.status for x in deltas] == [
         DeltaStatusCodes.UNCHANGED,
         DeltaStatusCodes.CHANGED,
         DeltaStatusCodes.UNCHANGED,
         DeltaStatusCodes.REMOVED,
         DeltaStatusCodes.REMOVED,
+        DeltaStatusCodes.CREATED,
     ]
+
+
+def test_signature_realistic_dataset(a_core):
+    """Check with a realistic dataset. Nothing should crash"""
+    deltas = extract_signature(a_core, CTDatasetFactory())
+    len([x for x in deltas if x.has_changed()]) == 19
 
 
 @pytest.mark.parametrize(
