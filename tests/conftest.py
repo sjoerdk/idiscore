@@ -5,7 +5,8 @@ import pytest
 from dicomgenerator.factory import DataElementFactory
 from pydicom.dataset import Dataset
 
-from idiscore.core import Core, Profile, Rule, RuleSet
+from idiscore.core import Core, Profile
+from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.operations import Hash, Remove
 

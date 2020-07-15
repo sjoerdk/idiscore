@@ -8,7 +8,7 @@ such as default implementations for the action codes should be put in 'profiles.
 from collections import namedtuple
 from typing import Dict, List, Tuple
 
-from idiscore.core import Rule, RuleSet
+from idiscore.rules import Rule, RuleSet
 from idiscore.exceptions import IDISCoreException
 from idiscore.identifiers import TagIdentifier
 from idiscore.operations import Operator

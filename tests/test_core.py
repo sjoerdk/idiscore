@@ -4,14 +4,12 @@
 """Tests for `idiscore` package."""
 
 import pytest
+from dicomgenerator.factory import DataElementFactory as DatEF
 
 from pydicom.tag import Tag
 
-from idiscore.core import (
-    Profile,
-    Rule,
-    RuleSet,
-)
+from idiscore.core import Profile
+from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.operations import Hash, Keep, Remove
 
@@ -80,10 +78,12 @@ def test_rule_set():
     rule3 = Rule(PrivateTags(), Remove())
     rules = RuleSet(rules=[rule1, rule2, rule3])
 
-    assert rules.get_rule(Tag("PatientName")) == rule1
-    assert rules.get_rule(Tag("Modality")) is None  # This rule is not defined
-    assert rules.get_rule(Tag((0x5000, 0x0001))) == rule2  # try a repeating rule
-    assert rules.get_rule(Tag((0x1301, 0x0001))) == rule3  # try a private tag rule
+    assert rules.get_rule(DatEF(tag="PatientName")) == rule1
+    assert rules.get_rule(DatEF(tag="Modality")) is None  # This rule is not defined
+    assert rules.get_rule(DatEF(tag=(0x5000, 0x0001))) == rule2  # try a repeating rule
+    assert (
+        rules.get_rule(DatEF(tag=(0x1301, 0x0001))) == rule3
+    )  # try a private tag rule
 
 
 def test_rule_precedence():
@@ -98,20 +98,20 @@ def test_rule_precedence():
     rules = RuleSet(rules=[rule_a, rule_b, rule_c, rule_d, rule_e])
 
     # now in all these cases, the most specific rule should be returned:
-    assert rules.get_rule(Tag(0x1301, 0x0000)) == rule_b  # also matches a
-    assert rules.get_rule(Tag(0x5002, 0x0002)) == rule_d  # also matches c
-    assert rules.get_rule(Tag(0x5002, 0x0001)) == rule_c
-    assert rules.get_rule(Tag(0x5001, 0x0001)) == rule_c  # also matches a
-    assert rules.get_rule(Tag(0x0010, 0x0010)) == rule_e
-    assert rules.get_rule(Tag("Modality")) is None
+    assert rules.get_rule(DatEF(tag=(0x1301, 0x0000))) == rule_b  # also matches a
+    assert rules.get_rule(DatEF(tag=(0x5002, 0x0002))) == rule_d  # also matches c
+    assert rules.get_rule(DatEF(tag=(0x5002, 0x0001))) == rule_c
+    assert rules.get_rule(DatEF(tag=(0x5001, 0x0001))) == rule_c  # also matches a
+    assert rules.get_rule(DatEF(tag=(0x0010, 0x0010))) == rule_e
+    assert rules.get_rule(DatEF(tag="Modality")) is None
 
     # For rules with identical generality, just keep the order of input
     rule_1 = Rule(RepeatingGroup("50xx,xxxx"), Hash())
     rule_2 = Rule(RepeatingGroup("xx10,xxxx"), Hash())
     rules = RuleSet(rules=[rule_1, rule_2])
 
-    assert rules.get_rule(Tag(0x5010, 0x0000)) == rule_1  # also matches a
-    assert rules.get_rule(Tag(0x5110, 0x0000)) == rule_2  # also matches a
+    assert rules.get_rule(DatEF(tag=(0x5010, 0x0000))) == rule_1  # also matches a
+    assert rules.get_rule(DatEF(tag=(0x5110, 0x0000))) == rule_2  # also matches a
 
 
 def test_rule_set_human_readable(some_rules):

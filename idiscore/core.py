@@ -1,125 +1,18 @@
 # -*- coding: utf-8 -*-
-from typing import Dict, Iterable, List, Optional, Set, Union
+from typing import List, Optional
 
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
-from pydicom.tag import BaseTag
 
 from idiscore.exceptions import IDISCoreException, PrivateProcessorException
-from idiscore.identifiers import SingleTag, TagIdentifier
-from idiscore.operations import ElementShouldBeRemoved, Operator, Remove
+from idiscore.operations import ElementShouldBeRemoved, Remove
 from idiscore.imageprocessing import (
     PixelDataProcessorException,
     PixelProcessor,
 )
+from idiscore.privateprocessing import PrivateProcessor
+from idiscore.rules import RuleSet
 from idiscore.validation import Deidentifier
-
-
-class Rule:
-    """Defines what to do with a single DICOM element or single group of elements"""
-
-    def __init__(self, identifier: Union[TagIdentifier, BaseTag], operation: Operator):
-        # allow pydicom Tag object for less clutter in Rule init
-        if isinstance(identifier, BaseTag):
-            identifier = SingleTag(identifier)
-        self.identifier = identifier
-        self.operation = operation
-
-    def __str__(self):
-        return f"{self.identifier} - {self.operation}"
-
-    def as_human_readable(self) -> str:
-        return f"{self.identifier.name()} - {self.identifier} - {self.operation}"
-
-    def number_of_matchable_tags(self) -> int:
-        """The number of distinct DICOM tags that this rule could match"""
-        return self.identifier.number_of_matchable_tags()
-
-    def matches(self, tag: BaseTag) -> bool:
-        """True if this rule matches the given DICOM tag"""
-        return self.identifier.matches(tag)
-
-
-class RuleSet:
-    """Defines what to do to one or more DICOM tags
-
-    Models part of a deidentification procedure, such as the Basic Application
-    Level Confidentiality Options in DICOM (e.g. Retain Safe Private Option)
-    """
-
-    def __init__(self, rules: Iterable[Rule], name: str = "RuleSet"):
-        """
-
-        Parameters
-        ----------
-        rules: Iterable[Rule]
-            The rules comprising this set
-        name: str, optional
-            Human readable name. Defaults to 'RuleSet'
-        """
-
-        # keep wildcard rule separately for more efficient matching
-        self._single_tag_rules_dict = {
-            str(x.identifier): x for x in rules if self.is_single_tag_rule(x)
-        }
-
-        self._group_rules = [x for x in rules if not self.is_single_tag_rule(x)]
-        # Try to match most specific group rules first
-        self._group_rules.sort(key=lambda x: x.number_of_matchable_tags())
-
-        self.name = name
-
-    @property
-    def rules(self) -> Set[Rule]:
-        """All rules in this list"""
-        return set(self._single_tag_rules_dict.values()) | set(self._group_rules)
-
-    def as_dict(self) -> Dict[TagIdentifier, Rule]:
-        return {x.identifier: x for x in self.rules}
-
-    @staticmethod
-    def is_single_tag_rule(rule: Rule) -> bool:
-        """Targets only a single DICOM tag"""
-        return isinstance(rule.identifier, SingleTag)
-
-    def get_rule(self, tag: BaseTag) -> Optional[Rule]:
-        """Return the most specific rule for the given DICOM tag, or None if not found
-
-        Returns
-        -------
-        Rule
-            Most specific rule for the given DICOM tag
-        None
-            If no rule matches the given DICOM tag
-
-        Notes
-        -----
-        It is possible for multiple rules to match. Lookup is always done from
-        specific to general.
-        For example, when getting a rule for tag (0010,0010):
-        * A rule for (0010,0010) is preferred over (0010,00xx)
-        * A rule for (0010,00xx) is preferred over (0010,xx10)
-        * A rule for (0010,xx10) is preferred over (xxxx,0010)
-
-        """
-        # On single tags we can do efficient dictionary lookup
-        if rule := self._single_tag_rules_dict.get(str(tag)):
-            return rule
-
-        #  found no specific rule for this tag. Try wildcard tags
-        for group_rule in self._group_rules:
-            if group_rule.matches(tag):
-                return group_rule
-
-        # nothing matches. There is no rule
-        return None
-
-    def as_human_readable_list(self) -> str:
-        """All rules in this set sorted by tag name"""
-        return "\n".join(sorted([x.as_human_readable() for x in self.rules]))
-
-    def __str__(self):
-        return f'RuleSet "{self.name}"'
 
 
 class Profile:
@@ -130,8 +23,8 @@ class Profile:
     Rules:
     * DICOM tags that are not mentioned explicitly in the profile are kept
     * A Profile holds a list of RuleSets. Later Rules overrule earlier
-    * A profile's RuleSets can be 'collapsed' to have one operation for each
-      tag
+    * A profile's RuleSets can be 'collapsed' to have exactly one operation for
+      each tag
 
     """
 
@@ -209,7 +102,7 @@ class Core(Deidentifier):
         profile: Profile,
         insertions: List[DataElement] = None,
         bouncers: List[Bouncer] = None,
-        safe_private: Optional["PrivateProcessor"] = None,
+        safe_private: Optional[PrivateProcessor] = None,
         pixel_processor: Optional[PixelProcessor] = None,
     ):
         """
@@ -268,7 +161,7 @@ class Core(Deidentifier):
             """Process element according to the rules in the outer scope"""
 
             # Find the rule to apply for this DICOM element
-            rule = rules.get_rule(data_element_in.tag)
+            rule = rules.get_rule(data_element_in)
 
             if not rule:
                 #  Keep elements for which there is no rule

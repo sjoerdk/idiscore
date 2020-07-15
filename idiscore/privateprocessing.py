@@ -2,15 +2,14 @@
 
 Is a private tag is safe to keep? This can not be answered with regular rules of
 the form tag -> operation. Sometimes you need to inspect the entire dataset, for
-example to check modality and vendor.
+example to check modality or vendor.
 """
 
 from typing import Callable, Iterable, List, Optional, Set
 
 from pydicom.dataset import Dataset
-from pydicom.tag import Tag
 
-from idiscore.core import RuleSet
+from idiscore.rules import RuleSet
 from idiscore.exceptions import PrivateProcessorException
 from idiscore.identifiers import TagIdentifier
 from idiscore.imageprocessing import CriterionException
@@ -25,6 +24,7 @@ class SafePrivateDefinition:
         self,
         tags: Iterable[TagIdentifier],
         criterion: Optional[Callable[[Dataset], bool]] = None,
+        comment: str = "",
     ):
         """
 
@@ -33,13 +33,17 @@ class SafePrivateDefinition:
         tags: Iterable[TagIdentifier]
             One ore more Tags of private DICOM elements
         criterion: Callable[[Dataset], bool], optional
-            Function that returns True if these private Elements are safe to keep
-            in the given dataset. May return CriterionException if a True or
-            False answer cannot be given. Defaults to None, in which case the tags
-            are always considered safe
+            Function that is fed a Dataset instance. Returns True if the private
+            elements are safe to keep in this instance. May raise CriterionException
+            if a True or False answer cannot be given. Defaults to None, in which
+            case the elements are always considered safe
+        comment: str
+            human readable explanation of why these tags are safe, or the domain in
+            which they are safe (only in this hospital, only for these machines etc.)
         """
         self.tags = tags
         self.criterion = criterion
+        self.comment = comment
 
     def get_safe_private_tags(self, dataset: Dataset) -> Set[TagIdentifier]:
         """The private tags that are safe to keep, given this dataset
@@ -49,10 +53,20 @@ class SafePrivateDefinition:
         CriterionException
             If no True or False response can be given for this dataset
         """
-        if self.criterion and self.criterion(dataset):
+        if self.tags_are_safe(dataset):
             return {x for x in self.tags}
         else:
             return set()
+
+    def tags_are_safe(self, dataset: Dataset) -> bool:
+        """True if these private tags are safe to keep in this dataset"""
+        if self.criterion:
+            try:
+                return self.criterion(dataset)
+            except AttributeError as e:
+                raise CriterionException(f'Error while checking criterion: "{e}"')
+        else:
+            return True  # no criterion. Assume tags are always safe
 
 
 class PrivateProcessor:
@@ -86,7 +100,7 @@ class PrivateProcessor:
         try:
             return RuleSet(
                 name="safe private",
-                rules={x for x in self.definitions if x.is_safe(dataset)},
+                rules={x.get_safe_private_tags(dataset) for x in self.definitions},
             )
         except CriterionException as e:
             raise PrivateProcessorException(e)

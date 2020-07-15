@@ -1,10 +1,11 @@
 """Ways to designate a DICOM tag or a group of dicom tags"""
-
+import re
 from functools import total_ordering
 from typing import Tuple, Union
 
 from pydicom._dicom_dict import RepeatersDictionary
 from pydicom.datadict import dictionary_keyword, mask_match
+from pydicom.dataelem import DataElement
 from pydicom.tag import BaseTag, Tag
 
 
@@ -24,8 +25,8 @@ class TagIdentifier:
     * a private tag with a variable group ([PrivateCreatorName]01,0010)
     """
 
-    def matches(self, element: Tag) -> bool:
-        """The given tag matches this identifier"""
+    def matches(self, element: DataElement) -> bool:
+        """The given element matches this identifier"""
         return False
 
     def key(self) -> str:
@@ -86,9 +87,9 @@ class SingleTag(TagIdentifier):
         """Human readable name for this tag"""
         return dictionary_keyword(self.tag)
 
-    def matches(self, tag: BaseTag) -> bool:
+    def matches(self, element: DataElement) -> bool:
         """The given element matches this identifier"""
-        return tag == self.tag
+        return element.tag == self.tag
 
     def key(self) -> str:
         """Return a valid Tag() string argument"""
@@ -197,15 +198,14 @@ class RepeatingGroup(TagIdentifier):
     def __str__(self):
         return str(self.tag)
 
-    def matches(self, tag: BaseTag) -> bool:
+    def matches(self, element: DataElement) -> bool:
         """True if the tag values match this repeater in all places without an 'x'"""
         # Following pydicom in using byte operations for this
-        return tag & self.tag.as_mask() == self.tag.static_component()
+        return element.tag & self.tag.as_mask() == self.tag.static_component()
 
     def key(self) -> str:
         """For sane sorting, make sure this matches the key format of other
         identifiers
-
         """
         return clean_tag_string(str(self.tag))
 
@@ -227,8 +227,8 @@ class PrivateTags(TagIdentifier):
     def __str__(self):
         return self.key()
 
-    def matches(self, tag: BaseTag) -> bool:
-        return tag.is_private
+    def matches(self, element: DataElement) -> bool:
+        return element.tag.is_private
 
     def key(self) -> str:
         return "PrivateAttributes"
@@ -257,40 +257,128 @@ class PrivateBlockTagIdentifier(TagIdentifier):
     section 7.8.1 ('Private Data Elements')
     """
 
-    def __init__(self, tag: str):
+    BLOCK_TAG_REGEX = re.compile(
+        r"(?P<group>[0-9A-F]{4}),?\s?\["
+        r"(?P<private_creator>.*)\](?P<element>[0-9,A-F]*)",
+        re.IGNORECASE,
+    )
 
-        self.tag = self.parse_input_string(tag)
+    def __init__(self, tag: str):
+        """
+
+        Parameters
+        ----------
+        tag: str
+            In the format 'xxxx,[private_creator]yy' where xxxx and yy are
+            interpreted as hexadecimals
+
+        """
+        self.group, self.private_creator, self.element = self.parse_tag(tag)
+
+    @classmethod
+    def init_explicit(cls, group: int, private_creator: str, element: int):
+        """Create with explicit parameters. This cannot be the main init because
+        TagIdentifier classes need to be instantiable from a single string and
+        uphold cls(cls.tag)=cls
+
+        Parameters
+        ----------
+        group: int
+            DICOM group, between 0x0000 and 0xFFFF
+        private_creator: str
+            Name of the private creator for this tag
+        element: int
+            The two final bytes of the element. Between 0x00 and 0xFF
+        """
+        return cls(
+            cls.to_tag(group=group, private_creator=private_creator, element=element)
+        )
+
+    @staticmethod
+    def to_tag(group: int, private_creator: str, element: int) -> str:
+        """Tag string like '1301,[creator]01' from individual elements
+
+        Parameters
+        ----------
+        group: int
+            DICOM group, between 0x0000 and 0xFFFF
+        private_creator: str
+            Name of the private creator for this tag
+        element: int
+            The two final bytes of the element. Between 0x00 and 0xFF
+        """
+        return f"{group:04x},[{private_creator}]{element:02x}"
+
+    @property
+    def tag(self) -> str:
+        return self.to_tag(
+            group=self.group, private_creator=self.private_creator, element=self.element
+        )
+
+    @classmethod
+    def parse_tag(cls, tag: str) -> Tuple[int, str, int]:
+        """Parses 'xxxx,[creator]yy' into xxxx, creator and yy components.
+        xxxx and yy are interpreted as hexadecimals
+
+        Parameters
+        ----------
+        tag: str
+            Format: 'xxxx,[creator]yy' where xxxx and yy are hexadecimals. Case
+            insensitive.
+
+        Returns
+        -------
+        Tuple[int, str, int]:
+            xxxx: int, creator:str and yy:int from tag string 'xxxx,[creator]yy'
+            where xxxx and yy are read as hexadecimals from string
+
+        Raises
+        ------
+        ValueError:
+            When input cannot be parsed
+        """
+
+        match = cls.BLOCK_TAG_REGEX.match(tag)
+        if not match:
+            raise ValueError(f'Could not parse "{tag}" as "xxxx,[creator]yy"')
+        return (
+            int(match.group("group"), 16),
+            match.group("private_creator"),
+            int(match.group("element"), 16),
+        )
 
     def __str__(self):
         return str(self.tag)
 
-    @staticmethod
-    def parse_input_string(
-        private_block_tag_string,
-    ) -> Tuple[
-        str,
-    ]:
-        return None
-
-    def matches(self, tag: BaseTag) -> bool:
-        """True if the tag values match this repeater in all places without an 'x'"""
-        # Following pydicom in using byte operations for this
-        return tag & self.tag.as_mask() == self.tag.static_component()
+    def matches(self, element: DataElement) -> bool:
+        """True if private element has been created by private creator and the rest
+        of the group and element match up
+        """
+        if element.tag.group != self.group:
+            return False
+        elif element.tag.element & 0x00FF != self.element:  # last 2 bytes match
+            return False
+        elif element.private_creator != self.private_creator:
+            return False
+        else:
+            return True
 
     def key(self) -> str:
         """For sane sorting, make sure this matches the key format of other
         identifiers
 
         """
-        return clean_tag_string(str(self.tag))
+        return self.tag
 
     def name(self) -> str:
         """Human readable name for this tag"""
-        return self.tag.name()
+        return self.tag
 
     def number_of_matchable_tags(self) -> int:
-        return 16 ** self.tag.number_of_wildcard_positions()
+        """How many tags could this identifier match?"""
+
+        return 265  # Private creator part value can be 00-FF. So 16 * 16.
 
     def as_python(self) -> str:
         """For special export. Python code that recreates this instance"""
-        return f"RepeatingGroup('{self.key()}')"
+        return f"PrivateBlockTagIdentifier('{self.key()}')"

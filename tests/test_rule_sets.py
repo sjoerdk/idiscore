@@ -1,7 +1,6 @@
 from copy import deepcopy
 
-from dicomgenerator.factory import CTDatasetFactory
-from pydicom.tag import Tag
+from dicomgenerator.factory import CTDatasetFactory, DataElementFactory
 
 from idiscore.core import Core, Profile
 from idiscore.nema import ActionCodes
@@ -14,8 +13,10 @@ def test_compile_rule_list():
     profiles = DICOMRuleSets()
 
     basic = profiles.basic_profile
-    assert basic.get_rule(Tag("PatientName")).operation.name == "Empty"
-    assert basic.get_rule(Tag("PatientID")).operation.name == "Empty"
+    assert (
+        basic.get_rule(DataElementFactory(tag="PatientName")).operation.name == "Empty"
+    )
+    assert basic.get_rule(DataElementFactory(tag="PatientID")).operation.name == "Empty"
 
 
 def test_compile_rule_list_overrule_action_code():
@@ -26,7 +27,10 @@ def test_compile_rule_list_overrule_action_code():
 
     profiles = DICOMRuleSets(action_mapping={ActionCodes.CLEAN: CustomClean()})
     rules = profiles.clean_descriptors
-    assert rules.get_rule(Tag(0x0018, 0x4000)).operation.name == "Custom"
+    assert (
+        rules.get_rule(DataElementFactory(tag=(0x0018, 0x4000))).operation.name
+        == "Custom"
+    )
 
 
 def test_realistic_profile():

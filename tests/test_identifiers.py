@@ -1,5 +1,6 @@
 import pytest
 from dicomgenerator.factory import CTDatasetFactory
+from dicomgenerator.factory import DataElementFactory as DatEF
 
 from idiscore.identifiers import (
     PrivateBlockTagIdentifier,
@@ -34,17 +35,17 @@ def test_identifier_comparison():
 
 def test_identifier_matching():
 
-    assert RepeatingGroup("50xx,xxxx").matches(Tag("50100040"))
-    assert RepeatingGroup("50xx,xxxx").matches(Tag((0x5010, 0x0040)))
-    assert RepeatingGroup("50xx,xxxx").matches(Tag("50ef3340"))
-    assert not RepeatingGroup("50xx,xxxx").matches(Tag("51ef3340"))
+    assert RepeatingGroup("50xx,xxxx").matches(DatEF(tag="50100040"))
+    assert RepeatingGroup("50xx,xxxx").matches(DatEF(tag=(0x5010, 0x0040)))
+    assert RepeatingGroup("50xx,xxxx").matches(DatEF(tag="50ef3340"))
+    assert not RepeatingGroup("50xx,xxxx").matches(DatEF(tag="51ef3340"))
 
-    assert RepeatingGroup("0010,10xx").matches(Tag("00101000"))
-    assert RepeatingGroup("0010,10xx").matches(Tag("001010ef"))
-    assert not RepeatingGroup("0010,10xx").matches(Tag("001011ef"))
+    assert RepeatingGroup("0010,10xx").matches(DatEF(tag="00101000"))
+    assert RepeatingGroup("0010,10xx").matches(DatEF(tag="001010ef"))
+    assert not RepeatingGroup("0010,10xx").matches(DatEF(tag="001011ef"))
 
-    assert PrivateTags().matches(Tag("11ef0010"))
-    assert not PrivateTags().matches(Tag("12ee201f"))
+    assert PrivateTags().matches(DatEF(tag="11ef0010"))
+    assert not PrivateTags().matches(DatEF(tag="12ee201f"))
 
 
 @pytest.mark.parametrize(
@@ -115,7 +116,68 @@ def test_identifier_keys(tag_identifier_instance: TagIdentifier):
     assert instance == type(instance)(instance.key())
 
 
+def test_private_block_identifier_tag_parse():
+    assert PrivateBlockTagIdentifier("0075,[MyCompany]01").element == 0x01
+    assert PrivateBlockTagIdentifier("0075,[MyCompany]01").group == 0x0075
+    assert (
+        PrivateBlockTagIdentifier("0075,[MyCompany]01").private_creator == "MyCompany"
+    )
+
+    assert (
+        PrivateBlockTagIdentifier("0075,[Pushing it $%23987$#*???]01").private_creator
+        == "Pushing it $%23987$#*???"
+    )
+
+
+@pytest.mark.parametrize(
+    "tag",
+    (
+        "0075,[MyCompany]01",
+        "13ef,[MyCompany]f1",  # hex capitalization insensitive
+        "13EF,[MyCompany]F1",
+        "13EF, [MyCompany]F1",  # no hairsplitting over spaces
+        "13EF[MyCompany]F1",  # this clear enough
+        "0075,[With spaces and * things]01",
+        "0075,[Pushing it $%23987$#*???]01",
+    ),
+)
+def test_private_block_identifier_tag_parse_should_work(tag):
+    """All of these should be parsed without problems
+
+    Notes
+    -----
+    Private create identifiers should have DICOM VR LongString (according to
+    part 5, section 7.8.1). This means they can contain almost any character
+    """
+    PrivateBlockTagIdentifier(tag)
+
+
+@pytest.mark.parametrize(
+    "tag",
+    (
+        "0075,,[MyCompany]01",
+        "0075,MyCompany]01",
+        "13EF,   [MyCompany]F1",  # one space ok. But this?
+        "whatever",
+        "13,[thing]01",  # don't clip group
+    ),
+)
+def test_private_block_identifier_tag_parse_exceptions(tag):
+    """All of these tags should not be accepted"""
+    with pytest.raises(ValueError):
+        PrivateBlockTagIdentifier(tag)
+
+
 def test_private_block_identifier():
     dataset = CTDatasetFactory()
-    tag_to_match = dataset[(0x0075, 0x1000)]
-    tag = PrivateBlockTagIdentifier("0075,[MyCompany]01")
+    element = dataset[(0x0075, 0x1000)]
+    assert PrivateBlockTagIdentifier("0075,[RADBOUDUMCANONYMIZER]00").matches(element)
+    assert not PrivateBlockTagIdentifier("0075,[radboudumcanonymizer]00").matches(
+        element
+    )
+    assert not PrivateBlockTagIdentifier("0073,[RADBOUDUMCANONYMIZER]00").matches(
+        element
+    )
+    assert not PrivateBlockTagIdentifier("0075,[RADBOUDUMCANONYMIZER]01").matches(
+        element
+    )
