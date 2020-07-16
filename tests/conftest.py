@@ -6,8 +6,14 @@ from dicomgenerator.factory import DataElementFactory
 from pydicom.dataset import Dataset
 
 from idiscore.core import Core, Profile
+from idiscore.privateprocessing import PrivateProcessor, SafePrivateDefinition
 from idiscore.rules import Rule, RuleSet
-from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
+from idiscore.identifiers import (
+    PrivateBlockTagIdentifier,
+    PrivateTags,
+    RepeatingGroup,
+    SingleTag,
+)
 from idiscore.operations import Hash, Remove
 
 
@@ -37,4 +43,29 @@ def a_dataset() -> Dataset:
     dataset.add(DataElementFactory(tag="PatientName", value="Martha"))
     dataset.add(DataElementFactory(tag=(0x5010, 0x3000), value=b"Sensitive data"))
     dataset.add(DataElementFactory(tag=(0x1013, 0x0001), value=b"private tag"))
+    block = dataset.private_block(0x000B, "TestCreator", create=True)
+    block.add_new(0x01, "SH", "my testvalue")
     return dataset
+
+
+@pytest.fixture
+def some_private_identifiers() -> List[PrivateBlockTagIdentifier]:
+    return [
+        PrivateBlockTagIdentifier("0023[SIEMENS MED SP DXMG WH AWS 1]10"),
+        PrivateBlockTagIdentifier("0023[SIEMENS MED SP DXMG WH AWS 1]11"),
+        PrivateBlockTagIdentifier("0011[TestCreator]01"),
+        PrivateBlockTagIdentifier("0011[TestCreator]02"),
+    ]
+
+
+@pytest.fixture
+def a_ct_safe_private_definition(some_private_identifiers):
+    """Some safe private rules that only apply to Modality=CT datasets"""
+    return SafePrivateDefinition(
+        tags=some_private_identifiers, criterion=lambda x: x.Modality == "CT",
+    )
+
+
+@pytest.fixture
+def a_private_processor(a_ct_safe_private_definition):
+    return PrivateProcessor(definitions=[a_ct_safe_private_definition])

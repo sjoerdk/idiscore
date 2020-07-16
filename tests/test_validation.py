@@ -68,6 +68,8 @@ def test_signature(a_core, a_dataset):
     deltas = extract_signature(a_core, a_dataset)
     assert [x.status for x in deltas] == [
         DeltaStatusCodes.UNCHANGED,
+        DeltaStatusCodes.REMOVED,
+        DeltaStatusCodes.REMOVED,
         DeltaStatusCodes.CHANGED,
         DeltaStatusCodes.UNCHANGED,
         DeltaStatusCodes.REMOVED,
@@ -79,7 +81,7 @@ def test_signature(a_core, a_dataset):
 def test_signature_realistic_dataset(a_core):
     """Check with a realistic dataset. Nothing should crash"""
     deltas = extract_signature(a_core, CTDatasetFactory())
-    len([x for x in deltas if x.has_changed()]) == 19
+    assert len([x for x in deltas if x.has_changed()]) == 19
 
 
 @pytest.mark.parametrize(

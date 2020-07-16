@@ -184,16 +184,16 @@ class Core(Deidentifier):
 
         return dataset
 
-    def get_safe_private_rules(self, dataset) -> Optional[RuleSet]:
+    def get_safe_private_rules(self, dataset) -> List[RuleSet]:
         """Find any specific exceptions to the default 'remove all private tags'"""
 
         if self.safe_private:
             try:
-                return self.safe_private.get_rule_set(dataset)
+                return [self.safe_private.get_rule_set(dataset)]
             except PrivateProcessorException as e:
                 raise DeidentificationException(e)
         else:
-            return None
+            return []
 
     def apply_pixel_processor(self, dataset):
         """Put blackouts in image data if required"""

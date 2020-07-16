@@ -9,7 +9,8 @@ from typing import Callable, Iterable, List, Optional, Set
 
 from pydicom.dataset import Dataset
 
-from idiscore.rules import RuleSet
+from idiscore.operations import Keep
+from idiscore.rules import Rule, RuleSet
 from idiscore.exceptions import PrivateProcessorException
 from idiscore.identifiers import TagIdentifier
 from idiscore.imageprocessing import CriterionException
@@ -97,10 +98,17 @@ class PrivateProcessor:
         PrivateProcessorException
             When rule set cannot be found properly
         """
-        try:
-            return RuleSet(
-                name="safe private",
-                rules={x.get_safe_private_tags(dataset) for x in self.definitions},
-            )
-        except CriterionException as e:
-            raise PrivateProcessorException(e)
+
+        # collect safe private tags from each definition
+        identifiers = []
+        for definition in self.definitions:
+            try:
+                identifiers += definition.get_safe_private_tags(dataset)
+            except CriterionException as e:
+                raise PrivateProcessorException(e)
+
+        keep = Keep()  # all save private tags should be kept
+        return RuleSet(
+            name="safe private",
+            rules=[Rule(identifier=x, operation=keep) for x in identifiers],
+        )

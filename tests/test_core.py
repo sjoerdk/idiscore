@@ -8,10 +8,11 @@ from dicomgenerator.factory import DataElementFactory as DatEF
 
 from pydicom.tag import Tag
 
-from idiscore.core import Profile
+from idiscore.core import Core, Profile
 from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.operations import Hash, Keep, Remove
+from idiscore.validation import extract_signature
 
 
 def test_idiscore_deidentify_basic(a_dataset, a_core_with_some_rules):
@@ -22,7 +23,7 @@ def test_idiscore_deidentify_basic(a_dataset, a_core_with_some_rules):
     assert Tag(0x1013, 0x0001) in a_dataset
     assert a_dataset.PatientID == "12345"
     assert a_dataset.PatientName == "Martha"
-    assert len(a_dataset.items()) == 5
+    assert len(a_dataset.items()) == 7
 
     # now apply the rules to the dataset
     core = a_core_with_some_rules
@@ -119,3 +120,22 @@ def test_rule_set_human_readable(some_rules):
     as_string = RuleSet(some_rules).as_human_readable_list()
     assert "PatientName - (0010, 0010)" in as_string
     assert "Unknown Repeater tag" in as_string
+
+
+def test_core_deidentify_safe_private(a_dataset, a_private_processor):
+    """In core, rules for each safe private tag are added before processing all
+    rules in the profile.
+    This should only be done if the profile contains a rule PrivateTags() -> Clean()
+    """
+
+    rules = [
+        Rule(SingleTag("PatientID"), Hash()),
+        Rule(PrivateTags(), Remove()),
+    ]  # Remove all private tags
+
+    core = Core(profile=Profile([RuleSet(rules)]), safe_private=a_private_processor)
+
+    # now apply the rules to the dataset an check changes
+    deltas = extract_signature(deidentifier=core, dataset=a_dataset)
+
+    assert {x.tag: x for x in deltas}[Tag("000b0010")].status == "REMOVED"
