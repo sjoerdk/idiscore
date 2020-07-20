@@ -8,6 +8,7 @@ from dicomgenerator.factory import (
 )
 
 from idiscore.core import Core, Profile
+from idiscore.defaults import RejectKOGSPS
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.nema import ActionCodes
 from idiscore.operations import Clean, Hash, Remove
@@ -101,3 +102,25 @@ def test_rule_set_remove():
 
     with pytest.raises(KeyError):
         rules.remove(rule1)
+
+
+def test_core_description():
+    """Human readable answer to the question 'what does this deidentifier do?'"""
+
+    sets = DICOMRuleSets()
+    profile = Profile(
+        rule_sets=[
+            sets.basic_profile,
+            sets.clean_descriptors,
+            sets.clean_graphics,
+            sets.retain_modified_dates,
+            sets.retain_safe_private,
+        ]
+    )
+
+    final_set = profile.flatten()
+    assert len(final_set.rules) == 442
+
+    core = Core(profile=profile, bouncers=[RejectKOGSPS])
+    test = core.description()
+    print(test)

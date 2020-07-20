@@ -77,6 +77,14 @@ def test_repeating_tag_format_exceptions(tag_string):
         RepeatingTag(tag_string)
 
 
+def test_single_tag_name():
+    """Single tag identifiers have a name, provided pydicom knows this tag"""
+    # known tag
+    assert SingleTag("00100010").name() == "PatientName"
+    # unknown tag should just give back 'Unknown Tag'
+    assert SingleTag("10b10010").name() == "Unknown Tag"
+
+
 def test_repeating_tag_masks():
     """Just checking the byte fiddling that RepeatingTag does"""
     # mask should have 0 where there was x

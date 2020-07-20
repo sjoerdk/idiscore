@@ -85,7 +85,10 @@ class SingleTag(TagIdentifier):
 
     def name(self) -> str:
         """Human readable name for this tag"""
-        return dictionary_keyword(self.tag)
+        try:
+            return dictionary_keyword(self.tag)
+        except KeyError:
+            return "Unknown Tag"
 
     def matches(self, element: DataElement) -> bool:
         """The given element matches this identifier"""

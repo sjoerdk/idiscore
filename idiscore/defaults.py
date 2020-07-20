@@ -16,6 +16,9 @@ from idiscore.core import Bouncer, BouncerException
 
 
 class RejectKOGSPS(Bouncer):
+
+    description = "Reject PresentationStorage and KeyObjectSelectionDocument"
+
     def inspect(self, dataset: Dataset):
         """Rejects three types of DICOM objects:
         1.2.840.10008.5.1.4.1.1.11.1 - GrayscaleSoftcopyPresentationStateStorage

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from typing import List, Optional
 
+from jinja2 import Template
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 
+from idiscore import __version__
 from idiscore.exceptions import IDISCoreException
 from idiscore.operations import ElementShouldBeRemoved, Remove
 from idiscore.imageprocessing import (
@@ -11,6 +13,7 @@ from idiscore.imageprocessing import (
     PixelProcessor,
 )
 from idiscore.rules import RuleSet
+from idiscore.templates import idiscore_description, profile_description
 from idiscore.validation import Deidentifier
 
 
@@ -66,9 +69,23 @@ class Profile:
 
         return RuleSet(name="flattened", rules=set(output.values()))
 
+    def description(self) -> str:
+        """A multi-line, human readable description of this profile"""
+        rules = self.flatten().rules
+        return Template(profile_description).render(
+            profile_name=self.name,
+            rule_set_names=[f"* {x.name}" for x in self.rule_sets],
+            rule_strings_by_name=sorted([x.as_human_readable() for x in rules]),
+            rule_strings_by_tag=sorted(
+                f"{x.identifier} ({x.identifier.name()}) - {x.operation}" for x in rules
+            ),
+        )
+
 
 class Bouncer:
     """Inspects a dataset and either rejects it or lets it through"""
+
+    description = "Bouncer"  # single line description used in human-readable output
 
     def inspect(self, dataset: Dataset):
         """Check given dataset, raise exception if it should be rejected
@@ -185,6 +202,19 @@ class Core(Deidentifier):
             except PixelDataProcessorException as e:
                 raise DeidentificationException(e)
         return dataset
+
+    def description(self) -> str:
+        """A multi-line, human readable description of this instance
+
+        what happens to each tag, which data will be rejected, etc.
+        """
+
+        return Template(idiscore_description).render(
+            idiscore_lib_version=__version__,
+            bouncer_descriptions=[x.description for x in self.bouncers],
+            profile_description=self.profile.description()
+            # if applicable, safe private
+        )
 
     def apply_bouncers(self, dataset):
         """Check all bouncers to see whether dataset should be rejected"""
