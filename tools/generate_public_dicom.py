@@ -255,7 +255,8 @@ profile_template_text = """
         name="{{ profile_verbose_name }}",
         code="{{ profile_code }}",
         rules=[{% for rule in rules %}
-               ({{rule.0}}, {{rule.1}}){% if not loop.last %},{% endif%}{% endfor %}]
+               ({{rule.0}}, {{rule.1}}){% if not loop.last %},{% endif%}  # {{rule.2}}{% endfor %}
+               ]
     )
 
 """
@@ -276,7 +277,10 @@ for profile in E1_1_METHOD_INFO:
         profile_name=profile.short_name,
         profile_verbose_name=profile.full_name,
         profile_code=profile.code,
-        rules=[(x.as_python(), f"ActionCodes.{y.var_name}") for x, y in raw_list.rules],
+        rules=[
+            (x.as_python(), f"ActionCodes.{y.var_name}", x.name())
+            for x, y in raw_list.rules
+        ],
     )
 
 print(content)

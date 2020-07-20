@@ -3,7 +3,7 @@ Profile and Options as defined in table E1-1 here:
 http://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html
 
 This module should model public DICOM information. Any additional information
-such as default implementations for the action codes should be put in 'profiles.py'
+such as default implementations for the action codes should be put in 'rule_sets.py'
 """
 from collections import namedtuple
 from typing import Dict, List, Tuple
