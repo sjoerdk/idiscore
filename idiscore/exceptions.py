@@ -4,5 +4,9 @@ class IDISCoreException(Exception):
     pass
 
 
-class PrivateProcessorException(IDISCoreException):
+class SafePrivateException(IDISCoreException):
+    pass
+
+
+class AnnotationValidationFailed(IDISCoreException):
     pass

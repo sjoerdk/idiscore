@@ -7,17 +7,17 @@ example to check modality or vendor.
 
 from typing import Callable, Iterable, List, Optional, Set
 
+from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 
-from idiscore.operations import Keep
-from idiscore.rules import Rule, RuleSet
-from idiscore.exceptions import PrivateProcessorException
+from idiscore.exceptions import SafePrivateException
 from idiscore.identifiers import TagIdentifier
 from idiscore.imageprocessing import CriterionException
 
 
-class SafePrivateDefinition:
+class SafePrivateBlock:
     """Defines when one or more private DICOM elements can be considered 'safe'
+
     Safe as in 'not containing personally identifiable information'
     """
 
@@ -35,7 +35,7 @@ class SafePrivateDefinition:
             One ore more Tags of private DICOM elements
         criterion: Callable[[Dataset], bool], optional
             Function that is fed a Dataset instance. Returns True if the private
-            elements are safe to keep in this instance. May raise CriterionException
+            elements are safe to keep in the dataset. May raise CriterionException
             if a True or False answer cannot be given. Defaults to None, in which
             case the elements are always considered safe
         comment: str
@@ -70,45 +70,37 @@ class SafePrivateDefinition:
             return True  # no criterion. Assume tags are always safe
 
 
-class PrivateProcessor:
-    """Uses SafePrivateDefinitions to determine all private DICOM elements that
-    can be kept for any given dataset
+class SafePrivateDefinition:
+    """Holds all information on which private tags can be considered safe
 
+    Contains one or more SafePrivateBlocks
     """
 
-    def __init__(self, definitions: List[SafePrivateDefinition]):
-        self.definitions = definitions
+    def __init__(self, blocks: List[SafePrivateBlock]):
+        self.blocks = blocks
 
-    def get_rule_set(self, dataset: Dataset) -> RuleSet:
-        """Given this dataset, which private elements can be kept?
-
-        Parameters
-        ----------
-        dataset: Dataset
-            The DICOM dataset to inspect
-
-        Returns
-        -------
-        RuleSet
-            Rules for all private DICOM elements that are safe for the
-            given dataset
+    def is_safe(self, element: DataElement, dataset: Dataset) -> bool:
+        """True if the given private element in the given dataset is safe to keep
 
         Raises
         ------
-        PrivateProcessorException
-            When rule set cannot be found properly
+        SafePrivateException
+            If for some reason it cannot be determined whether this is safe
         """
+        return any(x.matches(element) for x in self.safe_identifiers(dataset))
 
-        # collect safe private tags from each definition
+    def safe_identifiers(self, dataset: Dataset) -> List[TagIdentifier]:
+        """All tags that are safe to keep given this dataset
+
+        Raises
+        ------
+        SafePrivateException
+            If safe identifiers cannot be determined
+        """
         identifiers = []
-        for definition in self.definitions:
+        for definition in self.blocks:
             try:
                 identifiers += definition.get_safe_private_tags(dataset)
             except CriterionException as e:
-                raise PrivateProcessorException(e)
-
-        keep = Keep()  # all save private tags should be kept
-        return RuleSet(
-            name="safe private",
-            rules=[Rule(identifier=x, operation=keep) for x in identifiers],
-        )
+                raise SafePrivateException(e)
+        return identifiers

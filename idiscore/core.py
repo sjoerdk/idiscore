@@ -4,13 +4,12 @@ from typing import List, Optional
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 
-from idiscore.exceptions import IDISCoreException, PrivateProcessorException
+from idiscore.exceptions import IDISCoreException
 from idiscore.operations import ElementShouldBeRemoved, Remove
 from idiscore.imageprocessing import (
     PixelDataProcessorException,
     PixelProcessor,
 )
-from idiscore.privateprocessing import PrivateProcessor
 from idiscore.rules import RuleSet
 from idiscore.validation import Deidentifier
 
@@ -102,7 +101,6 @@ class Core(Deidentifier):
         profile: Profile,
         insertions: List[DataElement] = None,
         bouncers: List[Bouncer] = None,
-        safe_private: Optional[PrivateProcessor] = None,
         pixel_processor: Optional[PixelProcessor] = None,
     ):
         """
@@ -117,9 +115,6 @@ class Core(Deidentifier):
             Inspect all incoming data and can reject if it is deemed not fit for
             deidentification. For example rejecting encapsulated PDFs as they are
             too difficult to deidentify. Defaults to empty list (all data allowed)
-        safe_private: Optional[PrivateProcessor],
-            Defines what to do with private DICOM elements. Some might be safe under
-            certain circumstances. Defaults to None
         pixel_processor: Optional[PrivateProcessor],
             Defines what to do with DICOM image data (the PixelData tag). Can remove
             or black out certain parts of an image. Defaults to None
@@ -128,7 +123,6 @@ class Core(Deidentifier):
         self.profile = profile
         self.insertions = insertions if insertions else []  # convert default None
         self.bouncers = bouncers if bouncers else []
-        self.safe_private = safe_private
         self.pixel_processor = pixel_processor
 
     def deidentify(self, dataset: Dataset) -> Dataset:
@@ -151,10 +145,8 @@ class Core(Deidentifier):
         self.apply_bouncers(dataset)  # should this dataset be rejected outright?
         dataset = self.apply_pixel_processor(dataset)  # clean image data if needed
 
-        # add safe private rules and then flatten to get one rule per tag/group
-        rules = self.profile.flatten(
-            additional_rule_sets=self.get_safe_private_rules(dataset)
-        )
+        # Obtain exactly one rule per tag/group
+        rules = self.profile.flatten()
 
         # define a function for walk() below
         def process_element(dataset_in: Dataset, data_element_in: DataElement):
@@ -170,7 +162,7 @@ class Core(Deidentifier):
                 del dataset_in[data_element_in.tag]
             else:
                 try:
-                    if replacement := rule.operation.apply(data_element_in):
+                    if replacement := rule.operation.apply(data_element_in, dataset):
                         dataset_in[data_element_in.tag] = replacement
                     # if no replacement, the element has been modified in place
                 except ElementShouldBeRemoved:
@@ -183,17 +175,6 @@ class Core(Deidentifier):
             dataset.add(element)
 
         return dataset
-
-    def get_safe_private_rules(self, dataset) -> List[RuleSet]:
-        """Find any specific exceptions to the default 'remove all private tags'"""
-
-        if self.safe_private:
-            try:
-                return [self.safe_private.get_rule_set(dataset)]
-            except PrivateProcessorException as e:
-                raise DeidentificationException(e)
-        else:
-            return []
 
     def apply_pixel_processor(self, dataset):
         """Put blackouts in image data if required"""

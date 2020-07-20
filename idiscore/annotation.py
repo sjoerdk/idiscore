@@ -20,7 +20,8 @@ from dicomgenerator.importer import to_json
 from pydicom.dataset import Dataset
 from pydicom.tag import BaseTag, Tag
 
-from idiscore.exceptions import IDISCoreException
+from idiscore.exceptions import AnnotationValidationFailed, IDISCoreException
+from idiscore.delta import Delta, DeltaStatusCodes
 
 
 class Annotation:
@@ -78,7 +79,7 @@ class Annotation:
     def from_dict(dict_in) -> "Annotation":
         """Cast to correct child class of Annotation"""
 
-        cls = AnnotationTypes.get_annotation_class(key=dict_in["annotation_type"])
+        cls = AnnotationTypes.from_key(key=dict_in["annotation_type"])
         return cls(
             tag=Tag(dict_in["tag"]),
             tag_info=dict_in["tag_info"],
@@ -88,17 +89,50 @@ class Annotation:
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), indent=2)
 
+    def assert_conformance(self, delta: Delta) -> None:
+        """Raises exception if delta goes against what validator wants
+
+        For example, if annotation is 'do not change patient ID', and the delta shows
+        a changed patient ID
+
+        Raises
+        ------
+        AnnotationValidationFailed
+            If delta does not conform to this validator. For example when an element
+            contains PII, but the value is unchanged in delta
+        """
+        pass  # if not implemented in child class, just always pass
+
 
 class MustNotChange(Annotation):
 
     key = "must_not_change"
     description = "This tag's value must not be deidentified"
 
+    def assert_conformance(self, delta: Delta):
+        if not delta.status == DeltaStatusCodes.UNCHANGED:
+            raise AnnotationValidationFailed(
+                f"{delta.tag} had value {delta.before} and should not change"
+                f"(reason: '{self.explanation}'). However it was changed to"
+                f"'{delta.after}'"
+            )
+
 
 class ContainsPII(Annotation):
 
     key = "contains_pii"
     description = "this tag contains personally identifiable information"
+
+    def assert_conformance(self, delta: Delta):
+        if delta.status not in [
+            DeltaStatusCodes.REMOVED,
+            DeltaStatusCodes.EMPTIED,
+            DeltaStatusCodes.CHANGED,
+        ]:
+            raise AnnotationValidationFailed(
+                f"{delta.tag} contained PII (explanation:'{self.explanation}') "
+                f"but was not changed or removed. The value is still {delta.after}"
+            )
 
 
 class EmptyAnnotation(Annotation):
@@ -120,7 +154,7 @@ class AnnotationTypes:
     }
 
     @classmethod
-    def get_annotation_class(cls, key: str) -> Type[Annotation]:
+    def from_key(cls, key: str) -> Type[Annotation]:
         try:
             return cls.ALL[key]
         except KeyError:

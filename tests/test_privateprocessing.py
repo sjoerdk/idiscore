@@ -3,7 +3,7 @@ from dicomgenerator.factory import CTDatasetFactory
 from pydicom.dataset import Dataset
 
 from idiscore.imageprocessing import CriterionException
-from idiscore.privateprocessing import SafePrivateDefinition
+from idiscore.privateprocessing import SafePrivateBlock
 
 
 def test_private_definition(a_ct_safe_private_definition):
@@ -25,7 +25,7 @@ def test_private_definition(a_ct_safe_private_definition):
 def test_private_definition_no_criterion(some_private_identifiers):
     """Without a criterion tags are always considered safe"""
 
-    safe_private = SafePrivateDefinition(tags=some_private_identifiers)
+    safe_private = SafePrivateBlock(tags=some_private_identifiers)
 
     assert len(safe_private.get_safe_private_tags(CTDatasetFactory())) == 4
     assert len(safe_private.get_safe_private_tags(CTDatasetFactory(Modality="US"))) == 4

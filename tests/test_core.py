@@ -11,7 +11,7 @@ from pydicom.tag import Tag
 from idiscore.core import Core, Profile
 from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
-from idiscore.operations import Hash, Keep, Remove
+from idiscore.operations import Clean, Hash, Keep, Remove
 from idiscore.validation import extract_signature
 
 
@@ -70,23 +70,6 @@ def test_profile_flatten(some_pid_rules):
     assert hash_name in profile.flatten(additional_rule_sets=[set3]).rules
 
 
-def test_rule_set():
-    """Rule set should be able to find the proper rules for tags"""
-
-    # some rules
-    rule1 = Rule(SingleTag("PatientName"), Hash())
-    rule2 = Rule(RepeatingGroup("50xx,xxxx"), Remove())
-    rule3 = Rule(PrivateTags(), Remove())
-    rules = RuleSet(rules=[rule1, rule2, rule3])
-
-    assert rules.get_rule(DatEF(tag="PatientName")) == rule1
-    assert rules.get_rule(DatEF(tag="Modality")) is None  # This rule is not defined
-    assert rules.get_rule(DatEF(tag=(0x5000, 0x0001))) == rule2  # try a repeating rule
-    assert (
-        rules.get_rule(DatEF(tag=(0x1301, 0x0001))) == rule3
-    )  # try a private tag rule
-
-
 def test_rule_precedence():
     """Rules are applied in order of generality - most specific first. Verify"""
 
@@ -122,20 +105,25 @@ def test_rule_set_human_readable(some_rules):
     assert "Unknown Repeater tag" in as_string
 
 
-def test_core_deidentify_safe_private(a_dataset, a_private_processor):
-    """In core, rules for each safe private tag are added before processing all
-    rules in the profile.
-    This should only be done if the profile contains a rule PrivateTags() -> Clean()
-    """
+def test_core_deidentify_safe_private(a_dataset, a_safe_private_definition):
+    """Private elements marked as safe should not be removed by Clean()"""
 
-    rules = [
-        Rule(SingleTag("PatientID"), Hash()),
-        Rule(PrivateTags(), Remove()),
-    ]  # Remove all private tags
+    assert Tag("00b10010") in a_dataset  # a private creator tag
+    assert Tag("00b11001") in a_dataset  # and a private tag
 
-    core = Core(profile=Profile([RuleSet(rules)]), safe_private=a_private_processor)
+    # A core instance that should clean() private tags, but one tag is deemed safe
+    ruleset = RuleSet(
+        [Rule(PrivateTags(), Clean(safe_private=a_safe_private_definition))]
+    )
+    core = Core(profile=Profile([ruleset]))
 
-    # now apply the rules to the dataset an check changes
+    # One tag should be kept
     deltas = extract_signature(deidentifier=core, dataset=a_dataset)
+    assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "REMOVED"
+    assert {x.tag: x for x in deltas}[Tag("00b11001")].status == "UNCHANGED"
 
-    assert {x.tag: x for x in deltas}[Tag("000b0010")].status == "REMOVED"
+    # but only so long as dataset has modality = CT
+    a_dataset.Modality = "US"
+    deltas = extract_signature(deidentifier=core, dataset=a_dataset)
+    assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "REMOVED"
+    assert {x.tag: x for x in deltas}[Tag("00b11001")].status == "REMOVED"

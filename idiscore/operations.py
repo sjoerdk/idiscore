@@ -4,8 +4,10 @@ from typing import Optional
 from dicomgenerator.dicom import VRs
 from dicomgenerator.factory import DataElementFactory
 from pydicom.dataelem import DataElement
+from pydicom.dataset import Dataset
 
 from idiscore.exceptions import IDISCoreException
+from idiscore.privateprocessing import SafePrivateDefinition
 
 
 class Operator:
@@ -20,23 +22,32 @@ class Operator:
 
     An Operator
 
-    * Can change a single DICOM data element that is fed to it
-    * Can use the content or value representation of the input argument
+    * Can change the single DICOM data element that is fed to it
+    * Can inspect the dataset that is passed to it
     * Can take init arguments and connect to external resources if needed
 
-    * Should NOT Depend on the value of other DataElements. If more complicated logic
-      is needed it should be dealt with higher up the execution stack
     * Should NOT Be stateful. ElementOperation.apply(element) should return the same
       object regardless of what went before. It CAN however rely on external stateful
       sources like a pseudonymization service.
-    * Should NOT alter anything besides the element that is fed to it
+    * Should NOT alter the dataset that is passed to it
 
     """
 
     name = "Base Operation"
 
-    def apply(self, element: DataElement) -> Optional[DataElement]:
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> Optional[DataElement]:
         """Perform this operation on the given element.
+
+        Parameters
+        ----------
+        element: DataElement
+            The DICOM element to operate on
+        dataset: Dataset, optional
+            The DICOM dataset that this element comes from. This can be inspected
+            to determine what to do with element. Should not be changed in any way.
+            Defaults to None
 
         Returns
         -------
@@ -52,12 +63,14 @@ class Operator:
             when the data element has a number ValueType but the operation is for
             a string
         ElementShouldBeRemoved
-            When this element should be remove from the dataset. Operators cannot
-            do this by themselves as they can only operate on the element
+            Signals that this element should be removed from the dataset. Operators
+            cannot do this by themselves as they can only operate on the element
+            given
 
         Notes
         -----
         Apply might alter the given element in place as it is passed by reference
+
         """
         return element
 
@@ -73,8 +86,10 @@ class Keep(Operator):
 
     name = "Keep"
 
-    def apply(self, element: DataElement) -> DataElement:
-        return element
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> Optional[DataElement]:
+        return None  # do nothing
 
 
 class Remove(Operator):
@@ -82,7 +97,9 @@ class Remove(Operator):
 
     name = "Remove"
 
-    def apply(self, element: DataElement) -> None:
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> Optional[DataElement]:
         raise ElementShouldBeRemoved()
 
 
@@ -91,8 +108,11 @@ class Empty(Operator):
 
     name = "Empty"
 
-    def apply(self, element: DataElement) -> None:
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> Optional[DataElement]:
         element.value = ""
+        return None
 
 
 class Clean(Operator):
@@ -100,17 +120,34 @@ class Clean(Operator):
     information and consistent with the VR
 
     'similar meaning' is open to interpretation.
+
+    Also handles private tags
     """
 
     name = "Clean"
 
-    def apply(self, element: DataElement) -> Optional[DataElement]:
+    def __init__(self, safe_private: SafePrivateDefinition = None):
+        """
+
+        Parameters
+        ----------
+        safe_private: SafePrivateDefinition, optional
+            For cleaning private tags. Defines which private tags are safe to keep.
+            Defaults to None, in which case all private elements are removed
+        """
+        self.safe_private = safe_private
+
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> Optional[DataElement]:
         vr = VRs.short_name_to_vr(element.VR)
 
         if element.tag.is_private:
-            # Private elements are handled separately in Core. If an element
-            # gets passed here it means no special rules were found. Remove.
-            raise ElementShouldBeRemoved()
+            # is this element safe?
+            if self.is_safe(element=element, dataset=dataset):
+                return  # Nothing needs to be done. Keep.
+            else:
+                raise ElementShouldBeRemoved()  # not safe. Remove
 
         if vr in VRs.date_like:
             # maybe something can be done for dates. For now just return a random one
@@ -127,13 +164,28 @@ class Clean(Operator):
                 f"tags of type '{vr}'"
             )
 
+    def is_safe(self, element: DataElement, dataset: Dataset) -> bool:
+        """True if this element is safe according to safe private definition
+
+        Raises
+        ------
+        SafePrivateException
+            If for some reason it cannot be determined whether this is safe
+        """
+        if not self.safe_private:
+            return False
+        else:
+            return self.safe_private.is_safe(element=element, dataset=dataset)
+
 
 class Replace(Operator):
     """Replace element with a dummy value"""
 
     name = "Replace"
 
-    def apply(self, element: DataElement) -> DataElement:
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> Optional[DataElement]:
         return DataElementFactory(tag=element.tag)
 
 
@@ -142,7 +194,9 @@ class GenerateUID(Operator):
 
     name = "GenerateUID"
 
-    def apply(self, element: DataElement) -> None:
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> Optional[DataElement]:
         # not so pretty, but works
         element.value = DataElementFactory(tag="StudyInstanceUID").value
 
@@ -152,7 +206,9 @@ class Hash(Operator):
 
     name = "Hash"
 
-    def apply(self, element: DataElement) -> None:
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> Optional[DataElement]:
         element.value = md5(str(element.value).encode("utf8")).hexdigest()
 
 

@@ -52,7 +52,7 @@ class RuleSet:
 
         # keep single tag rules separately for more efficient matching
         self._single_tag_rules_dict = {
-            str(x.identifier): x for x in rules if self.is_single_tag_rule(x)
+            x.identifier.key(): x for x in rules if self.is_single_tag_rule(x)
         }
 
         # wildcard rules
@@ -69,6 +69,21 @@ class RuleSet:
 
     def as_dict(self) -> Dict[TagIdentifier, Rule]:
         return {x.identifier: x for x in self.rules}
+
+    def remove(self, rule: Rule):
+        """Remove the given rule from this set
+
+        Raises
+        ------
+        KeyError
+            If rule is not in this set
+        """
+        if rule in self._group_rules:
+            self._group_rules.remove(rule)
+        elif (key := rule.identifier.key()) in self._single_tag_rules_dict:
+            self._single_tag_rules_dict.pop(key)
+        else:
+            raise KeyError(f"{rule} is not in this RuleSet")
 
     @staticmethod
     def is_single_tag_rule(rule: Rule) -> bool:
@@ -96,7 +111,7 @@ class RuleSet:
 
         """
         # On single tags we can do efficient dictionary lookup
-        if rule := self._single_tag_rules_dict.get(str(element.tag)):
+        if rule := self._single_tag_rules_dict.get(self.tag_to_key(element.tag)):
             return rule
 
         #  found no specific rule for this tag. Try wildcard tags
@@ -106,6 +121,14 @@ class RuleSet:
 
         # nothing matches. There is no rule
         return None
+
+    @staticmethod
+    def tag_to_key(tag: BaseTag) -> str:
+        """Represent tag as single 8 char hex string like '00100010'
+
+        This is the format used as dict key internally
+        """
+        return f"{tag.group:04x}{tag.element:04x}"
 
     def as_human_readable_list(self) -> str:
         """All rules in this set sorted by tag name"""

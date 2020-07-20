@@ -5,11 +5,10 @@ from pydicom.tag import Tag
 from idiscore.annotation import AnnotatedDataset, ContainsPII, MustNotChange
 from idiscore.insertions import PATIENT_IDENTITY_REMOVED
 from idiscore.validation import (
-    Delta,
-    DeltaStatusCodes,
     Validation,
     extract_signature,
 )
+from idiscore.delta import Delta, DeltaStatusCodes
 
 
 @pytest.fixture
@@ -50,7 +49,7 @@ def test_validate(a_core, a_dataset):
         description="example3",
         dataset=a_dataset,
         annotations=[
-            MustNotChange(tag=Tag("PatientID"), explanation="Patient ID is needed")
+            ContainsPII(tag=Tag("PatientID"), explanation="This is a name! bad.")
         ],
     )
 
@@ -68,14 +67,29 @@ def test_signature(a_core, a_dataset):
     deltas = extract_signature(a_core, a_dataset)
     assert [x.status for x in deltas] == [
         DeltaStatusCodes.UNCHANGED,
-        DeltaStatusCodes.REMOVED,
-        DeltaStatusCodes.REMOVED,
         DeltaStatusCodes.CHANGED,
         DeltaStatusCodes.UNCHANGED,
         DeltaStatusCodes.REMOVED,
         DeltaStatusCodes.REMOVED,
+        DeltaStatusCodes.REMOVED,
+        DeltaStatusCodes.REMOVED,
         DeltaStatusCodes.CREATED,
     ]
+
+
+def test_signature_leave_input_dataset_unaltered(a_core, a_dataset):
+    """Make sure extracting a signature does not alter input dataset"""
+
+    len_before = len(a_dataset)
+    extract_signature(a_core, a_dataset)
+    assert len(a_dataset) == len_before
+
+
+def test_signature_include_each_element(a_core, a_dataset):
+    """Make sure all DICOM elements in dataset get a delta"""
+
+    deltas = extract_signature(a_core, a_dataset)
+    assert len(deltas) == len(a_dataset) + 1  # +1 because a_core inserts 1 element
 
 
 def test_signature_realistic_dataset(a_core):
