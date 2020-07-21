@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
+from dicomgenerator.dicom import VRs
 from jinja2 import Template
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
+from pydicom.sequence import Sequence
 
 from idiscore import __version__
 from idiscore.exceptions import IDISCoreException
@@ -162,36 +164,49 @@ class Core(Deidentifier):
         self.apply_bouncers(dataset)  # should this dataset be rejected outright?
         dataset = self.apply_pixel_processor(dataset)  # clean image data if needed
 
-        # Obtain exactly one rule per tag/group
-        rules = self.profile.flatten()
+        deidentified = self.apply_rules(rules=self.profile.flatten(), dataset=dataset)
 
-        # define a function for walk() below
-        def process_element(dataset_in: Dataset, data_element_in: DataElement):
-            """Process element according to the rules in the outer scope"""
-
-            # Find the rule to apply for this DICOM element
-            rule = rules.get_rule(data_element_in)
-
-            if not rule:
-                #  Keep elements for which there is no rule
-                return
-            elif type(rule.operation) == Remove:
-                del dataset_in[data_element_in.tag]
-            else:
-                try:
-                    if replacement := rule.operation.apply(data_element_in, dataset):
-                        dataset_in[data_element_in.tag] = replacement
-                    # if no replacement, the element has been modified in place
-                except ElementShouldBeRemoved:
-                    # clean() operation can signal removal like this.
-                    del dataset_in[data_element_in.tag]
-
-        dataset.walk(process_element)
-
+        # add tags if needed
         for element in self.insertions:
-            dataset.add(element)
+            deidentified.add(element)
 
-        return dataset
+        return deidentified
+
+    def apply_rules(self, rules: RuleSet, dataset: Dataset) -> Dataset:
+        """Apply rules to each element in dataset, recursing into sequence elements
+
+        This creates a deep copy of the input dataset. Except for PixelData, which
+        will be a reference. PixelData is not copied because it can take up a lot
+        of memory
+        """
+        deidentified = Dataset()
+        pixel_data_tag = 0x7FE00010
+
+        for element in dataset:
+            if element.tag == pixel_data_tag:
+                deidentified.add(element)  # add pixel data as reference to save mem
+            elif element.VR == VRs.Sequence:  # recurse into sequences
+                deidentified.add(
+                    DataElement(
+                        tag=element.tag,
+                        VR=element.VR,
+                        value=Sequence([self.apply_rules(rules, dataset)]),
+                    )
+                )
+            elif rule := rules.get_rule(element):
+                if type(rule.operation) == Remove:
+                    continue  # special handling. should be removed, do not add
+                try:
+                    new = rule.operation.apply(element, dataset)
+                    deidentified.add(new)
+                except ElementShouldBeRemoved:  # Operators signals removal
+                    continue
+            else:  # no rule found. Just copy the element over
+                deidentified.add(
+                    DataElement(tag=element.tag, VR=element.VR, value=element.value)
+                )
+
+        return deidentified
 
     def apply_pixel_processor(self, dataset):
         """Put blackouts in image data if required"""
@@ -224,6 +239,39 @@ class Core(Deidentifier):
                 bouncer.inspect(dataset)
             except BouncerException as e:
                 raise DeidentificationException(e)
+
+
+def split_pixel_data(dataset: Dataset) -> Tuple[Dataset, Optional[DataElement]]:
+    """Make a copy of dataset, but return PixelData element separately
+
+    PixelData element will be a reference, not a copy.
+    This function is useful if you want to process all DICOM elements in a dataset
+    without modifying the original. PixelData is not copied because it can be
+    thousands of times bigger then all other elements combined, and needs special
+    processing anyway.
+
+    Parameters
+    ----------
+    dataset: Dataset
+        A DICOM dataset that might contain a PixelData element
+
+    Returns
+    -------
+    Tuple[Dataset, Optional[DataElement]]
+        A deep copy of dataset and a reference to the original PixelData element.
+        If dataset contains no PixelData element, will return Tuple[DataSet, None]
+    """
+    copied = Dataset()
+    pixel_data_tag = 0x7FE00010
+
+    for element in dataset:
+        if element.tag != pixel_data_tag:
+            copied.add(DataElement(tag=element.tag, VR=element.VR, value=element.value))
+
+    if pixel_data_tag in dataset:
+        return copied, dataset[pixel_data_tag]
+    else:
+        return copied, None
 
 
 class BouncerException(IDISCoreException):

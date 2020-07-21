@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `idiscore` package."""
+from typing import Set
 
 import pytest
-from dicomgenerator.factory import DataElementFactory as DatEF
+from dicomgenerator.dicom import VRs
+from dicomgenerator.factory import CTDatasetFactory, DataElementFactory as DatEF
+from pydicom.dataset import Dataset
 
 from pydicom.tag import Tag
 
-from idiscore.core import Core, Profile
+from idiscore.core import Core, Profile, split_pixel_data
 from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.operators import Clean, Hash, Keep, Remove
@@ -127,3 +130,38 @@ def test_core_deidentify_safe_private(a_dataset, a_safe_private_definition):
     deltas = extract_signature(deidentifier=core, dataset=a_dataset)
     assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "REMOVED"
     assert {x.tag: x for x in deltas}[Tag("00b11001")].status == "REMOVED"
+
+
+def test_splitting_off_pixeldata():
+
+    original = CTDatasetFactory()
+    copied, pixeldata = split_pixel_data(original)
+
+    only_in_copied = [
+        copied[z] for z in {x.tag for x in copied} - {x.tag for x in original}
+    ]
+    only_in_original = [
+        original[z] for z in {x.tag for x in original} - {x.tag for x in copied}
+    ]
+
+    assert len(only_in_copied) == 0  # no new items should have been inserted
+    assert only_in_original == [pixeldata]
+
+    # make the copy does not contain any references to object from original
+    def get_all_ids(dataset: Dataset) -> Set[int]:
+        ids = set()
+        for element in dataset:
+            if element.VR == VRs.Sequence:
+                ids = ids + get_all_ids(element)
+            else:
+                ids.add(id(element))
+
+        return ids
+
+    assert not get_all_ids(original) & get_all_ids(copied)  # intersection is empty
+
+
+def test_splitting_off_pixeldata_no_pixeldata(a_dataset):
+    copied, pixel_data = split_pixel_data(a_dataset)
+    assert len(copied) == len(a_dataset)
+    assert pixel_data is None

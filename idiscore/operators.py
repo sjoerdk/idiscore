@@ -1,3 +1,4 @@
+from copy import copy
 from hashlib import md5
 from typing import Optional
 
@@ -37,7 +38,7 @@ class Operator:
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
-    ) -> Optional[DataElement]:
+    ) -> DataElement:
         """Perform this operation on the given element.
 
         Parameters
@@ -51,8 +52,6 @@ class Operator:
 
         Returns
         -------
-        None
-            When this operation was applied to the given element reference directly
         DataElement
             A new DataElement instance to replace the given element with
 
@@ -66,10 +65,6 @@ class Operator:
             Signals that this element should be removed from the dataset. Operators
             cannot do this by themselves as they can only operate on the element
             given
-
-        Notes
-        -----
-        Apply might alter the given element in place as it is passed by reference
 
         """
         return element
@@ -88,8 +83,8 @@ class Keep(Operator):
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
-    ) -> Optional[DataElement]:
-        return None  # do nothing
+    ) -> DataElement:
+        return copy(element)
 
 
 class Remove(Operator):
@@ -97,9 +92,7 @@ class Remove(Operator):
 
     name = "Remove"
 
-    def apply(
-        self, element: DataElement, dataset: Optional[Dataset] = None
-    ) -> Optional[DataElement]:
+    def apply(self, element: DataElement, dataset: Optional[Dataset] = None):
         raise ElementShouldBeRemoved()
 
 
@@ -110,9 +103,10 @@ class Empty(Operator):
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
-    ) -> Optional[DataElement]:
-        element.value = ""
-        return None
+    ) -> DataElement:
+        copied = copy(element)
+        copied.value = ""
+        return copied
 
 
 class Clean(Operator):
@@ -139,13 +133,13 @@ class Clean(Operator):
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
-    ) -> Optional[DataElement]:
+    ) -> DataElement:
         vr = VRs.short_name_to_vr(element.VR)
 
         if element.tag.is_private:
             # is this element safe?
             if self.is_safe(element=element, dataset=dataset):
-                return  # Nothing needs to be done. Keep.
+                return copy(element)  # Nothing needs to be done. Keep.
             else:
                 raise ElementShouldBeRemoved()  # not safe. Remove
 
@@ -154,9 +148,9 @@ class Clean(Operator):
             return DataElementFactory(tag=element.tag)
         elif vr in VRs.string_like:
             element.value = "CLEANED"
-            return
+            return copy(element)
         elif vr == VRs.Sequence:
-            return  # elements in sequence will be processed individually. Pass here
+            return copy(element)  # sequence elements are processed later. pass
         else:
             # too difficult. Cannot do it
             raise ValueError(
@@ -185,7 +179,7 @@ class Replace(Operator):
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
-    ) -> Optional[DataElement]:
+    ) -> DataElement:
         return DataElementFactory(tag=element.tag)
 
 
@@ -196,9 +190,8 @@ class GenerateUID(Operator):
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
-    ) -> Optional[DataElement]:
-        # not so pretty, but works
-        element.value = DataElementFactory(tag="StudyInstanceUID").value
+    ) -> DataElement:
+        return DataElementFactory(tag="StudyInstanceUID")
 
 
 class Hash(Operator):
@@ -208,8 +201,10 @@ class Hash(Operator):
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
-    ) -> Optional[DataElement]:
-        element.value = md5(str(element.value).encode("utf8")).hexdigest()
+    ) -> DataElement:
+        copied = copy(element)
+        copied.value = md5(str(element.value).encode("utf8")).hexdigest()
+        return copied
 
 
 class ElementShouldBeRemoved(IDISCoreException):
