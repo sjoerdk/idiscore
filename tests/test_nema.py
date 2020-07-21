@@ -1,6 +1,6 @@
 from idiscore.identifiers import PrivateTags, SingleTag
 from idiscore.nema import ActionCodes, RawNemaRuleSet
-from idiscore.operations import Clean, Remove
+from idiscore.operators import Clean, Remove
 
 
 def test_raw_nema_rule_list():

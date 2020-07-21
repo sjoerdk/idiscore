@@ -11,7 +11,7 @@ from idiscore.core import Core, Profile
 from idiscore.defaults import RejectKOGSPS
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.nema import ActionCodes
-from idiscore.operations import Clean, Hash, Remove
+from idiscore.operators import Clean, Hash, Remove
 from idiscore.rule_sets import DICOMRuleSets
 from idiscore.rules import Rule, RuleSet
 

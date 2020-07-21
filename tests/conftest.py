@@ -14,7 +14,7 @@ from idiscore.identifiers import (
     RepeatingGroup,
     SingleTag,
 )
-from idiscore.operations import Hash, Remove
+from idiscore.operators import Hash, Remove
 
 
 @pytest.fixture

@@ -19,7 +19,7 @@ from idiscore._public_dicom import (
     retain_uid,
 )
 from idiscore.nema import ActionCode, ActionCodes
-from idiscore.operations import (
+from idiscore.operators import (
     Clean,
     Empty,
     GenerateUID,

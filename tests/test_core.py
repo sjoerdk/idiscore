@@ -11,7 +11,7 @@ from pydicom.tag import Tag
 from idiscore.core import Core, Profile
 from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
-from idiscore.operations import Clean, Hash, Keep, Remove
+from idiscore.operators import Clean, Hash, Keep, Remove
 from idiscore.validation import extract_signature
 
 

@@ -11,7 +11,7 @@ from typing import Dict, List, Tuple
 from idiscore.rules import Rule, RuleSet
 from idiscore.exceptions import IDISCoreException
 from idiscore.identifiers import TagIdentifier
-from idiscore.operations import Operator
+from idiscore.operators import Operator
 
 ActionCode = namedtuple("ActionCode", ["key", "var_name"])
 

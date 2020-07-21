@@ -8,7 +8,7 @@ from dicomgenerator.dicom import VRs
 from dicomgenerator.factory import DataElementFactory
 from factory import random
 
-from idiscore.operations import Clean, Hash
+from idiscore.operators import Clean, Hash
 
 
 @pytest.fixture

@@ -7,7 +7,7 @@ from pydicom.dataset import Dataset
 
 from idiscore import __version__
 from idiscore.exceptions import IDISCoreException
-from idiscore.operations import ElementShouldBeRemoved, Remove
+from idiscore.operators import ElementShouldBeRemoved, Remove
 from idiscore.imageprocessing import (
     PixelDataProcessorException,
     PixelProcessor,

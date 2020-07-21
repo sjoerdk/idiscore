@@ -4,7 +4,7 @@ from pydicom.dataelem import DataElement
 from pydicom.tag import BaseTag
 
 from idiscore.identifiers import SingleTag, TagIdentifier
-from idiscore.operations import Operator
+from idiscore.operators import Operator
 
 
 class Rule:
