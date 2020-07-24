@@ -185,12 +185,17 @@ class Core(Deidentifier):
         for element in dataset:
             if element.tag == pixel_data_tag:
                 deidentified.add(element)  # add pixel data as reference to save mem
-            elif element.VR == VRs.Sequence:  # recurse into sequences
+            elif element.VR == VRs.Sequence.short_name:  # recurse into sequences
                 deidentified.add(
                     DataElement(
                         tag=element.tag,
                         VR=element.VR,
-                        value=Sequence([self.apply_rules(rules, dataset)]),
+                        value=Sequence(
+                            [
+                                self.apply_rules(rules, sub_dataset)
+                                for sub_dataset in element
+                            ]
+                        ),
                     )
                 )
             elif rule := rules.get_rule(element):

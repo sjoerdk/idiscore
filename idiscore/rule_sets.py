@@ -22,7 +22,7 @@ from idiscore.nema import ActionCode, ActionCodes
 from idiscore.operators import (
     Clean,
     Empty,
-    GenerateUID,
+    HashUID,
     Keep,
     Operator,
     Remove,
@@ -37,7 +37,7 @@ DEFAULT_MAPPING = {
     ActionCodes.REMOVE: Remove(),
     ActionCodes.KEEP: Keep(),
     ActionCodes.CLEAN: Clean(),
-    ActionCodes.UID: GenerateUID(),
+    ActionCodes.UID: HashUID(),
     ActionCodes.REPLACE_OR_DUMMY: Replace(),
     ActionCodes.REMOVE_OR_EMPTY: Remove(),
     ActionCodes.REMOVE_OR_DUMMY: Remove(),
