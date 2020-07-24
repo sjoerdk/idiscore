@@ -24,20 +24,18 @@ test_requirements = [
 setup(
     author="Sjoerd Kerkstra",
     author_email="sjoerd.kerkstra@radboudumcn.nl",
-    python_requires="~=3.6",
+    python_requires="~=3.8",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GPLv3 License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
-    description="Pure-python deidentification of DICOM images conforming to using Attribute "
-    "Confidentiality Options",
+    description="Pure-python deidentification of DICOM images conforming to using "
+    "Attribute Confidentiality Options",
     install_requires=requirements,
-    license="MIT license",
+    license="GPLv3 license",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="idiscore",

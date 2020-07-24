@@ -1,4 +1,9 @@
-[paths]
-source =
-    ./idiscore/
-    /idiscore
+[run]
+omit=
+    # tools are only useful for developers and not part of the main idiscore package
+    ./tools/*
+
+[report]
+exclude_lines =
+    # I do not want to write tests to assert that this is raised
+    raise NotImplementedError
