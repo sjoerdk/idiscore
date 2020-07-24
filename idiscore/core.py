@@ -8,6 +8,7 @@ from pydicom.dataset import Dataset
 from pydicom.sequence import Sequence
 
 from idiscore import __version__
+from idiscore.bouncers import Bouncer, BouncerException
 from idiscore.exceptions import IDISCoreException
 from idiscore.operators import ElementShouldBeRemoved, Remove
 from idiscore.imageprocessing import (
@@ -82,32 +83,6 @@ class Profile:
                 f"{x.identifier} ({x.identifier.name()}) - {x.operation}" for x in rules
             ),
         )
-
-
-class Bouncer:
-    """Inspects a dataset and either rejects it or lets it through"""
-
-    description = "Bouncer"  # single line description used in human-readable output
-
-    def inspect(self, dataset: Dataset):
-        """Check given dataset, raise exception if it should be rejected
-
-        Parameters
-        ----------
-        dataset: Dataset
-            The DICOM dataset to inspect
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        BouncerException
-            When this dataset cannot be deidentified for any reason
-
-        """
-        pass
 
 
 class Core(Deidentifier):
@@ -277,10 +252,6 @@ def split_pixel_data(dataset: Dataset) -> Tuple[Dataset, Optional[DataElement]]:
         return copied, dataset[pixel_data_tag]
     else:
         return copied, None
-
-
-class BouncerException(IDISCoreException):
-    pass
 
 
 class DeidentificationException(IDISCoreException):

@@ -8,7 +8,7 @@ from dicomgenerator.factory import (
 )
 
 from idiscore.core import Core, Profile
-from idiscore.defaults import RejectKOGSPS
+from idiscore.bouncers import RejectKOGSPS
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.nema import ActionCodes
 from idiscore.operators import Clean, Hash, Remove
