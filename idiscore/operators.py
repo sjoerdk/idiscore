@@ -12,7 +12,7 @@ from idiscore.privateprocessing import SafePrivateDefinition
 from idiscore.settings import IDIS_CORE_ROOT_UID
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 
 class Operator:
@@ -354,7 +354,7 @@ class HashUID(Operator):
 
 
 class Hash(Operator):
-    """Replace element value with an MD5 hash of that value"""
+    """Replace value with an MD5 hash of that value"""
 
     name = "Hash"
 
@@ -364,6 +364,27 @@ class Hash(Operator):
         copied = copy(element)
         copied.value = md5(str(element.value).encode("utf8")).hexdigest()
         return copied
+
+
+class SetFixedValue(Operator):
+    """Replace element with a fixed value from a list of tag-value pairs"""
+
+    name = "SetFixedValue"
+
+    def __init__(self, value: Union[str, int, object]):
+        """
+
+        Parameters
+        ----------
+        value: Union[str, int, object])
+            DICOM element value to set. Anything that is valid for DataElement.value
+        """
+        self.value = value
+
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> DataElement:
+        return DataElement(tag=element.tag, VR=element.VR, value=self.value)
 
 
 class ElementShouldBeRemoved(IDISCoreException):

@@ -10,7 +10,7 @@ from dicomgenerator.factory import DataElementFactory
 from factory import random
 from pydicom.dataset import Dataset
 
-from idiscore.operators import Clean, Hash, HashUID, TimeDeltaProvider
+from idiscore.operators import Clean, Hash, HashUID, SetFixedValue, TimeDeltaProvider
 
 
 @pytest.fixture
@@ -172,3 +172,14 @@ def test_hash_uid():
         hash_uid.apply(element).value
         != hash_uid.apply(DataElementFactory(tag="StudyInstanceUID")).value
     )
+
+
+def test_set_fixed_value():
+    fixed_value = SetFixedValue(value="FIXED")
+    assert (
+        fixed_value.apply(DataElementFactory(tag="StudyDescription")).value == "FIXED"
+    )
+
+    # should be able to change the value after initialization
+    fixed_value.value = 1
+    assert fixed_value.apply(DataElementFactory(tag="StudyDescription")).value == 1
