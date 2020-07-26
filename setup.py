@@ -28,14 +28,14 @@ setup(
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GPLv3 License",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Natural Language :: English",
         "Programming Language :: Python :: 3.8",
     ],
     description="Pure-python deidentification of DICOM images conforming to using "
     "Attribute Confidentiality Options",
     install_requires=requirements,
-    license="GPLv3 license",
+    license="GPLv3",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="idiscore",
