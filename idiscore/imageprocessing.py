@@ -1,9 +1,11 @@
 """Classes and methods for working with image part of a DICOM dataset"""
+from typing import Callable, List
 from dataclasses import dataclass
 
+from idiscore.dataset import RequiredDataset, RequiredTagNotFound
 from idiscore.exceptions import IDISCoreException
+from pydicom._storage_sopclass_uids import SecondaryCaptureImageStorage
 from pydicom.dataset import Dataset
-from typing import Callable, List
 
 
 @dataclass(frozen=True)
@@ -31,23 +33,21 @@ class PIILocation:
     """
 
     def __init__(
-        self, name: str, criterion: Callable[[Dataset], bool], areas: List[SquareArea]
+        self, areas: List[SquareArea], criterion: Callable[[Dataset], bool] = None
     ):
         """
 
         Parameters
         ----------
-        name: str
-            Human-readable name for this location
-        criterion: Callable[[Dataset], bool]
-            Function that return True if this PIILocation exists in the given dataset
-            May return CriterionException if a True or False answer cannot be given
         areas: List[SquareArea]
             The
+        criterion: Callable[[Dataset], bool], optional
+            Function that return True if this PIILocation exists in the given dataset
+            May return CriterionException if a True or False answer cannot be given.
+            Defaults to always returning True.
         """
-        self.name = name
-        self.criterion = criterion
         self.areas = areas
+        self.criterion = criterion
 
     def exists_in(self, dataset: Dataset) -> bool:
         """True if the given PII location exists in the given dataset
@@ -58,7 +58,10 @@ class PIILocation:
             If for some reason no True or False response can be given for this
             dataset
         """
-        return self.criterion(dataset)
+        if not self.criterion:
+            return True
+        else:
+            return self.criterion(dataset)
 
 
 class PixelProcessor:
@@ -89,10 +92,46 @@ class PixelProcessor:
         """Whether this dataset should be rejected as unsafe without cleaning
 
         Made this into a separate method as for many DICOM datasets you can
-        reasonably skip the slow redaction process all together
+        reasonably skip image processing altogether.
+
+        Raises
+        ------
+        PixelDataProcessorException
+            When it cannot be determined whether this dataset needs cleaning
+            or not. Usually due to missing DICOM elements
+
         """
-        # TODO: check separate criteria for suspicion! not get PPILocations
-        return True
+
+        def says_no_burned_in_info(dataset_in: RequiredDataset) -> bool:
+            """Dataset_in explicitly states that it has no burned in information"""
+            try:
+                return dataset_in.BurnedInAnnotation in ["NO", "No", "no"]
+            except RequiredTagNotFound:
+                return False  # not found so no specific burned in info disclaimer
+
+        def is_suspicious(dataset_in: RequiredDataset) -> bool:
+            return (
+                dataset.Modality in ["US", "SC"]
+                or dataset.SOPClassUID == SecondaryCaptureImageStorage
+            )
+
+        dataset = RequiredDataset(dataset)  # catch missing keys
+
+        # Cleaning might be needed in the the following cases:
+        try:
+            if not is_suspicious(dataset):
+                return False
+            else:
+                if says_no_burned_in_info(dataset):
+                    return False  # if dataset says it's clean we believe it
+                else:
+                    return True
+
+        except RequiredTagNotFound as e:
+            raise PixelDataProcessorException(
+                f"Missing DICOM element. I can not determine whether to clean "
+                f"the pixels or not. Original error: {e}"
+            )
 
     def get_locations(self, dataset: Dataset) -> List[PIILocation]:
         """Get all locations with person information in the current dataset
@@ -116,10 +155,18 @@ class PixelProcessor:
             If cleaning pixeldata fails for any reason
 
         """
+        pixel_array = dataset.pixel_array
         for location in self.get_locations(dataset):
-            # TODO: implement
-            for area in location:
-                print(f"Removing {area} in {dataset}")
+            for area in location.areas:
+
+                # extract the square location an set its value to 0
+                pixel_array[
+                    area.origin_y : area.origin_y + area.height,
+                    area.origin_x : area.origin_x + area.width,
+                ] = 0
+
+                # write back data
+                dataset.PixelData = pixel_array.tobytes()
         return dataset
 
 

@@ -10,6 +10,7 @@ from pydicom.sequence import Sequence
 from idiscore import __version__
 from idiscore.bouncers import Bouncer, BouncerException
 from idiscore.exceptions import IDISCoreException
+from idiscore.dataset import RequiredTagNotFound
 from idiscore.operators import ElementShouldBeRemoved, Remove
 from idiscore.imageprocessing import (
     PixelDataProcessorException,
@@ -256,3 +257,13 @@ def split_pixel_data(dataset: Dataset) -> Tuple[Dataset, Optional[DataElement]]:
 
 class DeidentificationException(IDISCoreException):
     pass
+
+
+def handle_key_error(func):
+    def decorated(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except KeyError as e:
+            raise RequiredTagNotFound(f"Required tag not found:{e}")
+
+    return decorated
