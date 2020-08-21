@@ -105,10 +105,14 @@ class RuleSet:
         It is possible for multiple rules to match. Lookup is always done from
         specific to general.
         For example, when getting a rule for element with tag (0010,0010):
+
         * A rule for (0010,0010) is preferred over (0010,00xx)
         * A rule for (0010,00xx) is preferred over (0010,xx10)
         * A rule for (0010,xx10) is preferred over (xxxx,0010)
 
+        Generality is determined by the `number_of_matchable_tags()` function
+        of each rule. The more tags that could be matched, the more general
+        the rule is
         """
         # On single tags we can do efficient dictionary lookup
         if rule := self._single_tag_rules_dict.get(self.tag_to_key(element.tag)):

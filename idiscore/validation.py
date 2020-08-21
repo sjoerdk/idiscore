@@ -4,11 +4,16 @@ This differs from regular testing, as there is no one-size-fits all definition
 of what a deidentification method should do.
 
 The validation approach is as follows:
+
 * Open an AnnotatedDataset. This can have annotations per DICOM element, indicating
   which definitely should be removed, which should be kept, etc.
+
 * Deidentify with method X
+
 * Compare before and after deidentification with respect to the annotations
+
 * Repeat for as many examples as you want
+
 * Produce a report specifying the method and the validation results per example
 
 """

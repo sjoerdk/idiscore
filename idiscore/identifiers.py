@@ -21,8 +21,10 @@ class TagIdentifier:
 
     Using just DICOM tags is too limited for defining deidentification. We want
     to be able to represent for example:
+
     * all curves (50xx,xxxx)
-    * a private tag with a variable group ([PrivateCreatorName]01,0010)
+    * a private tag with private creator group (01[PrivateCreatorName],0010)
+
     """
 
     def matches(self, element: DataElement) -> bool:
@@ -34,6 +36,7 @@ class TagIdentifier:
 
         Also. A key should contain all information needed to recreate an instance.
         if 'tag' is a TagIdentifier instance, the following should hold:
+
         >>> tag(tag.key()) == tag
         """
         return str(id(self))

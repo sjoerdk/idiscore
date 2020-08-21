@@ -12,7 +12,7 @@ from idiscore.bouncers import Bouncer, BouncerException
 from idiscore.exceptions import IDISCoreException
 from idiscore.dataset import RequiredTagNotFound
 from idiscore.operators import ElementShouldBeRemoved, Remove
-from idiscore.imageprocessing import (
+from idiscore.image_processing import (
     PixelDataProcessorException,
     PixelProcessor,
 )
@@ -28,7 +28,9 @@ class Profile:
 
     Rules:
     * DICOM tags that are not mentioned explicitly in the profile are kept
+
     * A Profile holds a list of RuleSets. Later Rules overrule earlier
+
     * A profile's RuleSets can be 'collapsed' to have exactly one operation for
       each tag
 
@@ -190,7 +192,12 @@ class Core(Deidentifier):
         return deidentified
 
     def apply_pixel_processor(self, dataset):
-        """Put blackouts in image data if required"""
+        """Paint parts of image data black if required
+
+        Raises
+        ------
+        Dei
+        """
 
         if self.pixel_processor and self.pixel_processor.needs_cleaning(dataset):
             try:
@@ -255,10 +262,6 @@ def split_pixel_data(dataset: Dataset) -> Tuple[Dataset, Optional[DataElement]]:
         return copied, None
 
 
-class DeidentificationException(IDISCoreException):
-    pass
-
-
 def handle_key_error(func):
     def decorated(*args, **kwargs):
         try:
@@ -267,3 +270,7 @@ def handle_key_error(func):
             raise RequiredTagNotFound(f"Required tag not found:{e}")
 
     return decorated
+
+
+class DeidentificationException(IDISCoreException):
+    pass

@@ -12,7 +12,7 @@ from pydicom.dataset import Dataset
 
 from idiscore.exceptions import SafePrivateException
 from idiscore.identifiers import TagIdentifier
-from idiscore.imageprocessing import CriterionException
+from idiscore.image_processing import CriterionException
 
 
 class SafePrivateBlock:

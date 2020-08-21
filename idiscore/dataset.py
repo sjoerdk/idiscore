@@ -28,6 +28,7 @@ class RequiredDataset(Dataset):
 
     Now you can handle missing keys cleanly without accidentally catching other
     KeyErrors:
+
     >>> try:
     >>>     important_dataset_check(rds)
     >>> except RequiredTagNotFound:

@@ -6,7 +6,7 @@ from dicomgenerator.factory import DataElementFactory
 from pydicom.dataset import Dataset
 
 from idiscore.core import Core, Profile
-from idiscore.privateprocessing import SafePrivateBlock, SafePrivateDefinition
+from idiscore.private_processing import SafePrivateBlock, SafePrivateDefinition
 from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import (
     PrivateBlockTagIdentifier,

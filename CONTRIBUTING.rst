@@ -102,8 +102,8 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 2.7, 3.5, 3.6, 3.7 and 3.8, and for PyPy. Check
-   https://travis-ci.org/sjoerdk/idiscore/pull_requests
+3. The pull request should work for Python 3.8, and for PyPy. Check
+   https://github.com/sjoerdk/idiscore/actions?query=workflow%3Abuild
    and make sure that the tests pass for all supported Python versions.
 
 Tips
@@ -114,15 +114,20 @@ To run a subset of tests::
 $ pytest tests.test_idiscore
 
 
-Deploying
----------
+Development
+-----------
+Some notes
 
-A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run::
+* idiscore is python-only. We recommend pycharm as an editor
+* Work via pull requests: clone the idiscore repo, make changes and make a pull request
 
-$ bump2version patch # possible: major / minor / patch
-$ git push
-$ git push --tags
+Code quality
+------------
+All code must conform to `flake8 <https://pypi.org/project/flake8/>`_. And `black <https://pypi.org/project/black/>`_
+Build will fail for non-conformant code.
+Either run flake8 and black yourself (in repo root folder, type `flake8 idiscore tests`, and 'black .') or install the pre-commit hooks::
 
-CI will then deploy to PyPI if tests pass.
+    $ python3 -m pip install pre-commit
+    $ python3 -m pre-commit install
+
+This will run black and flake8 automatically before any commit

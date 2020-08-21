@@ -5,12 +5,14 @@ definitely not be touched?
 Design requirements
 ===================
 * 1 example = Self contained file. An AnnotatedDataset should contain all data
- and annotations. This makes it easy to add examples to a repository and
- to denote which examples a certain test uses.
+  and annotations. This makes it easy to add examples to a repository and
+  to denote which examples a certain test uses.
+
 * Annotations can be edited by text editor. DICOM files that still contain PII are
   often encountered on servers where a terminal is the only communication channel.
   It should be possible to annotate directly, and not face tricky hurdles to adding
   an example to an example library
+
 """
 import json
 from os import PathLike

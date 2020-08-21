@@ -8,7 +8,7 @@ from dicomgenerator.dicom import VRs
 from dicomgenerator.factory import DataElementFactory
 from hashlib import md5
 from idiscore.exceptions import IDISCoreException
-from idiscore.privateprocessing import SafePrivateDefinition
+from idiscore.private_processing import SafePrivateDefinition
 from idiscore.settings import IDIS_CORE_ROOT_UID
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
@@ -25,15 +25,11 @@ class Operator:
     -----
     Responsibilities
 
-    An Operator
+    An Operator:
 
     * Can change the single DICOM data element that is fed to it
     * Can inspect the dataset that is passed to it
     * Can take init arguments and connect to external resources if needed
-
-    * Should NOT Be stateful. ElementOperation.apply(element) should return the same
-      object regardless of what went before. It CAN however rely on external stateful
-      sources like a pseudonymization service.
     * Should NOT alter the dataset that is passed to it
 
     """

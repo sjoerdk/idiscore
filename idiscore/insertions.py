@@ -18,6 +18,7 @@ from pydicom.sequence import Sequence
 from pydicom.tag import Tag
 
 from idiscore.nema import E1_1_METHOD_INFO
+from idiscore import __version__
 
 
 def get_idis_code_sequence(ruleset_names: List[str]) -> DataElement:
@@ -72,10 +73,21 @@ def get_idis_code_sequence(ruleset_names: List[str]) -> DataElement:
     return element
 
 
-def get_deidentification_method(method: str) -> DataElement:
+DEFAULT_DEIDENTIFICATION_METHOD = f"idiscore {__version__}"
+
+
+def get_deidentification_method(
+    method: str = DEFAULT_DEIDENTIFICATION_METHOD,
+) -> DataElement:
     """Create the element (0012,0063) - DeIdentificationMethod
 
     A string description of the deidentification method used
+
+    Parameters
+    ----------
+    method: str, optional
+        String representing the deidentification method used. Defaults to
+        'idiscore <version>'
     """
     return DataElement(
         tag=Tag("DeidentificationMethod"), VR=VRs.LongString.short_name, value=method

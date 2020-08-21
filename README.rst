@@ -27,7 +27,7 @@ IDIS Core
 Deidentification of DICOM images using Attribute Confidentiality Options
 
 
-* Free software: MIT license
+* Free software: GPLv3 License
 * Documentation: https://idiscore.readthedocs.io.
 
 

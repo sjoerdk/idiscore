@@ -2,8 +2,8 @@ import pytest
 from dicomgenerator.factory import CTDatasetFactory
 from pydicom.dataset import Dataset
 
-from idiscore.imageprocessing import CriterionException
-from idiscore.privateprocessing import SafePrivateBlock
+from idiscore.image_processing import CriterionException
+from idiscore.private_processing import SafePrivateBlock
 
 
 def test_private_definition(a_ct_safe_private_definition):

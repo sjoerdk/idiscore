@@ -27,9 +27,9 @@ class PIILocation:
     A PIILocation is 2D. Cleaning will be done on each slice individually.
 
     Responsibilities:
+
     * Holds location information. Does not alter PixelData itself
     * Determine whether it applies to a given Dataset
-
     """
 
     def __init__(
@@ -64,28 +64,46 @@ class PIILocation:
             return self.criterion(dataset)
 
 
+class PIILocationList:
+    """Defines where in images there might by Personally Identifiable information"""
+
+    def __init__(self, locations: List[PIILocation] = None):
+        """
+
+        Parameters
+        ----------
+        locations: List[PIILocation], optional
+            Information on all potentials locations containing personally
+            identifiable information. Defaults to empty list
+        """
+        if locations is None:
+            locations = []
+        self.locations = locations
+
+
 class PixelProcessor:
     """Finds and removes burned-in sensitive information in images
 
     Notes
     -----
     Responsibilities:
+
     * Checking whether a dataset needs cleaning of its pixel data
     * Checking whether redaction can be performed
     * Actually performing the blackout
     """
 
-    def __init__(self, locations: List[PIILocation]):
+    def __init__(self, location_list: PIILocationList):
         """
 
         Parameters
         ----------
-        locations: List[PIILocation]
+        location_list: PIILocationList
             Information on all potentials locations containing personally
             identifiable information
 
         """
-        self.locations = locations
+        self.locations = location_list.locations
 
     @staticmethod
     def needs_cleaning(dataset: Dataset) -> bool:
@@ -115,7 +133,7 @@ class PixelProcessor:
                 or dataset.SOPClassUID == SecondaryCaptureImageStorage
             )
 
-        dataset = RequiredDataset(dataset)  # catch missing keys
+        dataset = RequiredDataset(dataset)  # catch missing keys later
 
         # Cleaning might be needed in the the following cases:
         try:
@@ -147,17 +165,43 @@ class PixelProcessor:
             raise PixelDataProcessorException(e)
 
     def clean_pixel_data(self, dataset: Dataset) -> Dataset:
-        """Remove pixel data in all PII locations and mark the dataset as safe
+        """Remove pixel data that needs cleaning and mark the dataset as safe
+
+        If this dataset does not look suspicious it will not be returned unchanged
 
         Raises
         ------
         PixelDataProcessorException
-            If cleaning pixeldata fails for any reason
+            If pixel data needs cleaning but no information can be found
 
         """
-        pixel_array = dataset.pixel_array
-        for location in self.get_locations(dataset):
-            for area in location.areas:
+        if not self.needs_cleaning(dataset):
+            return dataset  # nothing needs to be done
+
+        # find all locations that contain PII
+        areas = [
+            area for location in self.get_locations(dataset) for area in location.areas
+        ]
+
+        if not areas:
+            summary = {
+                x: dataset.get(x)
+                for x in [
+                    "Modality",
+                    "Manufacturer",
+                    "ManufacturerModelName",
+                    "Rows",
+                    "Columns",
+                    "ImageType",
+                ]
+            }
+            raise PixelDataProcessorException(
+                f"Image data is suspicious, but I could not find any location to "
+                f"clean. You should probably add an image location for {summary}"
+            )
+        else:
+            pixel_array = dataset.pixel_array
+            for area in areas:
 
                 # extract the square location an set its value to 0
                 pixel_array[
@@ -165,8 +209,12 @@ class PixelProcessor:
                     area.origin_x : area.origin_x + area.width,
                 ] = 0
 
-                # write back data
-                dataset.PixelData = pixel_array.tobytes()
+            # write back data
+            dataset.PixelData = pixel_array.tobytes()
+
+            # mark as having no burned in annotation as per PS3.15 E3.1
+            dataset.BurnedInAnnotation = "NO"
+
         return dataset
 
 
