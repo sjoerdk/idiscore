@@ -105,7 +105,7 @@ class Empty(Operator):
         self, element: DataElement, dataset: Optional[Dataset] = None
     ) -> DataElement:
         copied = copy(element)
-        copied.value = ""
+        copied.value = None
         return copied
 
 
