@@ -17,7 +17,7 @@ def create_default_core(
     safe_private_definition: SafePrivateDefinition = None,
     location_list: PIILocationList = None,
 ) -> Core:
-    """A deidentification core with the following profile:
+    """A default deidentification core with the following profile:
 
     * basic_profile
     * clean_descriptors
@@ -25,8 +25,6 @@ def create_default_core(
     * retain_device_id
     * retain_safe_private
 
-    Which rejects non-standard dicom and encapsulated pdfs
-    and inserts some tags that indicate deidentification has been performed
 
     Parameters
     ----------
@@ -38,17 +36,67 @@ def create_default_core(
         information
 
     """
-    clean = Clean(safe_private=safe_private_definition)
-    sets = DICOMRuleSets(action_mapping={ActionCodes.CLEAN: clean})
+    sets = get_dicom_rule_sets(safe_private_definition)
     profile = Profile(  # Choose which rule sets to use
+        name="idiscore default profile",
         rule_sets=[
             sets.basic_profile,
             sets.clean_descriptors,
             sets.retain_patient_characteristics,
             sets.retain_device_id,
             sets.retain_safe_private,
-        ]
+        ],
     )
+    return create_core(
+        profile=profile,
+        safe_private_definition=safe_private_definition,
+        location_list=location_list,
+    )
+
+
+def get_dicom_rule_sets(
+    safe_private_definition: SafePrivateDefinition = None,
+) -> DICOMRuleSets:
+    """Create the standard DICOM rule sets
+
+    Parameters
+    ----------
+    safe_private_definition: SafePrivateDefinition, optional
+        Which private tags are safe to keep. Defaults to keeping none
+
+    Returns
+    -------
+    DICOMRuleSets
+        All standard DICOM rule sets, optionally with built in safe private
+        definitions
+
+    """
+    clean = Clean(safe_private=safe_private_definition)
+    return DICOMRuleSets(action_mapping={ActionCodes.CLEAN: clean})
+
+
+def create_core(
+    profile: Profile,
+    safe_private_definition: SafePrivateDefinition = None,
+    location_list: PIILocationList = None,
+) -> Core:
+    """A deidentification core with defaults
+
+    Which rejects non-standard dicom and encapsulated pdfs
+    and inserts some tags that indicate deidentification has been performed
+
+    Parameters
+    ----------
+    profile: Profile,
+        The deidentification profile to use
+    safe_private_definition: SafePrivateDefinition, optional
+        Which private tags are safe to keep. Defaults to keeping none
+    location_list: PIILocationList, optional
+        Definition of where to remove burnt in information from images.
+        Defaults to simply rejecting all datasets that might have burnt in
+        information
+
+    """
     # insert some info on what type of deidentification was performed
     insertions = [
         get_idis_code_sequence([x.name for x in profile.rule_sets]),

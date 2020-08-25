@@ -1,4 +1,4 @@
-"""Basic example of deidentifying a single file"""
+"""How mark safe private tags and known PII locations"""
 
 import pydicom
 from idiscore.core import Core, Profile

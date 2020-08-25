@@ -2,7 +2,6 @@
 from typing import List, Optional, Tuple
 
 from dicomgenerator.dicom import VRs
-from jinja2 import Template
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 from pydicom.sequence import Sequence
@@ -17,7 +16,13 @@ from idiscore.image_processing import (
     PixelProcessor,
 )
 from idiscore.rules import RuleSet
-from idiscore.templates import idiscore_description, profile_description
+from idiscore.templates import (
+    idiscore_description_rst,
+    idiscore_description_txt,
+    jinja_env,
+    profile_description_rst,
+    profile_description_txt,
+)
 from idiscore.validation import Deidentifier
 
 
@@ -75,10 +80,30 @@ class Profile:
 
         return RuleSet(name="flattened", rules=set(output.values()))
 
-    def description(self) -> str:
-        """A multi-line, human readable description of this profile"""
+    def description(self, text_format: str = "txt") -> str:
+        """A multi-line, human readable description of this profile
+
+        Parameters
+        ----------
+        text_format: str,optional
+            Format of output. Either 'txt' for flat string description, or 'rst'
+            for Sphinx rst. Defaults to txt
+
+        Raises
+        ------
+        ValueError
+            For unknown format
+        """
+        if text_format == "txt" or not text_format:
+            template = profile_description_txt
+        elif text_format == "rst":
+            template = profile_description_rst
+        else:
+            raise ValueError(
+                f"{text_format} is not a valid format. Allowed:" f' ["txt","rst"]'
+            )
         rules = self.flatten().rules
-        return Template(profile_description).render(
+        return jinja_env.from_string(template).render(
             profile_name=self.name,
             rule_set_names=[f"* {x.name}" for x in self.rule_sets],
             rule_strings_by_name=sorted([x.as_human_readable() for x in rules]),
@@ -196,7 +221,8 @@ class Core(Deidentifier):
 
         Raises
         ------
-        Dei
+        DeidentificationException
+            When dataset can not be processed
         """
 
         if self.pixel_processor and self.pixel_processor.needs_cleaning(dataset):
@@ -206,16 +232,35 @@ class Core(Deidentifier):
                 raise DeidentificationException(e)
         return dataset
 
-    def description(self) -> str:
+    def description(self, text_format: str = "txt") -> str:
         """A multi-line, human readable description of this instance
 
         what happens to each tag, which data will be rejected, etc.
-        """
 
-        return Template(idiscore_description).render(
+        Parameters
+        ----------
+        text_format: str,optional
+            Format of output. Either 'txt' for flat string description, or 'rst'
+            for Sphinx rst. Defaults to txt
+
+        Raises
+        ------
+        ValueError
+            For unknown format
+        """
+        if text_format == "txt" or not text_format:
+            template = idiscore_description_txt
+        elif text_format == "rst":
+            template = idiscore_description_rst
+        else:
+            raise ValueError(
+                f"{text_format} is not a valid format. Allowed:" f' ["txt","rst"]'
+            )
+
+        return jinja_env.from_string(template).render(
             idiscore_lib_version=__version__,
             bouncer_descriptions=[x.description for x in self.bouncers],
-            profile_description=self.profile.description()
+            profile_description=self.profile.description(text_format=text_format)
             # if applicable, safe private
         )
 

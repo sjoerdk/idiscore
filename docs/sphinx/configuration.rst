@@ -9,4 +9,4 @@ datasets might be rejected and more DICOM elements might be removed then might b
 
 Changing deidentification
 =========================
-To extend or alter deidentification, you     can extend or alter the python modules that make up core.
+To extend or alter deidentification, you can extend or alter the python modules that make up core.

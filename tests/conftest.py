@@ -59,6 +59,16 @@ def some_private_identifiers() -> List[PrivateBlockTagIdentifier]:
 
 
 @pytest.fixture
+def some_private_identifier_strings() -> List[str]:
+    return [
+        "0023[SIEMENS MED SP DXMG WH AWS 1]10",
+        "0023[SIEMENS MED SP DXMG WH AWS 1]11",
+        "00b1[TestCreator]01",
+        "00b1[TestCreator]02",
+    ]
+
+
+@pytest.fixture
 def a_ct_safe_private_definition(some_private_identifiers):
     """Some safe private rules that only apply to Modality=CT datasets"""
     return SafePrivateBlock(

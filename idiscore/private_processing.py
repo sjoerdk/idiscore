@@ -5,13 +5,13 @@ the form tag -> operation. Sometimes you need to inspect the entire dataset, for
 example to check modality or vendor.
 """
 
-from typing import Callable, Iterable, List, Optional, Set
+from typing import Callable, Iterable, List, Optional, Set, Union
 
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 
 from idiscore.exceptions import SafePrivateException
-from idiscore.identifiers import TagIdentifier
+from idiscore.identifiers import PrivateBlockTagIdentifier, TagIdentifier
 from idiscore.image_processing import CriterionException
 
 
@@ -23,7 +23,7 @@ class SafePrivateBlock:
 
     def __init__(
         self,
-        tags: Iterable[TagIdentifier],
+        tags: Iterable[Union[PrivateBlockTagIdentifier, str]],
         criterion: Optional[Callable[[Dataset], bool]] = None,
         comment: str = "",
     ):
@@ -31,20 +31,42 @@ class SafePrivateBlock:
 
         Parameters
         ----------
-        tags: Iterable[TagIdentifier]
-            One ore more Tags of private DICOM elements
+        tags: Iterable[Union[PrivateBlockTagIdentifier, str]]
+            One ore more Tags of private DICOM elements, or strings representing such
+            elements
         criterion: Callable[[Dataset], bool], optional
             Function that is fed a Dataset instance. Returns True if the private
             elements are safe to keep in the dataset. May raise CriterionException
             if a True or False answer cannot be given. Defaults to None, in which
-            case the elements are always considered safe
+            case tags are always considered safe regardless of the containing dataset
         comment: str
             human readable explanation of why these tags are safe, or the domain in
             which they are safe (only in this hospital, only for these machines etc.)
         """
-        self.tags = tags
+        self.tags = [self.to_tag_identifier(x) for x in tags]
         self.criterion = criterion
         self.comment = comment
+
+    @staticmethod
+    def to_tag_identifier(
+        tag_or_string: Union[PrivateBlockTagIdentifier, str]
+    ) -> PrivateBlockTagIdentifier:
+        """Cast any string to tag identifier. If already a TagIdentifier do nothing
+
+        Returns
+        -------
+        TagIdentifier
+
+        Raises
+        ------
+        ValueError
+            if tag is string and is not in the correct format
+
+        """
+        if isinstance(tag_or_string, PrivateBlockTagIdentifier):
+            return tag_or_string
+        else:
+            return PrivateBlockTagIdentifier(tag_or_string)
 
     def get_safe_private_tags(self, dataset: Dataset) -> Set[TagIdentifier]:
         """The private tags that are safe to keep, given this dataset

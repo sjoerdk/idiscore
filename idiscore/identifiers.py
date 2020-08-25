@@ -254,7 +254,7 @@ class PrivateTags(TagIdentifier):
 
 
 class PrivateBlockTagIdentifier(TagIdentifier):
-    """A private DICOM tag with a private creator. Like '0013,[MyCompany]01)
+    """A private DICOM tag with a private creator. Like '0013,[MyCompany]01'
 
     In this example [MyCompany] refers whatever block was reserved by private
     creator identifier 'MyCompany'
@@ -277,6 +277,11 @@ class PrivateBlockTagIdentifier(TagIdentifier):
         tag: str
             In the format 'xxxx,[private_creator]yy' where xxxx and yy are
             interpreted as hexadecimals
+
+        Raises
+        ------
+        ValueError
+            if tag is not in the correct format
 
         """
         self.group, self.private_creator, self.element = self.parse_tag(tag)
