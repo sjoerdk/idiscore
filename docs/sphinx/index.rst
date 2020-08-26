@@ -2,7 +2,7 @@ Welcome to IDIS Core's documentation!
 ======================================
 
 IDIS core de-identifies DICOM datasets. It does this by removing or replacing DICOM elements when needed. All DICOM
-processing is based on `pydicom <https://pydicom.github.io/pydicom/stable/>`_ . It processes in accordance to the
+processing is based on `pydicom <https://pydicom.github.io/pydicom/stable/>`_. It processes in accordance to the
 `DICOM deidentification profile and options <http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html#table_E.1-1>`_.
 
 
@@ -62,8 +62,7 @@ CTP
 deid
     `pydicom deid <https://github.com/pydicom/deid>`_ is a pydicom based best-effort anonymizer for medical image data.
     It is part of the pydicom family. It has `extensive and friendly documentation <https://pydicom.github.io/deid/>`_
-    and get several concepts right.
-    Reasons for not expanding on this library and instead starting a new one:
+    and get several concepts right. Reasons for not expanding on this library and instead starting a new one:
 
     * There seems to have been little development since the libraries start in 2017
     * Seems to be quite file-based in places, often requiring input and output folders for initializing objects
@@ -72,19 +71,12 @@ deid
       anonymization. This is useful for non-coding end-users, but adds a layer of indirectness to automated testing.
 
 
-Concepts
-========
-
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    readme
    getting_started
-   installation
-   configuration
-   usage
    advanced
    concepts
    modules

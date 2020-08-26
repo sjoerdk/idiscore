@@ -53,12 +53,3 @@ DICOM example tool
 PII
     Personally Identifiable Information. Information in a DICOM dataset that can be used to trace back the dataset to
     a single person. Deidentification attempts to remove all such information
-
-
-.. _how_does_idiscore_deidentify_a_dataset:
-
-How does idiscore deidentify a dataset
-======================================
-
-A depth-first dive into the :func:`idiscore.core.Core.deidentify` method
-

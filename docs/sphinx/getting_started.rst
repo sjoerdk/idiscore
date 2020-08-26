@@ -10,7 +10,7 @@ Installation
 
     $ pip install idiscore
 
-For more details see `installation`_
+For more details see :ref:`installation`
 
 
 How to run idiscore
@@ -29,11 +29,9 @@ Idiscore is meant to be used within a python script:
     ds.save_as("deidentified.dcm")    # save to disk
 
 
-Configuration
-=============
 
 Choosing a deidentification profile
------------------------------------
+===================================
 
 Deidentification is based on the DICOM standard deidentification profile and one or more
 `DICOM Confidentiality options <http://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.html>`_.
@@ -60,8 +58,10 @@ The rule sets in idiscore implement the rules in
 `DICOM PS3.15 table E.1-1 <http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html>`_.
 
 Safe Private and PII location list
-----------------------------------
-The rule sets determine how to process each DICOM element. There are two areas however that require extra consideration:
+==================================
+
+Safe private and PII location lists are often needed for more advanced deidentification. They address two special types
+of data:
 
 Private DICOM tags
     These are non-standard tags that can be written into a DICOM dataset by any manufacturer. A list of private tags
@@ -72,27 +72,43 @@ PixelData
     often the case for ultrasound images for example. To handle this a list of known PII locations can be passed to an
     idiscore instance. Without this list, datasets with burnt-in information will be rejected
 
-Here is an example of passing both lists to an idiscore instance::
+Here is an example of passing both lists to an idiscore instance:
 
-Sometimes you want to keep these tags however. To do so make sure you use the
-    'Retain safe private' rule set, and add the tags you consider safe to
+..  code-block:: python
 
+    from idiscore.defaults import create_default_core
+    from idiscore.image_processing import PIILocation, PIILocationList, SquareArea
+    from idiscore.private_processing import SafePrivateBlock, SafePrivateDefinition
 
+    safe_private = SafePrivateDefinition(
+        blocks=[
+            SafePrivateBlock(
+                tags=["0023[SIEMENS MED SP DXMG WH AWS 1]10",
+                      "0023[SIEMENS MED SP DXMG WH AWS 1]11",
+                      "00b1[TestCreator]01",
+                      "00b1[TestCreator]02"],
+                criterion=lambda x: x.Modality == "CT",
+                comment='Some test tags, only valid for CT datasets'),
+            SafePrivateBlock(
+                tags=["00b1[othercreator]11", "00b1[othercreator]12"],
+                comment='Some more test tags, without a criterion')])
 
+    location_list = PIILocationList(
+        [PIILocation(
+            areas=[SquareArea(5, 10, 4, 12),
+                   SquareArea(0, 0, 20, 3)],
+            criterion=lambda x: x.Rows == 265 and x.Columns == 512
+         ),
+         PIILocation(
+            areas=[SquareArea(0, 200, 4, 12)],
+            criterion=lambda x: x.Rows == 265 and x.Columns == 712
+         )]
+    )
 
+    core = create_default_core(safe_private_definition=safe_private,
+                           location_list=location_list)
 
+.. tip:: When passing a safe private definition, make sure the rule set `Retain Safe Private` is included in your
+         profile
 
-In many cases two extra lists are required for useful
-
-In addition to the rule sets
-Two areas of To deidentify a DICOM dataset properly
-
-Two lists are usually needed
-
-
-
-Examples
-
-Advanced
-    - How DICOM elements are processed
-    - How to modify and extend processing
+For more information on how idiscore works, see :ref:`advanced`.

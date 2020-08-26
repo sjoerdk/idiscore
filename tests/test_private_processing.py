@@ -4,7 +4,7 @@ from pydicom.dataset import Dataset
 
 from idiscore.identifiers import TagIdentifier
 from idiscore.image_processing import CriterionException
-from idiscore.private_processing import SafePrivateBlock
+from idiscore.private_processing import SafePrivateBlock, SafePrivateDefinition
 
 
 def test_private_definition(a_ct_safe_private_definition):
@@ -54,3 +54,31 @@ def test_private_definition_string_exception():
     """If initialise with rubbish a ValueError will be raised"""
     with pytest.raises(ValueError):
         SafePrivateBlock(tags=["not_a_private_block_tag"])
+
+
+def test_private_definition_strings():
+    """Just testing human readable input of private definition"""
+
+    definition = SafePrivateDefinition(
+        blocks=[
+            SafePrivateBlock(
+                tags=[
+                    "0023[SIEMENS MED SP DXMG WH AWS 1]10",
+                    "0023[SIEMENS MED SP DXMG WH AWS 1]11",
+                    "00b1[TestCreator]01",
+                    "00b1[TestCreator]02",
+                ],
+                criterion=lambda x: x.Modality == "CT",
+                comment="Just some test tags",
+            ),
+            SafePrivateBlock(
+                tags=["00b1[othercreator]11", "00b1[othercreator]12"],
+                comment="Some more test tags, without a criterion",
+            ),
+        ]
+    )
+    # for a CT dataset all tags are considered safe
+    assert len(definition.safe_identifiers(CTDatasetFactory())) == 6
+
+    # for a US dataset only the last block is considered safe
+    assert len(definition.safe_identifiers(CTDatasetFactory(Modality="US"))) == 2

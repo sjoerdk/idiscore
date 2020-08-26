@@ -47,11 +47,7 @@ def create_default_core(
             sets.retain_safe_private,
         ],
     )
-    return create_core(
-        profile=profile,
-        safe_private_definition=safe_private_definition,
-        location_list=location_list,
-    )
+    return create_core(profile=profile, location_list=location_list,)
 
 
 def get_dicom_rule_sets(
@@ -75,11 +71,7 @@ def get_dicom_rule_sets(
     return DICOMRuleSets(action_mapping={ActionCodes.CLEAN: clean})
 
 
-def create_core(
-    profile: Profile,
-    safe_private_definition: SafePrivateDefinition = None,
-    location_list: PIILocationList = None,
-) -> Core:
+def create_core(profile: Profile, location_list: PIILocationList = None,) -> Core:
     """A deidentification core with defaults
 
     Which rejects non-standard dicom and encapsulated pdfs
@@ -89,8 +81,6 @@ def create_core(
     ----------
     profile: Profile,
         The deidentification profile to use
-    safe_private_definition: SafePrivateDefinition, optional
-        Which private tags are safe to keep. Defaults to keeping none
     location_list: PIILocationList, optional
         Definition of where to remove burnt in information from images.
         Defaults to simply rejecting all datasets that might have burnt in

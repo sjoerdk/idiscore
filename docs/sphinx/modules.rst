@@ -36,6 +36,16 @@ idiscore.dataset module
    :undoc-members:
    :show-inheritance:
 
+
+idiscore.defaults module
+------------------------
+
+.. automodule:: idiscore.defaults
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 idiscore.delta module
 ---------------------
 

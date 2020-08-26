@@ -3,6 +3,7 @@
 import pydicom
 from idiscore.defaults import create_default_core
 
+
 core = create_default_core()  # create an idiscore instance
 
 ds = pydicom.read("my_file.dcm")  # load a DICOM dataset
