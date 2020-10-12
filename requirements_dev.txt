@@ -9,7 +9,7 @@ coverage==5.3
 flake8==3.8.4
 pip==20.2.3
 Sphinx==3.2.1
-tox==3.16.1
+tox==3.20.1
 twine==3.2.0
 watchdog==0.10.3
 pre-commit==2.6.0
