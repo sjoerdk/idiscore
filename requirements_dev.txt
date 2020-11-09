@@ -3,7 +3,7 @@ bump2version==1.0.1
 pytest==6.1.2
 pytest-runner==5.2
 dicomgenerator==0.3.7
-pydicom==2.0.0
+pydicom==2.1.1
 factory-boy==2.12
 coverage==5.2
 flake8==3.8.3
