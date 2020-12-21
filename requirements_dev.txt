@@ -7,7 +7,7 @@ pydicom==2.1.2
 factory-boy==3.1.0
 coverage==5.3.1
 flake8==3.8.4
-pip==20.1.1
+pip==20.3.3
 Sphinx==3.4.0
 tox==3.16.1
 twine==3.2.0
