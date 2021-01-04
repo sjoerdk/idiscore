@@ -11,5 +11,5 @@ pip==20.3.3
 Sphinx==3.4.2
 tox==3.20.1
 twine==3.3.0
-watchdog==0.10.3
+watchdog==1.0.2
 pre-commit==2.6.0
