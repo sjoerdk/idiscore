@@ -12,4 +12,4 @@ Sphinx==3.4.3
 tox==3.21.1
 twine==3.3.0
 watchdog==1.0.2
-pre-commit==2.6.0
+pre-commit==2.9.3
