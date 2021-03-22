@@ -10,6 +10,6 @@ flake8==3.9.0
 pip==21.0.1
 Sphinx==3.5.3
 tox==3.23.0
-twine==3.3.0
+twine==3.4.1
 watchdog==1.0.2
 pre-commit==2.10.1
