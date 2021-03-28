@@ -155,12 +155,12 @@ class RepeatingTag:
         # remove potential brackets and comma. Make lower case to reduce clutter
         tag = clean_tag_string(tag).lower()
         if len(tag) != 8:
-            raise ValueError(f"Tag should be 8 characters long")
+            raise ValueError("Tag should be 8 characters long")
         # check whether this is a valid hex string if you discount the x's
         try:
             int(f'0x{tag.replace("x","0")}', 0)
         except ValueError:
-            raise ValueError(f'Non "x" parts of this tag are not hexadecimal')
+            raise ValueError('Non "x" parts of this tag are not hexadecimal')
 
         return tag
 
@@ -250,7 +250,7 @@ class PrivateTags(TagIdentifier):
     @staticmethod
     def as_python() -> str:
         """For special export. Python code that recreates this instance"""
-        return f"PrivateTags()"
+        return "PrivateTags()"
 
 
 class PrivateBlockTagIdentifier(TagIdentifier):

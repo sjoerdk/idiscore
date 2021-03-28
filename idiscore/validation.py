@@ -94,7 +94,7 @@ class ValidationResult:
         output = f"Validation of '{self.deidentifier_description}'\n"
         output += f"On {len(self.results)} DICOM examples\n\n"
 
-        output += f"Results per example:\n"
+        output += "Results per example:\n"
         for example, results in self.results.items():
             errors = [x.message for x in results if not x.has_succeeded]
             if errors:

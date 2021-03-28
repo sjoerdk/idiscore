@@ -38,9 +38,9 @@ jobs:
         pytest --cov=./idiscore --cov-report=xml
     - name: Codecov
       uses: codecov/codecov-action@v1.0.7
-    - name: PyPI Deployment
+    - name: pypi-publish
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-      uses: casperdcl/deploy-pypi@v1
+      uses: pypa/gh-action-pypi-publish@v1.1.0
       with:
-        password: ${{ secrets.pypi_password }}
-        build: true
+        user: __token__
+        password: ${{ secrets.pypi_password }
