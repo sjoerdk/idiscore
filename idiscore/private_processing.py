@@ -4,7 +4,7 @@ Is a private tag is safe to keep? This can not be answered with regular rules of
 the form tag -> operation. Sometimes you need to inspect the entire dataset, for
 example to check modality or vendor.
 """
-
+import itertools
 from typing import Callable, Iterable, List, Optional, Set, Union
 
 from pydicom.dataelem import DataElement
@@ -119,10 +119,16 @@ class SafePrivateDefinition:
         SafePrivateException
             If safe identifiers cannot be determined
         """
-        identifiers = []
-        for definition in self.blocks:
-            try:
-                identifiers += definition.get_safe_private_tags(dataset)
-            except CriterionException as e:
-                raise SafePrivateException(e)
-        return identifiers
+        try:
+            return list(
+                itertools.chain(
+                    *(
+                        list(
+                            block.get_safe_private_tags(dataset)
+                            for block in self.blocks
+                        )
+                    )
+                )
+            )
+        except CriterionException as e:
+            raise SafePrivateException(e)

@@ -42,7 +42,8 @@ idiscore lib version: {{ idiscore_lib_version }}
 {{ profile_description }}
 """
 
-profile_description_rst = """{% filter make_h2 %}Profile '{{ profile_name }}'{% endfilter %}
+profile_description_rst = """{% filter make_h2 %}Profile '{{ profile_name }}'
+{% endfilter %}
 
 {{ 'Rule sets:'|make_h3 }}
 

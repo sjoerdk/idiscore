@@ -1,18 +1,18 @@
 import hashlib
 import random
-
 from copy import copy
-from datetime import timedelta
-from datetime import datetime
+from datetime import datetime, timedelta
+from hashlib import md5
+from typing import Optional, Tuple, Union
+
 from dicomgenerator.dicom import VRs
 from dicomgenerator.factory import DataElementFactory
-from hashlib import md5
+from pydicom.dataelem import DataElement
+from pydicom.dataset import Dataset
+
 from idiscore.exceptions import IDISCoreException
 from idiscore.private_processing import SafePrivateDefinition
 from idiscore.settings import IDIS_CORE_ROOT_UID
-from pydicom.dataelem import DataElement
-from pydicom.dataset import Dataset
-from typing import Optional, Tuple, Union
 
 
 class Operator:
@@ -260,7 +260,9 @@ class Clean(Operator):
             except ValueError:
                 continue  # try next format
 
-        raise ValueError(f"Value {value} did not fit any" f" of the formats {formats}")
+        raise ValueError(
+            f"Value {value} did not fit any" f" of the formats " f"{formats}"
+        )
 
     def is_safe(self, element: DataElement, dataset: Dataset) -> bool:
         """True if this element is safe according to safe private definition

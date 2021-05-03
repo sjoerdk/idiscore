@@ -1,9 +1,5 @@
 from functools import wraps
 
-from idiscore.dataset import RequiredDataset, RequiredTagNotFound
-from idiscore.exceptions import IDISCoreException
-from pydicom.dataset import Dataset
-
 from pydicom._storage_sopclass_uids import (
     ColorSoftcopyPresentationStateStorage,
     EncapsulatedCDAStorage,
@@ -11,6 +7,10 @@ from pydicom._storage_sopclass_uids import (
     GrayscaleSoftcopyPresentationStateStorage,
     KeyObjectSelectionDocumentStorage,
 )
+from pydicom.dataset import Dataset
+
+from idiscore.dataset import RequiredDataset, RequiredTagNotFound
+from idiscore.exceptions import IDISCoreException
 
 
 def handle_required_tag_not_found(func):

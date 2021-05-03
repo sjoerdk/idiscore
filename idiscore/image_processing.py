@@ -1,11 +1,12 @@
 """Classes and methods for working with image part of a DICOM dataset"""
-from typing import Callable, List
 from dataclasses import dataclass
+from typing import Callable, List
+
+from pydicom._storage_sopclass_uids import SecondaryCaptureImageStorage
+from pydicom.dataset import Dataset
 
 from idiscore.dataset import RequiredDataset, RequiredTagNotFound
 from idiscore.exceptions import IDISCoreException
-from pydicom._storage_sopclass_uids import SecondaryCaptureImageStorage
-from pydicom.dataset import Dataset
 
 
 @dataclass(frozen=True)
