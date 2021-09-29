@@ -1,6 +1,7 @@
 """Basic example of deidentifying a single file"""
 
 import pydicom
+
 from idiscore.core import Core, Profile
 from idiscore.defaults import get_dicom_rule_sets
 
@@ -11,4 +12,4 @@ profile = Profile(  # Choose which rule sets to use
 core = Core(profile)  # Create an deidentification core
 
 # read a DICOM dataset from file and write to another
-core.deidentify(pydicom.read("my_file.dcm")).save_as("deidentified.dcm")
+core.deidentify(pydicom.dcmread("my_file.dcm")).save_as("deidentified.dcm")

@@ -1,6 +1,6 @@
 """Classes and methods for working with image part of a DICOM dataset"""
 from dataclasses import dataclass
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 from pydicom._storage_sopclass_uids import SecondaryCaptureImageStorage
 from pydicom.dataset import Dataset
@@ -68,7 +68,7 @@ class PIILocation:
 class PIILocationList:
     """Defines where in images there might by Personally Identifiable information"""
 
-    def __init__(self, locations: List[PIILocation] = None):
+    def __init__(self, locations: Optional[List[PIILocation]] = None):
         """
 
         Parameters
@@ -150,7 +150,7 @@ class PixelProcessor:
             raise PixelDataProcessorException(
                 f"Missing DICOM element. I can not determine whether to clean "
                 f"the pixels or not. Original error: {e}"
-            )
+            ) from e
 
     def get_locations(self, dataset: Dataset) -> List[PIILocation]:
         """Get all locations with person information in the current dataset
@@ -163,7 +163,7 @@ class PixelProcessor:
         try:
             return [x for x in self.locations if x.exists_in(dataset)]
         except CriterionException as e:
-            raise PixelDataProcessorException(e)
+            raise PixelDataProcessorException(e) from e
 
     def clean_pixel_data(self, dataset: Dataset) -> Dataset:
         """Remove pixel data that needs cleaning and mark the dataset as safe

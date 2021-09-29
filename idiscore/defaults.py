@@ -81,7 +81,7 @@ def create_core(profile: Profile, location_list: PIILocationList = None,) -> Cor
     ----------
     profile: Profile,
         The deidentification profile to use
-    location_list: PIILocationList, optional
+    location_list: PIILocationList, optionalPrivateTag
         Definition of where to remove burnt in information from images.
         Defaults to simply rejecting all datasets that might have burnt in
         information
@@ -95,12 +95,16 @@ def create_core(profile: Profile, location_list: PIILocationList = None,) -> Cor
     ]
 
     bouncers = [RejectEncapsulatedImageStorage(), RejectNonStandardDicom()]
+    if not location_list:
+        pixel_processor = None
+    else:
+        pixel_processor = PixelProcessor(location_list)
 
     core = Core(
         profile=profile,
         insertions=insertions,
         bouncers=bouncers,
-        pixel_processor=PixelProcessor(PIILocationList(location_list)),
+        pixel_processor=pixel_processor,
     )
 
     return core

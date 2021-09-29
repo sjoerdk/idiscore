@@ -8,10 +8,11 @@ such as default implementations for the action codes should be put in 'rule_sets
 from collections import namedtuple
 from typing import Dict, List, Tuple
 
-from idiscore.rules import Rule, RuleSet
+
 from idiscore.exceptions import IDISCoreException
 from idiscore.identifiers import TagIdentifier
 from idiscore.operators import Operator
+from idiscore.rules import Rule, RuleSet
 
 ActionCode = namedtuple("ActionCode", ["key", "var_name"])
 
@@ -65,18 +66,18 @@ class ActionCodes:
         """I've got a string. Which action code is this?"""
         try:
             return cls.PER_STRING[key]
-        except KeyError:
+        except KeyError as e:
             raise ValueError(
                 f"Unknown action code '{key}'. I "
                 f"know {','.join([str(x) for x in cls.ALL])}"
-            )
+            ) from e
 
 
 # The header name in table E1-1 for basic profile and options
 # with codes from Table CID 7050 in PS3.16
 # format: <header name>, <profile or option name>, <short_name>, <code>
 NemaDeidMethodInfo = namedtuple(
-    "NemaProfile", ["table_header", "full_name", "short_name", "code"]
+    "NemaDeidMethodInfo", ["table_header", "full_name", "short_name", "code"]
 )
 
 E1_1_METHOD_INFO = [
@@ -170,11 +171,11 @@ class RawNemaRuleSet:
         for identifier, actioncode in self.rules:
             try:
                 operation = action_mapping[actioncode]
-            except KeyError:
+            except KeyError as e:
                 raise IDISCoreException(
                     f'Unknown actioncode "{actioncode}" I do'
                     f" not know which operation add here"
-                )
+                ) from e
             compiled.append(Rule(identifier=identifier, operation=operation))
 
         return RuleSet(rules=compiled, name=self.name)
