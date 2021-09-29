@@ -10,7 +10,7 @@ from dicomgenerator.factory import DataElementFactory
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 
-from idiscore.exceptions import IDISCoreException
+from idiscore.exceptions import IDISCoreError
 from idiscore.private_processing import SafePrivateDefinition
 from idiscore.settings import IDIS_CORE_ROOT_UID
 
@@ -155,10 +155,10 @@ class TimeDeltaProvider:
         """
         try:
             return dataset.StudyInstanceUID
-        except AttributeError:
+        except AttributeError as e:
             raise ValueError(
                 "Cannot determine key. This dataset has no" " StudyInstanceUID"
-            )
+            ) from e
 
 
 class Clean(Operator):
@@ -269,7 +269,7 @@ class Clean(Operator):
 
         Raises
         ------
-        SafePrivateException
+        SafePrivateError
             If for some reason it cannot be determined whether this is safe
         """
         if not self.safe_private:
@@ -385,5 +385,5 @@ class SetFixedValue(Operator):
         return DataElement(tag=element.tag, VR=element.VR, value=self.value)
 
 
-class ElementShouldBeRemoved(IDISCoreException):
+class ElementShouldBeRemoved(IDISCoreError):
     pass

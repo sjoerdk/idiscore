@@ -10,7 +10,7 @@ from pydicom._storage_sopclass_uids import (
 from pydicom.dataset import Dataset
 
 from idiscore.dataset import RequiredDataset, RequiredTagNotFound
-from idiscore.exceptions import IDISCoreException
+from idiscore.exceptions import IDISCoreError
 
 
 def handle_required_tag_not_found(func):
@@ -27,7 +27,7 @@ def handle_required_tag_not_found(func):
             raise BouncerException(
                 f"Required tag not found in dataset. I cannot determine whether"
                 f' this is safe. Error: "{e}"'
-            )
+            ) from e
 
     return decorated
 
@@ -131,5 +131,5 @@ class RejectEncapsulatedImageStorage(Bouncer):
             )
 
 
-class BouncerException(IDISCoreException):
+class BouncerException(IDISCoreError):
     pass

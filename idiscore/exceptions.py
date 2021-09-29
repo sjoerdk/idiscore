@@ -1,12 +1,12 @@
-class IDISCoreException(Exception):
+class IDISCoreError(Exception):
     """Base for all exceptions in IDIS core"""
 
     pass
 
 
-class SafePrivateException(IDISCoreException):
+class SafePrivateError(IDISCoreError):
     pass
 
 
-class AnnotationValidationFailed(IDISCoreException):
+class AnnotationValidationFailedError(IDISCoreError):
     pass

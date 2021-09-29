@@ -8,13 +8,13 @@ from pydicom.sequence import Sequence
 
 from idiscore import __version__
 from idiscore.bouncers import Bouncer, BouncerException
-from idiscore.exceptions import IDISCoreException
 from idiscore.dataset import RequiredTagNotFound
-from idiscore.operators import ElementShouldBeRemoved, Remove
+from idiscore.exceptions import IDISCoreError
 from idiscore.image_processing import (
     PixelDataProcessorException,
     PixelProcessor,
 )
+from idiscore.operators import ElementShouldBeRemoved, Remove
 from idiscore.rules import RuleSet
 from idiscore.templates import (
     idiscore_description_rst,
@@ -152,7 +152,7 @@ class Core(Deidentifier):
 
         Raises
         ------
-        DeidentificationException
+        DeidentificationError
             If deidentification fails for any reason
 
         Notes
@@ -221,7 +221,7 @@ class Core(Deidentifier):
 
         Raises
         ------
-        DeidentificationException
+        DeidentificationError
             When dataset can not be processed
         """
 
@@ -229,7 +229,7 @@ class Core(Deidentifier):
             try:
                 dataset = self.pixel_processor.clean_pixel_data(dataset)
             except PixelDataProcessorException as e:
-                raise DeidentificationException(e)
+                raise DeidentificationError(e) from e
         return dataset
 
     def description(self, text_format: str = "txt") -> str:
@@ -271,7 +271,7 @@ class Core(Deidentifier):
             try:
                 bouncer.inspect(dataset)
             except BouncerException as e:
-                raise DeidentificationException(e)
+                raise DeidentificationError(e) from e
 
 
 def split_pixel_data(dataset: Dataset) -> Tuple[Dataset, Optional[DataElement]]:
@@ -312,10 +312,10 @@ def handle_key_error(func):
         try:
             func(*args, **kwargs)
         except KeyError as e:
-            raise RequiredTagNotFound(f"Required tag not found:{e}")
+            raise RequiredTagNotFound("Required tag not found") from e
 
     return decorated
 
 
-class DeidentificationException(IDISCoreException):
+class DeidentificationError(IDISCoreError):
     pass

@@ -6,7 +6,7 @@ from pydicom._storage_sopclass_uids import SecondaryCaptureImageStorage
 from pydicom.dataset import Dataset
 
 from idiscore.dataset import RequiredDataset, RequiredTagNotFound
-from idiscore.exceptions import IDISCoreException
+from idiscore.exceptions import IDISCoreError
 
 
 @dataclass(frozen=True)
@@ -219,9 +219,9 @@ class PixelProcessor:
         return dataset
 
 
-class CriterionException(IDISCoreException):
+class CriterionException(IDISCoreError):
     pass
 
 
-class PixelDataProcessorException(IDISCoreException):
+class PixelDataProcessorException(IDISCoreError):
     pass

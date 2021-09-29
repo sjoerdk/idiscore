@@ -17,8 +17,8 @@ from pydicom.dataset import Dataset
 from pydicom.sequence import Sequence
 from pydicom.tag import Tag
 
-from idiscore.nema import E1_1_METHOD_INFO
 from idiscore import __version__
+from idiscore.nema import E1_1_METHOD_INFO
 
 
 def get_idis_code_sequence(ruleset_names: List[str]) -> DataElement:
@@ -53,11 +53,11 @@ def get_idis_code_sequence(ruleset_names: List[str]) -> DataElement:
     for name in ruleset_names:
         try:  # check whether we know this ruleset as a standard DICOM one
             ruleset_info = code_per_name[name]
-        except KeyError:
+        except KeyError as e:
             raise ValueError(
                 f'Could not find the code for rule set "{name}". I do'
                 f" not know this ruleset"
-            )
+            ) from e
         # Create the required designation for this dataset
         code_dataset = Dataset()
         code_dataset.CodeValue = ruleset_info.code

@@ -10,7 +10,7 @@ from typing import Callable, Iterable, List, Optional, Set, Union
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 
-from idiscore.exceptions import SafePrivateException
+from idiscore.exceptions import SafePrivateError
 from idiscore.identifiers import PrivateBlockTagIdentifier, TagIdentifier
 from idiscore.image_processing import CriterionException
 
@@ -87,7 +87,7 @@ class SafePrivateBlock:
             try:
                 return self.criterion(dataset)
             except AttributeError as e:
-                raise CriterionException(f'Error while checking criterion: "{e}"')
+                raise CriterionException("Error while checking criterion") from e
         else:
             return True  # no criterion. Assume tags are always safe
 
@@ -106,7 +106,7 @@ class SafePrivateDefinition:
 
         Raises
         ------
-        SafePrivateException
+        SafePrivateError
             If for some reason it cannot be determined whether this is safe
         """
         return any(x.matches(element) for x in self.safe_identifiers(dataset))
@@ -116,7 +116,7 @@ class SafePrivateDefinition:
 
         Raises
         ------
-        SafePrivateException
+        SafePrivateError
             If safe identifiers cannot be determined
         """
         try:
@@ -131,4 +131,4 @@ class SafePrivateDefinition:
                 )
             )
         except CriterionException as e:
-            raise SafePrivateException(e)
+            raise SafePrivateError(e) from e

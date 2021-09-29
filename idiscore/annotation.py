@@ -22,8 +22,8 @@ from dicomgenerator.importer import to_json
 from pydicom.dataset import Dataset
 from pydicom.tag import BaseTag, Tag
 
-from idiscore.exceptions import AnnotationValidationFailed, IDISCoreException
 from idiscore.delta import Delta, DeltaStatusCodes
+from idiscore.exceptions import AnnotationValidationFailedError, IDISCoreError
 
 
 class Annotation:
@@ -99,7 +99,7 @@ class Annotation:
 
         Raises
         ------
-        AnnotationValidationFailed
+        AnnotationValidationFailedError
             If delta does not conform to this validator. For example when an element
             contains PII, but the value is unchanged in delta
         """
@@ -113,7 +113,7 @@ class MustNotChange(Annotation):
 
     def assert_conformance(self, delta: Delta):
         if not delta.status == DeltaStatusCodes.UNCHANGED:
-            raise AnnotationValidationFailed(
+            raise AnnotationValidationFailedError(
                 f"{delta.tag} had value {delta.before} and should not change"
                 f"(reason: '{self.explanation}'). However it was changed to"
                 f"'{delta.after}'"
@@ -131,7 +131,7 @@ class ContainsPII(Annotation):
             DeltaStatusCodes.EMPTIED,
             DeltaStatusCodes.CHANGED,
         ]:
-            raise AnnotationValidationFailed(
+            raise AnnotationValidationFailedError(
                 f"{delta.tag} contained PII (explanation:'{self.explanation}') "
                 f"but was not changed or removed. The value is still {delta.after}"
             )
@@ -159,11 +159,11 @@ class AnnotationTypes:
     def from_key(cls, key: str) -> Type[Annotation]:
         try:
             return cls.ALL[key]
-        except KeyError:
+        except KeyError as e:
             raise UnknownAnnotationType(
                 f'Unknown annotation type "{key}". '
                 f"Known types: {list(cls.ALL.keys())}"
-            )
+            ) from e
 
 
 class AnnotatedDataset:
@@ -241,5 +241,5 @@ class AnnotatedDataset:
         return to_json(self.dataset)
 
 
-class UnknownAnnotationType(IDISCoreException):
+class UnknownAnnotationType(IDISCoreError):
     pass

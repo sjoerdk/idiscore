@@ -9,7 +9,7 @@ from collections import namedtuple
 from typing import Dict, List, Tuple
 
 
-from idiscore.exceptions import IDISCoreException
+from idiscore.exceptions import IDISCoreError
 from idiscore.identifiers import TagIdentifier
 from idiscore.operators import Operator
 from idiscore.rules import Rule, RuleSet
@@ -172,7 +172,7 @@ class RawNemaRuleSet:
             try:
                 operation = action_mapping[actioncode]
             except KeyError as e:
-                raise IDISCoreException(
+                raise IDISCoreError(
                     f'Unknown actioncode "{actioncode}" I do'
                     f" not know which operation add here"
                 ) from e

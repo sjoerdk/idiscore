@@ -1,7 +1,7 @@
 """Additions to the pydicom Dataset object"""
 from pydicom.dataset import Dataset
 
-from idiscore.exceptions import IDISCoreException
+from idiscore.exceptions import IDISCoreError
 
 
 class RequiredDataset(Dataset):
@@ -40,14 +40,14 @@ class RequiredDataset(Dataset):
         try:
             return super().__getattr__(name)
         except AttributeError as e:
-            raise RequiredTagNotFound(f"Required tag not found:{e}")
+            raise RequiredTagNotFound("Required tag not found") from e
 
     def __getitem__(self, key):
         try:
             return super().__getitem__(key)
         except KeyError as e:
-            raise RequiredTagNotFound(f"Required tag not found:{e}")
+            raise RequiredTagNotFound("Required tag not found") from e
 
 
-class RequiredTagNotFound(IDISCoreException):
+class RequiredTagNotFound(IDISCoreError):
     pass

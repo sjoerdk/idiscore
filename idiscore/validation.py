@@ -24,7 +24,7 @@ from pydicom.dataset import Dataset
 
 from idiscore.annotation import AnnotatedDataset, Annotation
 from idiscore.delta import Delta
-from idiscore.exceptions import AnnotationValidationFailed
+from idiscore.exceptions import AnnotationValidationFailedError
 
 
 class Deidentifier:
@@ -149,7 +149,7 @@ def check(
                         "OK", has_succeeded=True, annotation=annotation
                     )
                 )
-            except AnnotationValidationFailed as e:
+            except AnnotationValidationFailedError as e:
                 results.append(
                     AnnotationCheckResult(
                         message=str(e), has_succeeded=False, annotation=annotation

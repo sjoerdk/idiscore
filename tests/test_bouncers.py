@@ -7,7 +7,7 @@ from idiscore.bouncers import (
     RejectKOGSPS,
     RejectNonStandardDicom,
 )
-from idiscore.core import Core, DeidentificationException, Profile
+from idiscore.core import Core, DeidentificationError, Profile
 from tests.factories import quick_dataset
 
 
@@ -18,7 +18,7 @@ def test_reject_non_standard():
     # this should not raise anything
     a_core.deidentify(quick_dataset(SOPClassUID="1.2.840.10008"))
 
-    with pytest.raises(DeidentificationException):
+    with pytest.raises(DeidentificationError):
         a_core.deidentify(quick_dataset(SOPClassUID="123"))
 
 
@@ -58,7 +58,7 @@ def test_reject_kogsps_pass(dataset):
 def test_reject_kogsps_fail(dataset):
     """Datasets that should be rejected"""
 
-    with pytest.raises(DeidentificationException):
+    with pytest.raises(DeidentificationError):
         Core(profile=Profile(rule_sets=[]), bouncers=[RejectKOGSPS()]).deidentify(
             dataset
         )
