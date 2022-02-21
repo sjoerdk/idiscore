@@ -14,7 +14,7 @@ from idiscore.image_processing import (
     PixelDataProcessorException,
     PixelProcessor,
 )
-from idiscore.operators import ElementShouldBeRemoved, Remove
+from idiscore.operators import ElementShouldBeRemoved
 from idiscore.rules import RuleSet
 from idiscore.templates import (
     idiscore_description_rst,
@@ -178,18 +178,15 @@ class Core(Deidentifier):
     def apply_rules(self, rules: RuleSet, dataset: Dataset) -> Dataset:
         """Apply rules to each element in dataset, recursing into sequence elements
 
-        This creates a deep copy of the input dataset. Except for PixelData, which
-        will be a reference. PixelData is not copied because it can take up a lot
-        of memory
+        Notes
+        -----
+        This will modify the input Dataset instance. Modification in-place to minimize
+        memory footprint
         """
-        deidentified = Dataset()
-        pixel_data_tag = 0x7FE00010
 
         for element in dataset:
-            if element.tag == pixel_data_tag:
-                deidentified.add(element)  # add pixel data as reference to save mem
-            elif element.VR == VRs.Sequence.short_name:  # recurse into sequences
-                deidentified.add(
+            if element.VR == VRs.Sequence.short_name:  # recurse into sequences
+                dataset.add(  # add will overwrite existing
                     DataElement(
                         tag=element.tag,
                         VR=element.VR,
@@ -201,20 +198,16 @@ class Core(Deidentifier):
                         ),
                     )
                 )
-            elif rule := rules.get_rule(element):
-                if type(rule.operation) == Remove:
-                    continue  # special handling. should be removed, do not add
+            elif rule := rules.get_rule(element):  # non-sequence
                 try:
                     new = rule.operation.apply(element, dataset)
-                    deidentified.add(new)
-                except ElementShouldBeRemoved:  # Operators signals removal
-                    continue
-            else:  # no rule found. Just copy the element over
-                deidentified.add(
-                    DataElement(tag=element.tag, VR=element.VR, value=element.value)
-                )
+                    dataset.add(new)
+                except ElementShouldBeRemoved:  # Operator signals removal
+                    del dataset[element.tag]
+            else:  # no rule found. Leave this element unchanged
+                pass
 
-        return deidentified
+        return dataset
 
     def apply_pixel_processor(self, dataset):
         """Paint parts of image data black if required
@@ -280,7 +273,7 @@ def split_pixel_data(dataset: Dataset) -> Tuple[Dataset, Optional[DataElement]]:
     PixelData element will be a reference, not a copy.
     This function is useful if you want to process all DICOM elements in a dataset
     without modifying the original. PixelData is not copied because it can be
-    thousands of times bigger then all other elements combined, and needs special
+    thousands of times bigger than all other elements combined, and needs special
     processing anyway.
 
     Parameters
@@ -312,7 +305,7 @@ def handle_key_error(func):
         try:
             func(*args, **kwargs)
         except KeyError as e:
-            raise RequiredTagNotFound("Required tag not found") from e
+            raise RequiredTagNotFound(f"Required tag not found: {e}") from e
 
     return decorated
 

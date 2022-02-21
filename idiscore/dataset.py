@@ -40,13 +40,13 @@ class RequiredDataset(Dataset):
         try:
             return super().__getattr__(name)
         except AttributeError as e:
-            raise RequiredTagNotFound("Required tag not found") from e
+            raise RequiredTagNotFound(f"Required tag not found: {e}") from e
 
     def __getitem__(self, key):
         try:
             return super().__getitem__(key)
         except KeyError as e:
-            raise RequiredTagNotFound("Required tag not found") from e
+            raise RequiredTagNotFound(f"Required tag not found: {e}") from e
 
 
 class RequiredTagNotFound(IDISCoreError):
