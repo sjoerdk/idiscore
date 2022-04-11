@@ -6,7 +6,7 @@ factory-boy==3.2.1
 coverage==6.3.2
 flake8==4.0.1
 pip==22.0.3
-Sphinx==4.4.0
+Sphinx==4.5.0
 tox==3.24.5
 twine==3.8.0
 watchdog==2.1.6
