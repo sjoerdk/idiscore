@@ -3,7 +3,7 @@ pytest==7.1.2
 dicomgenerator==0.4.0
 pydicom==2.3.0
 factory-boy==3.2.1
-coverage==6.3.2
+coverage==6.4.1
 flake8==4.0.1
 pip==22.0.4
 Sphinx==5.0.2
