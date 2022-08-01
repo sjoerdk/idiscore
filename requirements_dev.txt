@@ -9,5 +9,5 @@ pip==22.2.1
 Sphinx==5.1.1
 tox==3.25.1
 twine==4.0.1
-watchdog==2.1.7
+watchdog==2.1.9
 pre-commit==2.18.1
