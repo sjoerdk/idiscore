@@ -2,6 +2,11 @@
 History
 =======
 
+1.0.3 (2022-09-13)
+------------------
+* Fixes bug in example docs (#106)
+* Updates github build procedure
+
 1.0.0 (2020-08-20)
 ------------------
 * Deidentification implementing standard DICOM confidentiality profile and options
