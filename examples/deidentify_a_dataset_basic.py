@@ -12,4 +12,8 @@ profile = Profile(  # Choose which rule sets to use
 core = Core(profile)  # Create an deidentification core
 
 # read a DICOM dataset from file and write to another
-core.deidentify(pydicom.dcmread("my_file.dcm")).save_as("deidentified.dcm")
+
+# pydicom.dcmread("/tmp/idis/a_dicom_file").save_as("/tmp/idis/deidentified")
+core.deidentify(pydicom.dcmread("/tmp/idis/a_dicom_file")).save_as(
+    "/tmp/idis/deidentified"
+)
