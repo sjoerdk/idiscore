@@ -42,7 +42,7 @@ class TagIdentifier:
         return str(id(self))
 
     def name(self) -> str:
-        """Human readable name for this tag"""
+        """Human-readable name for this tag"""
         return "BaseTagIdentifier"
 
     def number_of_matchable_tags(self) -> int:
@@ -67,6 +67,10 @@ class TagIdentifier:
     def __hash__(self):
         # TagIdentifiers are used as dictionary keys
         return hash(self.key())
+
+    def as_python(self) -> str:
+        """For special export. Python code that recreates this instance"""
+        raise NotImplementedError("Not implemented in base class")
 
 
 class SingleTag(TagIdentifier):
@@ -134,7 +138,7 @@ class RepeatingTag:
             raise ValueError(
                 f'Invalid format "{tag}":{e}. Examples of valid tag '
                 f'strings: "(0010,xx10)", "0010,xx10", "0010xx10"'
-            )
+            ) from e
 
     def __str__(self):
         """Output format matches pydicom.tag.Tag.__str__()"""
@@ -159,13 +163,13 @@ class RepeatingTag:
         # check whether this is a valid hex string if you discount the x's
         try:
             int(f'0x{tag.replace("x","0")}', 0)
-        except ValueError:
-            raise ValueError('Non "x" parts of this tag are not hexadecimal')
+        except ValueError as e:
+            raise ValueError('Non "x" parts of this tag are not hexadecimal') from e
 
         return tag
 
     def name(self) -> str:
-        """Human readable name for this repeater tag, from pydicom lists"""
+        """Human-readable name for this repeater tag, from pydicom lists"""
         key = mask_match(self.static_component())
         if key:
             return RepeatersDictionary[key][4]  # 4th item in tuple is no-space name

@@ -33,7 +33,10 @@ class Annotation:
     description = "A basic annotation"  # for humans
 
     def __init__(
-        self, tag: BaseTag, tag_info: str = "", explanation: str = "",
+        self,
+        tag: BaseTag,
+        tag_info: str = "",
+        explanation: str = "",
     ):
         """A comment about about a DICOM tag.
 
@@ -234,7 +237,7 @@ class AnnotatedDataset:
     def from_path(cls, path: PathLike) -> "AnnotatedDataset":
         """Load AnnotatedDataset from a json file"""
 
-        with open(path, "r") as f:
+        with open(path) as f:
             return AnnotatedDataset.from_dict(json.loads(f.read()))
 
     def to_json(self):

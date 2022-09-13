@@ -136,7 +136,7 @@ class RuleSet:
 
     def as_human_readable_list(self) -> str:
         """All rules in this set sorted by tag name"""
-        return "\n".join(sorted([x.as_human_readable() for x in self.rules]))
+        return "\n".join(sorted(x.as_human_readable() for x in self.rules))
 
     def __str__(self):
         return f'RuleSet "{self.name}"'

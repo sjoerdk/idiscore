@@ -1,17 +1,16 @@
 # test saving an example as json
 import json
 
-from tests import RESOURCE_PATH
-
 from dicomgenerator.factory import CTDatasetFactory, DataElementFactory
 from pydicom.tag import Tag
 
 from idiscore.annotation import (
-    Annotation,
     AnnotatedDataset,
+    Annotation,
     ContainsPII,
     MustNotChange,
 )
+from tests import RESOURCE_PATH
 
 
 def test_annotation_serialization():
@@ -32,7 +31,9 @@ def test_annotation_serialization():
     """
     element = DataElementFactory(tag="PatientName", value="WIMS^kees")
     annotation = ContainsPII(
-        tag=element.tag, tag_info=str(element), explanation="This is an actual name",
+        tag=element.tag,
+        tag_info=str(element),
+        explanation="This is an actual name",
     )
 
     json_str = json.dumps(annotation.to_dict(), indent=2)

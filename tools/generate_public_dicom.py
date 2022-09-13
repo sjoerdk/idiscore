@@ -102,7 +102,7 @@ def save_html_online(path: str):
 
 def load_html(path) -> str:
     print(f"loading from {path}")
-    with open(path, "r") as f:
+    with open(path) as f:
         text = f.read()
     return text
 
@@ -111,7 +111,7 @@ def get_html_cached(force_refresh: bool = False) -> str:
     """Get html for the table from cache, or refresh cache if it does not exist"""
     cache_path = Path("/tmp/dicomtable.html")
     if not cache_path.exists() or force_refresh:
-        save_html_online(cache_path)
+        save_html_online(str(cache_path))
     return load_html(cache_path)
 
 
@@ -138,7 +138,7 @@ def parse_nema_dicom_table(html: str) -> Table:
     return main_table
 
 
-class RowParseException(Exception):
+class RowParseError(Exception):
     pass
 
 
@@ -171,7 +171,7 @@ def parse_tag_string(tag_string) -> Optional[TagIdentifier]:
         # so no rule is needed for this
         return PrivateTags()
     else:
-        raise RowParseException(
+        raise RowParseError(
             f"Could not parse '{tag_string}' as regular tag or repeater tag"
         )
 

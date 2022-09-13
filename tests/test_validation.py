@@ -3,12 +3,12 @@ from dicomgenerator.factory import CTDatasetFactory
 from pydicom.tag import Tag
 
 from idiscore.annotation import AnnotatedDataset, ContainsPII, MustNotChange
+from idiscore.delta import Delta, DeltaStatusCodes
 from idiscore.insertions import PATIENT_IDENTITY_REMOVED
 from idiscore.validation import (
     Validation,
     extract_signature,
 )
-from idiscore.delta import Delta, DeltaStatusCodes
 
 
 @pytest.fixture

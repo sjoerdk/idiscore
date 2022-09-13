@@ -1,7 +1,11 @@
-import pytest
 from copy import copy
 
+import pytest
 from dicomgenerator.factory import CTDatasetFactory
+from numpy.core.multiarray import ndarray
+from pydicom.dataset import Dataset
+from pydicom.uid import ExplicitVRLittleEndian
+
 from idiscore.image_processing import (
     PIILocation,
     PIILocationList,
@@ -9,9 +13,6 @@ from idiscore.image_processing import (
     PixelProcessor,
     SquareArea,
 )
-from numpy.core.multiarray import ndarray
-from pydicom.dataset import Dataset
-from pydicom.uid import ExplicitVRLittleEndian
 from tests.factories import quick_dataset
 
 

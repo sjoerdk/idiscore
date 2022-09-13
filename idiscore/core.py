@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import List, Optional, Tuple
 
 from dicomgenerator.dicom import VRs
@@ -106,7 +105,7 @@ class Profile:
         return jinja_env.from_string(template).render(
             profile_name=self.name,
             rule_set_names=[f"* {x.name}" for x in self.rule_sets],
-            rule_strings_by_name=sorted([x.as_human_readable() for x in rules]),
+            rule_strings_by_name=sorted(x.as_human_readable() for x in rules),
             rule_strings_by_tag=sorted(
                 f"{x.identifier} ({x.identifier.name()}) - {x.operation}" for x in rules
             ),

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """Tests for `idiscore` package."""
 from typing import Set
@@ -8,18 +7,17 @@ import pytest
 from dicomgenerator.dicom import VRs
 from dicomgenerator.factory import CTDatasetFactory, DataElementFactory as DatEF
 from pydicom.dataset import Dataset
-
 from pydicom.tag import Tag
 
 from idiscore.core import Core, Profile, split_pixel_data
-from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.operators import Clean, Hash, Keep, Remove
+from idiscore.rules import Rule, RuleSet
 from idiscore.validation import extract_signature
 
 
 def test_idiscore_deidentify_basic(a_dataset, a_core_with_some_rules):
-    """Send a dataset trough a full Core instance"""
+    """Send a dataset through a full Core instance"""
 
     # check before processing
     assert Tag(0x5010, 0x3000) in a_dataset
@@ -149,10 +147,11 @@ def test_splitting_off_pixeldata():
 
     # make the copy does not contain any references to object from original
     def get_all_ids(dataset: Dataset) -> Set[int]:
-        ids = set()
+        ids: Set[int] = set()
         for element in dataset:
             if element.VR == VRs.Sequence:
-                ids = ids + get_all_ids(element)
+                for x in get_all_ids(element):
+                    ids.add(id(x))
             else:
                 ids.add(id(element))
 

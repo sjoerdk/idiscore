@@ -4,8 +4,8 @@ Information from table E.1-1 here:
 http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html
 """
 
+from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.nema import ActionCodes, RawNemaRuleSet
-from idiscore.identifiers import SingleTag, RepeatingGroup, PrivateTags
 
 basic_profile = RawNemaRuleSet(
     name="Basic Application Level Confidentiality Profile",

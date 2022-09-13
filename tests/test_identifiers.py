@@ -1,6 +1,7 @@
 import pytest
 from dicomgenerator.factory import CTDatasetFactory
 from dicomgenerator.factory import DataElementFactory as DatEF
+from pydicom.tag import Tag
 
 from idiscore.identifiers import (
     PrivateBlockTagIdentifier,
@@ -8,9 +9,7 @@ from idiscore.identifiers import (
     RepeatingGroup,
     RepeatingTag,
     SingleTag,
-    TagIdentifier,
 )
-from pydicom.tag import Tag
 
 
 def test_identifier_comparison():
@@ -103,8 +102,8 @@ def test_identifier_number_of_matchable_tags():
 
     assert SingleTag((0x0010, 0x10EA)).number_of_matchable_tags() == 1
     assert RepeatingGroup("(0010,00xx)").number_of_matchable_tags() == 16 * 16
-    assert RepeatingGroup("(00xx,xxxx)").number_of_matchable_tags() == 16 ** 6
-    assert PrivateTags().number_of_matchable_tags() == (16 ** 8) / 2
+    assert RepeatingGroup("(00xx,xxxx)").number_of_matchable_tags() == 16**6
+    assert PrivateTags().number_of_matchable_tags() == (16**8) / 2
 
 
 @pytest.mark.parametrize(
@@ -117,7 +116,7 @@ def test_identifier_number_of_matchable_tags():
         RepeatingGroup("(00xx, xxxx)"),
     ],
 )
-def test_identifier_keys(tag_identifier_instance: TagIdentifier):
+def test_identifier_keys(tag_identifier_instance):
     """You should be able te recreate a TagIdentifier instance using its key"""
 
     instance = tag_identifier_instance

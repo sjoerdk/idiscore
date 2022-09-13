@@ -6,8 +6,6 @@ from dicomgenerator.factory import DataElementFactory
 from pydicom.dataset import Dataset
 
 from idiscore.core import Core, Profile
-from idiscore.private_processing import SafePrivateBlock, SafePrivateDefinition
-from idiscore.rules import Rule, RuleSet
 from idiscore.identifiers import (
     PrivateBlockTagIdentifier,
     PrivateTags,
@@ -15,6 +13,8 @@ from idiscore.identifiers import (
     SingleTag,
 )
 from idiscore.operators import Hash, Remove
+from idiscore.private_processing import SafePrivateBlock, SafePrivateDefinition
+from idiscore.rules import Rule, RuleSet
 
 
 @pytest.fixture
@@ -72,7 +72,8 @@ def some_private_identifier_strings() -> List[str]:
 def a_ct_safe_private_definition(some_private_identifiers):
     """Some safe private rules that only apply to Modality=CT datasets"""
     return SafePrivateBlock(
-        tags=some_private_identifiers, criterion=lambda x: x.Modality == "CT",
+        tags=some_private_identifiers,
+        criterion=lambda x: x.Modality == "CT",
     )
 
 

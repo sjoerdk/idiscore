@@ -47,7 +47,10 @@ def create_default_core(
             sets.retain_safe_private,
         ],
     )
-    return create_core(profile=profile, location_list=location_list,)
+    return create_core(
+        profile=profile,
+        location_list=location_list,
+    )
 
 
 def get_dicom_rule_sets(
@@ -71,7 +74,10 @@ def get_dicom_rule_sets(
     return DICOMRuleSets(action_mapping={ActionCodes.CLEAN: clean})
 
 
-def create_core(profile: Profile, location_list: PIILocationList = None,) -> Core:
+def create_core(
+    profile: Profile,
+    location_list: PIILocationList = None,
+) -> Core:
     """A deidentification core with defaults
 
     Which rejects non-standard dicom and encapsulated pdfs
