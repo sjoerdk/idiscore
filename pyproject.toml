@@ -6,7 +6,7 @@ authors = ["sjoerdk <sjoerd.kerkstra@radboudumc.nl>"]
 license = "GPLv3"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 dicomgenerator = "^0.4.0"
 Jinja2 = "^3.1.2"
 
