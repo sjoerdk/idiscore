@@ -47,7 +47,7 @@ jobs:
         run: |
           tox
   deploy:
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: github.event_name == 'release'
     needs: [precommit, build]
     runs-on: ubuntu-latest
     steps:

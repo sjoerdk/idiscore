@@ -4,7 +4,7 @@
 IDISCore instance description
 =============================
 
-idiscore lib version: 0.3.1
+idiscore lib version: 1.0.3
 
 
 Bouncers:
@@ -15,7 +15,8 @@ Bouncers:
 
 
 Profile 'idiscore default profile'
-==================================
+
+===================================
 
 Rule sets:
 ----------
@@ -176,6 +177,7 @@ All rules, alphabetically:
 * ImageComments - (0020, 4000) - Clean
 * ImagePresentationComments - (0028, 4000) - Remove
 * ImagingServiceRequestComments - (0040, 2400) - Clean
+* ImpedanceMeasurementDateTime - (003a, 0314) - Replace
 * Impressions - (4008, 0300) - Clean
 * InstanceCoercionDateTime - (0008, 0015) - Remove
 * InstanceCreatorUID - (0008, 0014) - HashUID
@@ -189,6 +191,9 @@ All rules, alphabetically:
 * IntendedPhaseEndDate - (3010, 004d) - Remove
 * IntendedPhaseStartDate - (3010, 004c) - Remove
 * IntendedRecipientsOfResultsIdentificationSequence - (0040, 1011) - Remove
+* InterlockDateTime - (300a, 0741) - Replace
+* InterlockDescription - (300a, 0742) - Clean
+* InterlockOriginDescription - (300a, 0783) - Clean
 * InterpretationApproverSequence - (4008, 0111) - Remove
 * InterpretationAuthor - (4008, 010c) - Remove
 * InterpretationDiagnosisDescription - (4008, 0115) - Clean
@@ -225,6 +230,7 @@ All rules, alphabetically:
 * ModifyingDeviceID - (0020, 3401) - Remove
 * MostRecentTreatmentDate - (3008, 0056) - Remove
 * MultienergyAcquisitionDescription - (0018, 937b) - Clean
+* MultiplexGroupUID - (003a, 0310) - HashUID
 * NameOfPhysiciansReadingStudy - (0008, 1060) - Remove
 * NamesOfIntendedRecipientsOfResults - (0040, 1010) - Remove
 * ObservationDateTrial - (0040, a192) - Remove
@@ -246,6 +252,7 @@ All rules, alphabetically:
 * OverlayData - (60xx, 3000) - Remove
 * OverlayDate - (0008, 0024) - Remove
 * OverlayTime - (0008, 0034) - Remove
+* OverrideDateTime - (300a, 0760) - Replace
 * PaletteColorLookupTableUID - (0028, 1199) - HashUID
 * ParticipantSequence - (0040, a07a) - Remove
 * PatientAddress - (0010, 1040) - Remove
@@ -332,6 +339,7 @@ All rules, alphabetically:
 * ReasonForTheRequestedProcedure - (0040, 1002) - Clean
 * ReasonForVisit - (0032, 1066) - Clean
 * ReasonForVisitCodeSequence - (0032, 1067) - Clean
+* RecordedRTControlPointDateTime - (300a, 073a) - Replace
 * ReferencedConceptualVolumeUID - (3010, 000b) - HashUID
 * ReferencedDigitalSignatureSequence - (0400, 0402) - Remove
 * ReferencedDoseReferenceUID - (300a, 0083) - HashUID
@@ -443,23 +451,16 @@ All rules, alphabetically:
 * TreatmentMachineName - (300a, 00b2) - Keep
 * TreatmentPositionGroupLabel - (300a, 0608) - Clean
 * TreatmentPositionGroupUID - (300a, 0609) - HashUID
+* TreatmentSessionUID - (300a, 0700) - HashUID
 * TreatmentSite - (3010, 0077) - Clean
 * TreatmentTechniqueNotes - (3010, 007a) - Clean
 * TreatmentTime - (3008, 0251) - Remove
+* TreatmentToleranceViolationDateTime - (300a, 0736) - Replace
+* TreatmentToleranceViolationDescription - (300a, 0734) - Clean
 * UDISequence - (0018, 100a) - Keep
 * UID - (0040, a124) - HashUID
 * UniqueDeviceIdentifier - (0018, 1009) - Keep
 * Unknown Repeater tag 50xxxxxx - (50xx, xxxx) - Remove
-* Unknown Tag - (003a, 0310) - HashUID
-* Unknown Tag - (003a, 0314) - Replace
-* Unknown Tag - (300a, 0700) - HashUID
-* Unknown Tag - (300a, 0734) - Clean
-* Unknown Tag - (300a, 0736) - Replace
-* Unknown Tag - (300a, 073a) - Replace
-* Unknown Tag - (300a, 0741) - Replace
-* Unknown Tag - (300a, 0742) - Clean
-* Unknown Tag - (300a, 0760) - Replace
-* Unknown Tag - (300a, 0783) - Clean
 * UserContentLabel - (3010, 0033) - Clean
 * UserContentLongLabel - (3010, 0034) - Clean
 * VerbalSourceIdentifierCodeSequenceTrial - (0040, a358) - Remove
@@ -699,8 +700,8 @@ All rules, by tag:
 * (0038, 0400) (PatientInstitutionResidence) - Remove
 * (0038, 0500) (PatientState) - Clean
 * (0038, 4000) (VisitComments) - Clean
-* (003a, 0310) (Unknown Tag) - HashUID
-* (003a, 0314) (Unknown Tag) - Replace
+* (003a, 0310) (MultiplexGroupUID) - HashUID
+* (003a, 0314) (ImpedanceMeasurementDateTime) - Replace
 * (0040, 0001) (ScheduledStationAETitle) - Keep
 * (0040, 0002) (ScheduledProcedureStepStartDate) - Remove
 * (0040, 0003) (ScheduledProcedureStepStartTime) - Remove
@@ -856,14 +857,14 @@ All rules, by tag:
 * (300a, 0676) (EquipmentFrameOfReferenceDescription) - Clean
 * (300a, 067c) (RadiationGenerationModeLabel) - Clean
 * (300a, 067d) (RadiationGenerationModeDescription) - Clean
-* (300a, 0700) (Unknown Tag) - HashUID
-* (300a, 0734) (Unknown Tag) - Clean
-* (300a, 0736) (Unknown Tag) - Replace
-* (300a, 073a) (Unknown Tag) - Replace
-* (300a, 0741) (Unknown Tag) - Replace
-* (300a, 0742) (Unknown Tag) - Clean
-* (300a, 0760) (Unknown Tag) - Replace
-* (300a, 0783) (Unknown Tag) - Clean
+* (300a, 0700) (TreatmentSessionUID) - HashUID
+* (300a, 0734) (TreatmentToleranceViolationDescription) - Clean
+* (300a, 0736) (TreatmentToleranceViolationDateTime) - Replace
+* (300a, 073a) (RecordedRTControlPointDateTime) - Replace
+* (300a, 0741) (InterlockDateTime) - Replace
+* (300a, 0742) (InterlockDescription) - Clean
+* (300a, 0760) (OverrideDateTime) - Replace
+* (300a, 0783) (InterlockOriginDescription) - Clean
 * (300c, 0113) (ReasonForOmissionDescription) - Clean
 * (300e, 0008) (ReviewerName) - Remove
 * (3010, 0006) (ConceptualVolumeUID) - HashUID

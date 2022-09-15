@@ -15,4 +15,3 @@ python:
       path: .
     # TODO: Remove this requirements file once rtd fully supports dev-dependencies
     - requirements: docs/sphinx/requirements.docs.txt
-    - requirements: requirements_dev.txt
