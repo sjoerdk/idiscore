@@ -1,5 +1,7 @@
 from pydicom.tag import BaseTag
 
+from idiscore.identifiers import get_keyword
+
 
 class DeltaStatusCodes:
     """How has a DICOM element changed?"""
@@ -35,6 +37,10 @@ class Delta:
             else:
                 return DeltaStatusCodes.CHANGED
 
+    @property
+    def tag_name(self) -> str:
+        return get_keyword(self.tag)
+
     def __str__(self):
         return f"{self.tag} - {self.status}"
 
@@ -44,4 +50,7 @@ class Delta:
 
     def full_description(self) -> str:
         """Full human-readable description of the change that happened"""
-        return f"{self.tag} - {self.status}: {self.before} -> {self.after}"
+        return (
+            f"{self.tag} - {self.tag_name} - {self.status}: {self.before} "
+            f"-> {self.after}"
+        )

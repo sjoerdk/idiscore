@@ -38,7 +38,7 @@ class Annotation:
         tag_info: str = "",
         explanation: str = "",
     ):
-        """A comment about about a DICOM tag.
+        """A comment about a DICOM tag.
 
         Parameters
         ----------

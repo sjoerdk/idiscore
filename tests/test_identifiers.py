@@ -80,8 +80,8 @@ def test_single_tag_name():
     """Single tag identifiers have a name, provided pydicom knows this tag"""
     # known tag
     assert SingleTag("00100010").name() == "PatientName"
-    # unknown tag should just give back 'Unknown Tag'
-    assert SingleTag("10b10010").name() == "Unknown Tag"
+    # unknown tag should just give back 'Unknown'
+    assert SingleTag("10b10010").name() == "Unknown"
 
 
 def test_repeating_tag_masks():

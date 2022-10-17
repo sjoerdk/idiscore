@@ -42,7 +42,6 @@ To select DICOM confidentiality options yourself, initialise a core instance lik
 
 ..  code-block:: python
 
-    import pydicom
     from idiscore.core import Core, Profile
     from idiscore.defaults import get_dicom_rule_sets
 

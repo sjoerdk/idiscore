@@ -111,7 +111,7 @@ class ValidationResult:
 
 
 class Validation:
-    """Which DICOM examples to run through a deidentifier"""
+    """A deidentifier with a collection of DICOM examples"""
 
     def __init__(self, deidentifier: Deidentifier, examples: List[AnnotatedDataset]):
         self.deidentifier = deidentifier

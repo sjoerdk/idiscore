@@ -4,7 +4,7 @@ from functools import total_ordering
 from typing import Tuple, Union
 
 from pydicom._dicom_dict import RepeatersDictionary
-from pydicom.datadict import dictionary_keyword, mask_match
+from pydicom.datadict import keyword_for_tag, mask_match
 from pydicom.dataelem import DataElement
 from pydicom.tag import BaseTag, Tag
 
@@ -12,6 +12,15 @@ from pydicom.tag import BaseTag, Tag
 def clean_tag_string(x):
     """Remove common clutter from pydicom Tag.__str__() output"""
     return x.replace("(", "").replace(",", "").replace(" ", "").replace(")", "")
+
+
+def get_keyword(tag):
+    """Human-readable keyword for known dicom tags, or 'Unknown'"""
+    keyword = keyword_for_tag(tag)
+    if keyword:
+        return keyword
+    else:
+        return "Unknown"
 
 
 @total_ordering
@@ -91,11 +100,8 @@ class SingleTag(TagIdentifier):
         return str(self.tag)
 
     def name(self) -> str:
-        """Human readable name for this tag"""
-        try:
-            return dictionary_keyword(self.tag)
-        except KeyError:
-            return "Unknown Tag"
+        """Human-readable name for this tag"""
+        return get_keyword(self.tag)
 
     def matches(self, element: DataElement) -> bool:
         """The given element matches this identifier"""
