@@ -41,11 +41,28 @@ def a_dataset() -> Dataset:
     dataset.add(DataElementFactory(tag="PatientID", value="12345"))
     dataset.add(DataElementFactory(tag="Modality", value="CT"))
     dataset.add(DataElementFactory(tag="PatientName", value="Martha"))
-    dataset.add(DataElementFactory(tag=(0x5010, 0x3000), value=b"Sensitive data"))
+    dataset.add(
+        DataElementFactory(tag=(0x5010, 0x3000), value=b"Sensitive data", VR="OB")
+    )
     dataset.add(DataElementFactory(tag=(0x1013, 0x0001), value=b"private tag"))
     block = dataset.private_block(0x00B1, "TestCreator", create=True)
     block.add_new(0x01, "SH", "my testvalue")
     return dataset
+
+
+@pytest.fixture
+def a_path_to_dataset(a_dataset, tmp_path):
+    """Path to throw-away valid DICOM dataset"""
+    # set most common options to allow saving to disk
+    a_dataset.is_little_endian = True
+    a_dataset.is_implicit_VR = False
+
+    dataset_path = tmp_path / "datasets" / "a_dataset.dcm"
+    dataset_path.parent.mkdir()
+
+    a_dataset.save_as(filename=dataset_path, write_like_original=False)
+
+    return dataset_path
 
 
 @pytest.fixture
