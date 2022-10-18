@@ -9,7 +9,7 @@ def test_cli_to_json(a_path_to_dataset):
     assert len(list(a_path_to_dataset.parent.glob("*"))) == 1  # one file in dir
 
     result = runner.invoke(
-        cli.to_dicom_example, [str(a_path_to_dataset)], catch_exceptions=False
+        cli.to_dicom_example_cli, [str(a_path_to_dataset)], catch_exceptions=False
     )
     assert result.exit_code == 0  # call should succeed
     dicom_example_path = (
@@ -17,4 +17,4 @@ def test_cli_to_json(a_path_to_dataset):
     )
     with open(dicom_example_path) as f:
         annotated = ExampleDataset.load(f)  # json dataset should be written
-    assert annotated.description == "Converted"
+    assert annotated.description == "No description"

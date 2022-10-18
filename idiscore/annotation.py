@@ -14,13 +14,18 @@ Design requirements
   an example to an example library
 
 """
+from pathlib import Path
 from typing import Dict, Type
 
+import pydicom
 from dicomgenerator.annotation import AnnotatedDataset
 from dicomgenerator.persistence import JSONSerializable
 
 from idiscore.delta import Delta, DeltaStatusCodes
 from idiscore.exceptions import AnnotationValidationFailedError, IDISCoreError
+from idiscore.logging import get_module_logger
+
+logger = get_module_logger("annotation")
 
 
 class Annotation(JSONSerializable):
@@ -160,6 +165,34 @@ class ExampleDataset(AnnotatedDataset):
     def parse_annotation(cls, annotation_json_obj):
         """Process raw annotation object. For overwriting in child classes"""
         return Annotation.from_json_dict(annotation_json_obj)
+
+
+class FileExampleDataset(ExampleDataset):
+    """An example dataset linked to a source DICOM file on disk
+
+    Makes conversion (DICOM -> Example DICOM) cleaner
+    """
+
+    def __init__(self, dataset, source_file_path):
+        super().__init__(dataset)
+        self.source_file_path = source_file_path
+
+    @classmethod
+    def from_path(cls, source_file_path):
+        logger.info(f"Reading DICOM dataset from {source_file_path}")
+        return cls(
+            dataset=pydicom.dcmread(source_file_path), source_file_path=source_file_path
+        )
+
+    def save(self, save_path=None):
+        if save_path:
+            save_path = Path(save_path)
+        else:
+            source = Path(self.source_file_path)
+            save_path = source.parent / (source.stem + "_template.json")
+        with open(save_path, "w") as f:
+            super().save(f)
+        logger.info(f"Wrote DICOM example to {save_path}")
 
 
 class UnknownAnnotationType(IDISCoreError):

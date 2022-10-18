@@ -8,8 +8,9 @@ dicomgen convert to_dicom <json file in>
 import logging
 
 import click
+from dicomgenerator.tools import replace_pixel_data
 
-from idiscore.tools import to_annotated_dataset
+from idiscore.annotation import FileExampleDataset
 
 
 @click.group()
@@ -27,17 +28,21 @@ def convert():
 @click.argument("dicom_file", type=click.Path())
 @click.option("--output_file", type=click.Path(), default=None)
 @click.option(
-    "--replace-image-data/--no_replace_image_data",
+    "--replace-image-data/--no_replace-image_data",
     default=True,
     help="Replace pixel data with tiny dummy image",
 )
-def to_dicom_example(dicom_file, output_file, replace_image_data):
-    to_annotated_dataset(
-        input_path=dicom_file,
-        replace_image_data=replace_image_data,
-        output_path=output_file,
-    )
+@click.option(
+    "--seed-annotations/--no-seed-annotations",
+    default=True,
+    help="Place PII annotation according to DICOM basic profile",
+)
+def to_dicom_example_cli(dicom_file, output_file, replace_image_data, seed_annotations):
+    example = FileExampleDataset.from_path(dicom_file)
+    if replace_image_data:
+        example.dataset = replace_pixel_data(example.dataset)
+    example.save(output_file)
 
 
 main.add_command(convert)
-convert.add_command(to_dicom_example)
+convert.add_command(to_dicom_example_cli)
