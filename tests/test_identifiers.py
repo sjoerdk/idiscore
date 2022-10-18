@@ -1,6 +1,6 @@
 import pytest
-from dicomgenerator.factory import CTDatasetFactory
-from dicomgenerator.factory import DataElementFactory as DatEF
+from dicomgenerator.generators import DataElementFactory as DatEF
+from dicomgenerator.templates import CTDatasetFactory
 from pydicom.tag import Tag
 
 from idiscore.identifiers import (

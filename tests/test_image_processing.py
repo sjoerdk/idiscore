@@ -1,7 +1,7 @@
 from copy import copy
 
 import pytest
-from dicomgenerator.factory import CTDatasetFactory
+from dicomgenerator.templates import CTDatasetFactory
 from numpy.core.multiarray import ndarray
 from pydicom.dataset import Dataset
 from pydicom.uid import ExplicitVRLittleEndian

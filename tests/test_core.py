@@ -5,7 +5,8 @@ from typing import Set
 
 import pytest
 from dicomgenerator.dicom import VRs
-from dicomgenerator.factory import CTDatasetFactory, DataElementFactory as DatEF
+from dicomgenerator.generators import DataElementFactory as DatEF
+from dicomgenerator.templates import CTDatasetFactory
 from pydicom.dataset import Dataset
 from pydicom.tag import Tag
 

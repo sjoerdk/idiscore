@@ -5,7 +5,7 @@ of what a deidentification method should do.
 
 The validation approach is as follows:
 
-* Open an AnnotatedDataset. This can have annotations per DICOM element, indicating
+* Open an ExampleDataset. This can have annotations per DICOM element, indicating
   which definitely should be removed, which should be kept, etc.
 
 * Deidentify with method X
@@ -22,7 +22,7 @@ from typing import Dict, List
 
 from pydicom.dataset import Dataset
 
-from idiscore.annotation import AnnotatedDataset, Annotation
+from idiscore.annotation import Annotation, ExampleDataset
 from idiscore.delta import Delta
 from idiscore.exceptions import AnnotationValidationFailedError
 
@@ -63,7 +63,7 @@ class ValidationResult:
     def __init__(
         self,
         deidentifier_description: str,
-        results: Dict[AnnotatedDataset, List[AnnotationCheckResult]],
+        results: Dict[ExampleDataset, List[AnnotationCheckResult]],
     ):
         """
 
@@ -71,17 +71,17 @@ class ValidationResult:
         ----------
         deidentifier_description: str
             Human readable description of the deidentifier that was validated
-        results: Dict[AnnotatedDataset, List[AnnotationCheckResult]])
+        results: Dict[ExampleDataset, List[AnnotationCheckResult]])
             For each DICOM example, a list of results after checking
 
         """
         self.deidentifier_description = deidentifier_description
         self.results = results
 
-    def get_successful_examples(self) -> List[AnnotatedDataset]:
+    def get_successful_examples(self) -> List[ExampleDataset]:
         return [x for x, y in self.results.items() if all(z.has_succeeded for z in y)]
 
-    def get_failed_examples(self) -> List[AnnotatedDataset]:
+    def get_failed_examples(self) -> List[ExampleDataset]:
         return [
             x for x, y in self.results.items() if not all(z.has_succeeded for z in y)
         ]
@@ -113,7 +113,7 @@ class ValidationResult:
 class Validation:
     """A deidentifier with a collection of DICOM examples"""
 
-    def __init__(self, deidentifier: Deidentifier, examples: List[AnnotatedDataset]):
+    def __init__(self, deidentifier: Deidentifier, examples: List[ExampleDataset]):
         self.deidentifier = deidentifier
         self.examples = examples
 
@@ -126,7 +126,7 @@ class Validation:
 
 
 def check(
-    deidentifier: Deidentifier, annotated_dataset: AnnotatedDataset
+    deidentifier: Deidentifier, annotated_dataset: ExampleDataset
 ) -> List[AnnotationCheckResult]:
     """Does this deidentifier handle all DICOM elements according this example?
 
@@ -140,8 +140,8 @@ def check(
 
     # Check whether these changes fit with the annotations
     results = []
-    for annotation in annotated_dataset.annotations:
-        if delta := deltas.get(annotation.tag):
+    for tag, annotation in annotated_dataset.annotations.items():
+        if delta := deltas.get(tag):
             try:
                 annotation.assert_conformance(delta)
                 results.append(

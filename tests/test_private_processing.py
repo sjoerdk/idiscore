@@ -1,5 +1,5 @@
 import pytest
-from dicomgenerator.factory import CTDatasetFactory
+from dicomgenerator.templates import CTDatasetFactory
 from pydicom.dataset import Dataset
 
 from idiscore.identifiers import TagIdentifier

@@ -1,8 +1,8 @@
 import pytest
-from dicomgenerator.factory import CTDatasetFactory
+from dicomgenerator.templates import CTDatasetFactory
 from pydicom.tag import Tag
 
-from idiscore.annotation import AnnotatedDataset, ContainsPII, MustNotChange
+from idiscore.annotation import ContainsPII, ExampleDataset, MustNotChange
 from idiscore.delta import Delta, DeltaStatusCodes
 from idiscore.insertions import PATIENT_IDENTITY_REMOVED
 from idiscore.validation import (
@@ -22,35 +22,28 @@ def test_validate(a_core, a_dataset):
 
     core_instance = a_core
     # create an example dataset with annotation that PatientName is bad
-    example = AnnotatedDataset(
+    example = ExampleDataset(
         description="example1",
         dataset=a_dataset,
-        annotations=[
-            ContainsPII(
-                tag=Tag("PatientName"), explanation="This contains an actual name"
-            ),
-            MustNotChange(tag=Tag("PatientID"), explanation="Patient ID is needed"),
-        ],
+        annotations={
+            "PatientName": ContainsPII("This contains an actual name"),
+            "PatientID": MustNotChange("Patient ID is needed"),
+        },
     )
 
-    example2 = AnnotatedDataset(
+    example2 = ExampleDataset(
         description="example2",
         dataset=a_dataset,
-        annotations=[
-            ContainsPII(
-                tag=Tag("Modality"),
-                explanation="Modality must not be known here for some reason",
-            ),
-            MustNotChange(tag=Tag("PatientID"), explanation="Patient ID is needed"),
-        ],
+        annotations={
+            "Modality": ContainsPII("Modality must not be known here for some reason"),
+            "PatientID": MustNotChange("Patient ID is needed"),
+        },
     )
 
-    example3 = AnnotatedDataset(
+    example3 = ExampleDataset(
         description="example3",
         dataset=a_dataset,
-        annotations=[
-            ContainsPII(tag=Tag("PatientID"), explanation="This is a name! bad.")
-        ],
+        annotations={"PatientID": ContainsPII("This is a name! bad.")},
     )
 
     validation = Validation(
