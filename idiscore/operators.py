@@ -6,7 +6,7 @@ from hashlib import md5
 from typing import Optional, Tuple, Union
 
 from dicomgenerator.dicom import VRs
-from dicomgenerator.factory import DataElementFactory
+from dicomgenerator.generators import DataElementFactory
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 

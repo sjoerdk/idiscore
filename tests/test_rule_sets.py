@@ -1,11 +1,11 @@
 from copy import deepcopy
 
 import pytest
-from dicomgenerator.factory import (
-    CTDatasetFactory,
+from dicomgenerator.generators import (
     DataElementFactory,
     DataElementFactory as DatEF,
 )
+from dicomgenerator.templates import CTDatasetFactory
 
 from idiscore.bouncers import RejectKOGSPS
 from idiscore.core import Core, Profile

@@ -1,4 +1,4 @@
-from dicomgenerator.factory import CTDatasetFactory
+from dicomgenerator.templates import CTDatasetFactory
 
 from idiscore.defaults import create_default_core
 from idiscore.validation import extract_signature

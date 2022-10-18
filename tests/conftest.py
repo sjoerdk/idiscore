@@ -2,7 +2,7 @@
 from typing import List
 
 import pytest
-from dicomgenerator.factory import DataElementFactory
+from dicomgenerator.generators import DataElementFactory
 from pydicom.dataset import Dataset
 
 from idiscore.core import Core, Profile

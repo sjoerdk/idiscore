@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-
 """Tests for `idiscore` package."""
 from typing import List
 
 import pytest
 from dicomgenerator.dicom import VRs
-from dicomgenerator.factory import DataElementFactory
+from dicomgenerator.generators import DataElementFactory
 from factory import random
 from pydicom.dataset import Dataset
 

@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from dicomgenerator.dicom import VRs
 from pydicom.dataelem import DataElement
@@ -154,8 +154,8 @@ class Core(Deidentifier):
         DeidentificationError
             If deidentification fails for any reason
 
-        Notes
-        -----
+        Warnings
+        --------
         Input dataset is passed by reference so will be modified. The output
         of this function is the same object as the input
         >>> original_dataset
@@ -264,39 +264,6 @@ class Core(Deidentifier):
                 bouncer.inspect(dataset)
             except BouncerException as e:
                 raise DeidentificationError(e) from e
-
-
-def split_pixel_data(dataset: Dataset) -> Tuple[Dataset, Optional[DataElement]]:
-    """Make a copy of dataset, but return PixelData element separately
-
-    PixelData element will be a reference, not a copy.
-    This function is useful if you want to process all DICOM elements in a dataset
-    without modifying the original. PixelData is not copied because it can be
-    thousands of times bigger than all other elements combined, and needs special
-    processing anyway.
-
-    Parameters
-    ----------
-    dataset: Dataset
-        A DICOM dataset that might contain a PixelData element
-
-    Returns
-    -------
-    Tuple[Dataset, Optional[DataElement]]
-        A deep copy of dataset and a reference to the original PixelData element.
-        If dataset contains no PixelData element, will return Tuple[DataSet, None]
-    """
-    copied = Dataset()
-    pixel_data_tag = 0x7FE00010
-
-    for element in dataset:
-        if element.tag != pixel_data_tag:
-            copied.add(DataElement(tag=element.tag, VR=element.VR, value=element.value))
-
-    if pixel_data_tag in dataset:
-        return copied, dataset[pixel_data_tag]
-    else:
-        return copied, None
 
 
 def handle_key_error(func):
