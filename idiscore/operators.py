@@ -10,6 +10,7 @@ from dicomgenerator.generators import DataElementFactory
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 
+from idiscore.dicom import ActionCodes
 from idiscore.exceptions import IDISCoreError
 from idiscore.private_processing import SafePrivateDefinition
 from idiscore.settings import IDIS_CORE_ROOT_UID
@@ -20,6 +21,14 @@ class Operator:
 
     Like changing the value, hashing it, removing the entire element, etc.
     Takes care of input validation, raising exceptions when needed
+
+    class parameters
+    ----------------
+    name: str
+        Human-readable description of this operator
+    nema_action_code: ActionCode
+        The action from DICOM table E1-1 that this operator implements. For generating
+        tag-action lists for profiles that can be readily compared to the DICOM standard
 
     Notes
     -----
@@ -35,6 +44,7 @@ class Operator:
     """
 
     name = "Base Operation"
+    nema_action_code = ActionCodes.UNDEFINED
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
@@ -70,16 +80,18 @@ class Operator:
         return element
 
     def __str__(self):
-        if self.name:
-            return self.name
+        var_name = self.nema_action_code.var_name
+        if self.name.lower() == var_name.lower():
+            return self.name  # avoid remove(remove) for simple operations
         else:
-            return super().__str__()
+            return f"{var_name.capitalize()}({self.name})"
 
 
 class Keep(Operator):
     """Keep the given element as is. Make no changes"""
 
     name = "Keep"
+    nema_action_code = ActionCodes.KEEP
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
@@ -91,6 +103,7 @@ class Remove(Operator):
     """Remove the given element completely"""
 
     name = "Remove"
+    nema_action_code = ActionCodes.REMOVE
 
     def apply(self, element: DataElement, dataset: Optional[Dataset] = None):
         raise ElementShouldBeRemoved()
@@ -100,6 +113,7 @@ class Empty(Operator):
     """Make the content of element empty"""
 
     name = "Empty"
+    nema_action_code = ActionCodes.EMPTY
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
@@ -171,6 +185,7 @@ class Clean(Operator):
     """
 
     name = "Clean"
+    nema_action_code = ActionCodes.CLEAN
 
     def __init__(
         self,
@@ -282,6 +297,7 @@ class Replace(Operator):
     """Replace element with a dummy value"""
 
     name = "Replace"
+    nema_action_code = ActionCodes.DUMMY
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
@@ -293,6 +309,7 @@ class HashUID(Operator):
     """Replace element with a valid UID"""
 
     name = "HashUID"
+    nema_action_code = ActionCodes.CLEAN
 
     def __init__(self, root_uid: str = None):
         """
@@ -355,6 +372,7 @@ class Hash(Operator):
     """Replace value with an MD5 hash of that value"""
 
     name = "Hash"
+    nema_action_code = ActionCodes.CLEAN
 
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
@@ -368,6 +386,7 @@ class SetFixedValue(Operator):
     """Replace element with a fixed value from a list of tag-value pairs"""
 
     name = "SetFixedValue"
+    nema_action_code = ActionCodes.CLEAN
 
     def __init__(self, value: Union[str, int, object]):
         """

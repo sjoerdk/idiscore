@@ -18,7 +18,7 @@ from idiscore._public_dicom import (
     retain_safe_private,
     retain_uid,
 )
-from idiscore.nema import ActionCode, ActionCodes
+from idiscore.dicom import ActionCode, ActionCodes
 from idiscore.operators import (
     Clean,
     Empty,

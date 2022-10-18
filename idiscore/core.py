@@ -35,7 +35,7 @@ class Profile:
 
     * A Profile holds a list of RuleSets. Later Rules overrule earlier
 
-    * A profile's RuleSets can be 'collapsed' to have exactly one operation for
+    * A profile's RuleSets can be 'flattened' to have exactly one operation for
       each tag
 
     """
@@ -80,7 +80,7 @@ class Profile:
         return RuleSet(name="flattened", rules=set(output.values()))
 
     def description(self, text_format: str = "txt") -> str:
-        """A multi-line, human readable description of this profile
+        """A multi-line, human-readable description of this profile
 
         Parameters
         ----------

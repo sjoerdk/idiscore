@@ -22,6 +22,7 @@ from dicomgenerator.annotation import AnnotatedDataset
 from dicomgenerator.persistence import JSONSerializable
 
 from idiscore.delta import Delta, DeltaStatusCodes
+from idiscore.dicom import ActionCodes
 from idiscore.exceptions import AnnotationValidationFailedError, IDISCoreError
 from idiscore.logging import get_module_logger
 
@@ -49,6 +50,9 @@ class Annotation(JSONSerializable):
 
         """
         self.explanation = explanation
+
+    def __str__(self):
+        return f"{type(self).__name__}({self.explanation})"
 
     def to_json_dict(self) -> Dict:
         return {
@@ -193,6 +197,39 @@ class FileExampleDataset(ExampleDataset):
         with open(save_path, "w") as f:
             super().save(f)
         logger.info(f"Wrote DICOM example to {save_path}")
+
+
+def annotate(dicom_example: ExampleDataset, profile):
+    """Add annotations to example dataset based on a profile
+    Parameters
+    ----------
+    dicom_example: ExampleDataset
+        Annotate this dataset
+    profile: Profile
+        Annotate tags that this profile says should be changed
+    """
+    actions_indicating_pii = (
+        ActionCodes.REMOVE,
+        ActionCodes.DUMMY,
+        ActionCodes.EMPTY,
+        ActionCodes.CLEAN,
+    )
+
+    def might_have_pii(rule):
+        if not rule:
+            return False
+        else:
+            return rule.operation.nema_action_code in actions_indicating_pii
+
+    for element in dicom_example.dataset:
+        rule = profile.get_rule(element)
+        if might_have_pii(rule):
+            dicom_example.annotations[element.tag] = ContainsPII(
+                f"Basic Profile mandates action "
+                f"{rule.operation.nema_action_code.var_name} for "
+                f"this tag"
+            )
+    return dicom_example
 
 
 class UnknownAnnotationType(IDISCoreError):

@@ -13,6 +13,7 @@ from jinja2 import Template
 from pydicom.tag import Tag
 
 
+from idiscore.dicom import ActionCode, ActionCodes
 from idiscore.identifiers import (
     PrivateTags,
     RepeatingGroup,
@@ -20,7 +21,7 @@ from idiscore.identifiers import (
     SingleTag,
     TagIdentifier,
 )
-from idiscore.nema import ActionCode, ActionCodes, E1_1_METHOD_INFO, RawNemaRuleSet
+from idiscore.nema import E1_1_METHOD_INFO, RawNemaRuleSet
 
 
 class Table:

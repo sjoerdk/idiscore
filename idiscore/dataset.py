@@ -7,10 +7,10 @@ from idiscore.exceptions import IDISCoreError
 class RequiredDataset(Dataset):
     """A pydicom Dataset,that raises distinctive errors when accessing missing keys
 
-    Made this to specifically handle missing keys on a dataset. By
-    default a Dataset instance raises KeyError and AttributeError. These are too
-    general to safely catch over larger pieces of code. Putting try except blocks
-    around each individual dict key access is ugly and annoying.
+    Made this to specifically handle missing keys on a dataset. By default, a Dataset
+    instance raises KeyError and AttributeError. These are too general to safely
+    catch over larger pieces of code. Putting try-except blocks around each individual
+    dict key access is ugly and annoying.
 
     Raises
     ------

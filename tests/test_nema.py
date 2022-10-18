@@ -1,5 +1,6 @@
+from idiscore.dicom import ActionCodes
 from idiscore.identifiers import PrivateTags, SingleTag
-from idiscore.nema import ActionCodes, RawNemaRuleSet
+from idiscore.nema import RawNemaRuleSet
 from idiscore.operators import Clean, Remove
 
 

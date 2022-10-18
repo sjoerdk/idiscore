@@ -1,13 +1,13 @@
 """Default implementations of idiscore objects and convenience functions"""
 from idiscore.bouncers import RejectEncapsulatedImageStorage, RejectNonStandardDicom
 from idiscore.core import Core, Profile
+from idiscore.dicom import ActionCodes
 from idiscore.image_processing import PIILocationList, PixelProcessor
 from idiscore.insertions import (
     PATIENT_IDENTITY_REMOVED,
     get_deidentification_method,
     get_idis_code_sequence,
 )
-from idiscore.nema import ActionCodes
 from idiscore.operators import Clean
 from idiscore.private_processing import SafePrivateDefinition
 from idiscore.rule_sets import DICOMRuleSets
@@ -66,7 +66,7 @@ def get_dicom_rule_sets(
     Returns
     -------
     DICOMRuleSets
-        All standard DICOM rule sets, optionally with built in safe private
+        All standard DICOM rule sets, optionally with built-in safe private
         definitions
 
     """

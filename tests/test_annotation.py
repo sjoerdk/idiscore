@@ -3,7 +3,14 @@ import json
 
 from dicomgenerator.templates import CTDatasetFactory
 
-from idiscore.annotation import Annotation, ContainsPII, ExampleDataset, MustNotChange
+from idiscore.annotation import (
+    Annotation,
+    ContainsPII,
+    ExampleDataset,
+    MustNotChange,
+    annotate,
+)
+from idiscore.defaults import get_dicom_rule_sets
 from tests import RESOURCE_PATH
 
 
@@ -62,3 +69,11 @@ def test_annotated_dataset_load_save():
 
     assert len(loaded.dataset) == 108
     assert loaded.get_annotation((0x0010, 0x0010)).explanation == "This is PII"
+
+
+def test_annotate(a_dataset):
+    example = ExampleDataset(dataset=a_dataset)
+    profile = get_dicom_rule_sets().basic_profile
+    assert len(example.annotations) == 0
+    annotated = annotate(example, profile)
+    assert len(annotated.annotations) == 6
