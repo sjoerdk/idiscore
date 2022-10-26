@@ -21,7 +21,7 @@ from idiscore.identifiers import (
     SingleTag,
     TagIdentifier,
 )
-from idiscore.nema import E1_1_METHOD_INFO, RawNemaRuleSet
+from idiscore.nema_parsing import E1_1_METHOD_INFO, RawNemaRuleSet
 
 
 class Table:

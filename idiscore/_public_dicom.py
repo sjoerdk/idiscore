@@ -6,7 +6,7 @@ http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html
 
 from idiscore.dicom import ActionCodes
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
-from idiscore.nema import RawNemaRuleSet
+from idiscore.nema_parsing import RawNemaRuleSet
 
 basic_profile = RawNemaRuleSet(
     name="Basic Application Level Confidentiality Profile",

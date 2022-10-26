@@ -18,7 +18,7 @@ def test_idiscore_deidentify_basic(a_dataset, a_core_with_some_rules):
     assert Tag(0x1013, 0x0001) in a_dataset
     assert a_dataset.PatientID == "12345"
     assert a_dataset.PatientName == "Martha"
-    assert len(a_dataset.items()) == 7
+    assert len(a_dataset.items()) == 8
 
     # now apply the rules to the dataset
     core = a_core_with_some_rules
@@ -29,7 +29,7 @@ def test_idiscore_deidentify_basic(a_dataset, a_core_with_some_rules):
     assert Tag(0x1013, 0x0001) not in deidentified  # removed by PrivateTags() rule
     assert deidentified.PatientID == "12345"  # not touched. No rule for this
     assert deidentified.PatientName != "Martha"  # should have been hashed
-    assert len(deidentified.items()) == 3
+    assert len(deidentified.items()) == 4
 
 
 @pytest.fixture

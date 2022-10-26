@@ -18,7 +18,7 @@ from pydicom.sequence import Sequence
 from pydicom.tag import Tag
 
 from idiscore import __version__
-from idiscore.nema import E1_1_METHOD_INFO
+from idiscore.nema_parsing import E1_1_METHOD_INFO
 
 
 def get_idis_code_sequence(ruleset_names: List[str]) -> DataElement:

@@ -4,6 +4,7 @@ from typing import List
 import pytest
 from dicomgenerator.generators import DataElementFactory
 from pydicom.dataset import Dataset
+from pydicom.uid import CTImageStorage, ExplicitVRLittleEndian
 
 from idiscore.core import Core, Profile
 from idiscore.identifiers import (
@@ -44,7 +45,13 @@ def a_dataset() -> Dataset:
     dataset.add(
         DataElementFactory(tag=(0x5010, 0x3000), value=b"Sensitive data", VR="OB")
     )
-    dataset.add(DataElementFactory(tag=(0x1013, 0x0001), value=b"private tag"))
+    dataset.add(DataElementFactory(tag=(0x1013, 0x0001), value="private tag"))
+    dataset.SOPInstanceUID = "1.2.3.4"
+    dataset.ensure_file_meta()  # add if needed
+    dataset.file_meta.MediaStorageSOPClassUID = CTImageStorage
+    dataset.file_meta.MediaStorageSOPInstanceUID = dataset.SOPInstanceUID
+    dataset.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
+
     block = dataset.private_block(0x00B1, "TestCreator", create=True)
     block.add_new(0x01, "SH", "my testvalue")
     return dataset

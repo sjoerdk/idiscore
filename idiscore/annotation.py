@@ -14,17 +14,21 @@ Design requirements
   an example to an example library
 
 """
-from pathlib import Path
-from typing import Dict, Type
+import collections
+from typing import Any, Callable, Dict, Optional, Type
 
-import pydicom
 from dicomgenerator.annotation import AnnotatedDataset
-from dicomgenerator.persistence import JSONSerializable
+from dicomgenerator.dicom import VRs
+from dicomgenerator.generators import DataElementFactory
+from dicomgenerator.persistence import FileJSONDataset, JSONSerializable
+from pydicom.dataelem import DataElement
+from pydicom.dataset import Dataset
 
+from idiscore.defaults import get_dicom_rule_sets
 from idiscore.delta import Delta, DeltaStatusCodes
 from idiscore.dicom import ActionCodes
 from idiscore.exceptions import AnnotationValidationFailedError, IDISCoreError
-from idiscore.logging import get_module_logger
+from idiscore.logs import get_module_logger
 
 logger = get_module_logger("annotation")
 
@@ -171,32 +175,46 @@ class ExampleDataset(AnnotatedDataset):
         return Annotation.from_json_dict(annotation_json_obj)
 
 
-class FileExampleDataset(ExampleDataset):
+class FileExampleDataset(FileJSONDataset):
     """An example dataset linked to a source DICOM file on disk
 
     Makes conversion (DICOM -> Example DICOM) cleaner
     """
 
-    def __init__(self, dataset, source_file_path):
-        super().__init__(dataset)
-        self.source_file_path = source_file_path
+    json_dataset_class = ExampleDataset
 
-    @classmethod
-    def from_path(cls, source_file_path):
-        logger.info(f"Reading DICOM dataset from {source_file_path}")
-        return cls(
-            dataset=pydicom.dcmread(source_file_path), source_file_path=source_file_path
-        )
 
-    def save(self, save_path=None):
-        if save_path:
-            save_path = Path(save_path)
-        else:
-            source = Path(self.source_file_path)
-            save_path = source.parent / (source.stem + "_template.json")
-        with open(save_path, "w") as f:
-            super().save(f)
-        logger.info(f"Wrote DICOM example to {save_path}")
+def create_pii_filter(profile):
+    """Filter to use with Scrambler.scramble()"""
+
+    def might_contain_pii(element):
+        return bool(get_cleaning_rule(element, profile))
+
+    return might_contain_pii
+
+
+def get_cleaning_rule(element, profile):
+    """Profile indicates that this element should be cleaned or removed
+    Returns
+    -------
+    Optional[Rule]:
+        The cleaning or removing rule for this element, or None if there is no
+        rule of the rule is not a cleaning or removing rule
+
+    """
+    actions_indicating_pii = (
+        ActionCodes.REMOVE,
+        ActionCodes.DUMMY,
+        ActionCodes.EMPTY,
+        ActionCodes.CLEAN,
+    )
+    rule = profile.get_rule(element)
+    if not rule:
+        return None
+    elif rule.operation.nema_action_code in actions_indicating_pii:
+        return rule
+    else:
+        return None
 
 
 def annotate(dicom_example: ExampleDataset, profile):
@@ -208,28 +226,126 @@ def annotate(dicom_example: ExampleDataset, profile):
     profile: Profile
         Annotate tags that this profile says should be changed
     """
-    actions_indicating_pii = (
-        ActionCodes.REMOVE,
-        ActionCodes.DUMMY,
-        ActionCodes.EMPTY,
-        ActionCodes.CLEAN,
-    )
 
-    def might_have_pii(rule):
-        if not rule:
-            return False
-        else:
-            return rule.operation.nema_action_code in actions_indicating_pii
-
+    logger.info(f"Annotating using {profile}")
+    new_annotations = {}
     for element in dicom_example.dataset:
-        rule = profile.get_rule(element)
-        if might_have_pii(rule):
-            dicom_example.annotations[element.tag] = ContainsPII(
+        rule = get_cleaning_rule(element, profile)
+        if rule:
+            new_annotations[element.tag] = ContainsPII(
                 f"Basic Profile mandates action "
                 f"{rule.operation.nema_action_code.var_name} for "
                 f"this tag"
             )
+    logger.info(f"Added {len(new_annotations)} annotations")
+    dicom_example.annotations.update(new_annotations)
     return dicom_example
+
+
+class Scrambler:
+    def __init__(
+        self, element_filter: Optional[Callable[[DataElement], bool]] = lambda x: True
+    ):
+        """
+
+        Parameters
+        ----------
+        element_filter: optional
+            Callable that takes a DataElement in and returns True for scramble or False
+            for skip and leave unaltered. Defaults to scrambling all
+
+        """
+        self.replacements: Dict[str, Any] = {}
+        self.element_filter = element_filter
+
+    def reset_replacements(self):
+        self.replacements = {}
+
+    def scramble(self, dataset: Dataset):
+        """Replace the most identifiable data in dataset
+
+        Main purpose is to save a user from manually replacing 100+ dicom elements,
+        while still keeping the dataset 'realistic'. This balance is struck by
+        replacing only some elements:
+        * The most annoying to replace elements like UIDs (annoying to keep consistent)
+        * The most glaringly PII containing tags like Patient and Physician Names
+
+        Does not remove or add any dicom elements. Internal consistency is maintained
+        by mapping each string in dataset to a random value that is randomized for
+        each run.
+
+        Desired functions:
+        * Deidentify data for use as example data in deidentification validation
+        * Maintain original data structure as much as possible, even if original data
+          is not valid DICOM. This is to ensure real-life examples for validation,
+          not just ideal pydicom-generated proper datasets. Real DICOM can be very
+          bad. We don't want to sugarcoat things.
+
+        Parameters
+        ----------
+        dataset:
+            dataset to scramble elements of
+
+        Warnings
+        --------
+        This is not a full deidentification. After scrambling there might still be PII
+        in the dataset. Do a manual check before committing anything
+        """
+        if self.element_filter:
+            elements_to_scramble = [x for x in dataset if self.element_filter(x)]
+        else:
+            elements_to_scramble = list(dataset)  # don't filter
+
+        logger.info(
+            f"Scrambling {len(elements_to_scramble)} elements of "
+            f"{len([x for x in dataset])} in dataset"
+        )
+
+        for element in elements_to_scramble:
+            if element.VR == VRs.Sequence.short_name:  # recurse into sequences
+                for ds in element:
+                    self.scramble(ds)
+            else:
+                self.scramble_element(element)
+        self.reset_replacements()
+
+    def scramble_element(self, element):
+        """Scramble given element, trying to give the same scrambled value"""
+
+        if isinstance(element.value, collections.abc.Hashable):
+            value = element.value
+        else:
+            value = str(element.value)  # not very clean, but it's a scramble function..
+
+        if value == "":
+            return  # don't fill in empty values with gibberish
+
+        previous_replacement = self.replacements.get((element.VR, value))
+        if previous_replacement is None:
+            replacement = DataElementFactory(VR=element.VR).value
+            element.value = replacement
+            self.replacements[(element.VR, value)] = replacement
+
+            logger.debug(f"Replacing '{truncate(value,200)}' with '{replacement}'")
+        else:
+            element.value = previous_replacement
+
+
+def truncate(value, length):
+    value = str(value)
+    if len(value) > length - 14:
+        return value[: length - 14] + "...<truncated>"
+    else:
+        return value
+
+
+def create_default_scrambler():
+    """A scrambler that scrambles all tags containing PII according to
+    DICOM basic deidentificaion profile
+    """
+    return Scrambler(
+        element_filter=create_pii_filter(profile=get_dicom_rule_sets().basic_profile)
+    )
 
 
 class UnknownAnnotationType(IDISCoreError):

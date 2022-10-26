@@ -1,16 +1,18 @@
 # test saving an example as json
 import json
+import logging
 
+from dicomgenerator.persistence import FileJSONDataset
 from dicomgenerator.templates import CTDatasetFactory
 
+from idiscore import logs
 from idiscore.annotation import (
     Annotation,
     ContainsPII,
     ExampleDataset,
     MustNotChange,
-    annotate,
+    create_default_scrambler,
 )
-from idiscore.defaults import get_dicom_rule_sets
 from tests import RESOURCE_PATH
 
 
@@ -71,9 +73,11 @@ def test_annotated_dataset_load_save():
     assert loaded.get_annotation((0x0010, 0x0010)).explanation == "This is PII"
 
 
-def test_annotate(a_dataset):
-    example = ExampleDataset(dataset=a_dataset)
-    profile = get_dicom_rule_sets().basic_profile
-    assert len(example.annotations) == 0
-    annotated = annotate(example, profile)
-    assert len(annotated.annotations) == 6
+def test_scramble(a_path_to_dataset, caplog):
+    original_path = a_path_to_dataset
+    caplog.set_level(logging.DEBUG, logger=logs.ROOT_LOGGER_NAME)
+    json_dataset = FileJSONDataset.from_dicom_path(original_path)
+
+    scrambler = create_default_scrambler()
+    scrambler.scramble(json_dataset.dataset)
+    # do nothing, just wanted to see nothing crashes

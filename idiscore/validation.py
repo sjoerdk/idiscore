@@ -23,15 +23,9 @@ from typing import Dict, List
 from pydicom.dataset import Dataset
 
 from idiscore.annotation import Annotation, ExampleDataset
+from idiscore.core import Deidentifier
 from idiscore.delta import Delta
 from idiscore.exceptions import AnnotationValidationFailedError
-
-
-class Deidentifier:
-    """Something that has a deidentify() method that processes pydicom datasets"""
-
-    def deidentify(self, dataset: Dataset) -> Dataset:
-        raise NotImplementedError()
 
 
 def crop_string(string_in: str, max_length: int = 40) -> str:

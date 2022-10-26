@@ -1,3 +1,4 @@
+"""Calling this logs to avoid name clash with python built in logging module"""
 import logging
 
 ROOT_LOGGER_NAME = "idiscore"

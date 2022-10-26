@@ -60,6 +60,7 @@ def test_signature(a_core, a_dataset):
     deltas = extract_signature(a_core, a_dataset)
     assert [x.status for x in deltas] == [
         DeltaStatusCodes.UNCHANGED,
+        DeltaStatusCodes.UNCHANGED,
         DeltaStatusCodes.CHANGED,
         DeltaStatusCodes.UNCHANGED,
         DeltaStatusCodes.REMOVED,

@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "idiscore"
-version = "1.1.0"
+version = "1.2.0alpha"
 description = "Pure-python deidentification of DICOM images using Attribute Confidentiality Options"
 authors = ["sjoerdk <sjoerd.kerkstra@radboudumc.nl>"]
 license = "GPLv3"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-dicomgenerator = "^0.8.2"
+dicomgenerator = "^0.9.0alpha"
 Jinja2 = "^3.1.2"
 Pillow = "^9.2.0"
 

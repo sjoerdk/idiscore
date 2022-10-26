@@ -22,7 +22,6 @@ from idiscore.templates import (
     profile_description_rst,
     profile_description_txt,
 )
-from idiscore.validation import Deidentifier
 
 
 class Profile:
@@ -110,6 +109,13 @@ class Profile:
                 f"{x.identifier} ({x.identifier.name()}) - {x.operation}" for x in rules
             ),
         )
+
+
+class Deidentifier:
+    """Something that has a deidentify() method that processes pydicom datasets"""
+
+    def deidentify(self, dataset: Dataset) -> Dataset:
+        raise NotImplementedError()
 
 
 class Core(Deidentifier):
@@ -225,7 +231,7 @@ class Core(Deidentifier):
         return dataset
 
     def description(self, text_format: str = "txt") -> str:
-        """A multi-line, human readable description of this instance
+        """A multi-line, human-readable description of this instance
 
         what happens to each tag, which data will be rejected, etc.
 

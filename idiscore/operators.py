@@ -216,11 +216,11 @@ class Clean(Operator):
 
         if element.tag.is_private:
             return self.clean_private(element, dataset)
-        elif vr in VRs.date_like:
+        elif VRs.is_date_like(element.VR):
             return self.clean_date_time(element, dataset)
-        elif vr in VRs.string_like:
+        elif VRs.is_string_like(element.VR):
             return DataElement(tag=element.tag, VR=element.VR, value="CLEANED")
-        elif vr == VRs.Sequence:
+        elif VRs.is_sequence(element.VR):
             return copy(element)  # sequence elements are processed later. pass
         else:
             # too difficult. Cannot do it
