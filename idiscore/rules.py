@@ -57,7 +57,7 @@ class RuleSet:
 
         # wildcard rules
         self._group_rules = [x for x in rules if not self.is_single_tag_rule(x)]
-        # Try to match most specific group rules first
+        # match most specific group rules first
         self._group_rules.sort(key=lambda x: x.number_of_matchable_tags())
 
         self.name = name

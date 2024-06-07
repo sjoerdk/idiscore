@@ -27,12 +27,17 @@ def get_keyword(tag):
 class TagIdentifier:
     """Identifies a single DICOM tag or repeating group like (50xx,xxx)
 
-
-    Using just DICOM tags is too limited for defining deidentification. We want
+    Using just single DICOM tags is too limited for defining deidentification. We want
     to be able to represent for example:
 
     * all curves (50xx,xxxx)
     * a private tag with private creator group (01[PrivateCreatorName],0010)
+
+    TagIdentifier features:
+    * Can match a single tag or any collection of tags using .matches(element)
+    * Is uniquely defined by .key(). Instances with the same .key() will equate
+      and key is a sufficient argument to recreate a new instance:
+      Tag(tag.key()) == tag
 
     """
 
