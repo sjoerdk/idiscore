@@ -4,6 +4,8 @@ http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html
 
 and convert them to python that can be saved in public_dicom.py
 """
+import datetime
+from itertools import zip_longest
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -41,7 +43,7 @@ class Table:
     def add_row(self, row: List):
         """Add row, assume row is the same order as headers"""
         row_dict = {}
-        for header, value in zip(self.headers, row):
+        for header, value in zip_longest(self.headers, row):
             row_dict[header] = value
         self.rows.append(row_dict)
 
@@ -73,7 +75,7 @@ class ConfidentialityProfileTable(Table):
     def __init__(self, headers: List[str], rows: List[Dict] = None):
         if not headers == self.expected_header_names:
             raise ValueError(
-                f"Header names for this table seem to be different then"
+                f"Header names for this table seem to be different than "
                 f"expected. Expected {self.expected_header_names}, but "
                 f"got {headers}. I'm not sure this table contains"
                 f"the right info"
@@ -124,7 +126,7 @@ def parse_nema_dicom_table(html: str) -> Table:
 
     # parse the html to get to the main table
     soup = BeautifulSoup(html, "html.parser")
-    main_table_element = soup.select("div.table-contents table")[0]
+    main_table_element = soup.select("div.table-contents table")[1]
     header_elements = main_table_element.findAll("th")
     header_names = [x.text.replace("\n", "") for x in header_elements]
     rows = main_table_element.findAll("tr")
@@ -242,12 +244,16 @@ table = parse_nema_dicom_table(get_html_cached(force_refresh=False))
 heading = """
 \"\"\"Public DICOM information auto-generated from generate_public_dicom.py
 
-Information from table E.1-1 here:
+
+Scraped from the following page:
 http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html
+
+scrape date: {{ scrape_date_string }}
 \"\"\"
 
-from idiscore.nema import ActionCodes, RawNemaRuleSet
-from idiscore.identifiers import SingleTag, RepeatingGroup, PrivateTags
+from idiscore.dicom import ActionCodes
+from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
+from idiscore.nema_parsing import RawNemaRuleSet
 """
 
 profile_template_text = """
@@ -261,9 +267,10 @@ profile_template_text = """
     )
 
 """
+header_template = Template(heading)
 profile_template = Template(profile_template_text)
 
-content = heading
+content = header_template.render(scrape_date_string=str(datetime.date.today()))
 
 for profile in E1_1_METHOD_INFO:
     if profile.table_header is None:
