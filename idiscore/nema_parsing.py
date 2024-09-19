@@ -112,8 +112,8 @@ class RawNemaRuleSet:
                 operation = action_mapping[actioncode]
             except KeyError as e:
                 raise IDISCoreError(
-                    f'Unknown actioncode "{actioncode}" I do'
-                    f" not know which operation add here"
+                    f'Unknown actioncode "{actioncode}" I do not know which operation'
+                    f" to add here"
                 ) from e
             compiled.append(Rule(identifier=identifier, operation=operation))
 

@@ -18,6 +18,7 @@ class ActionCodes:
     KEEP = ActionCode("K", "KEEP")  # keep
     CLEAN = ActionCode("C", "CLEAN")  # clean
     UID = ActionCode("U", "UID")  # replace with consistent UID
+    EMPTY_OR_DUMMY = ActionCode("Z/D", "EMPTY_OR_DUMMY")
     REPLACE_OR_DUMMY = ActionCode("X/Z", "REPLACE_OR_DUMMY")  # X unless Z is
     # required for consistency
     REMOVE_OR_EMPTY = ActionCode("X/Z", "REMOVE_OR_EMPTY")  # X unless Z is
@@ -39,6 +40,7 @@ class ActionCodes:
         KEEP,
         CLEAN,
         UID,
+        EMPTY_OR_DUMMY,
         REMOVE_OR_EMPTY,
         REMOVE_OR_DUMMY,
         REMOVE_OR_EMPTY_OR_DUMMY,

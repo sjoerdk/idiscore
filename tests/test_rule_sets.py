@@ -56,7 +56,7 @@ def test_realistic_profile():
     )
 
     final_set = profile.flatten()
-    assert len(final_set.rules) == 442
+    assert len(final_set.rules) == 623
 
     core = Core(profile=profile)
     dataset = CTDatasetFactory()
@@ -119,7 +119,7 @@ def test_core_description():
     )
 
     final_set = profile.flatten()
-    assert len(final_set.rules) == 442
+    assert len(final_set.rules) == 623
 
     core = Core(profile=profile, bouncers=[RejectKOGSPS])
     test = core.description()

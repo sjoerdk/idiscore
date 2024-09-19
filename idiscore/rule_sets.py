@@ -38,6 +38,7 @@ DEFAULT_MAPPING = {
     ActionCodes.KEEP: Keep(),
     ActionCodes.CLEAN: Clean(),
     ActionCodes.UID: HashUID(),
+    ActionCodes.EMPTY_OR_DUMMY: Empty(),
     ActionCodes.REPLACE_OR_DUMMY: Replace(),
     ActionCodes.REMOVE_OR_EMPTY: Remove(),
     ActionCodes.REMOVE_OR_DUMMY: Remove(),
