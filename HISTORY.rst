@@ -2,6 +2,13 @@
 History
 =======
 
+1.2.0 (2024-09-20)
+------------------
+* Updates DICOM Profiles based on updated NEMA table
+* Follows NEMA in adding EMPTY_OR_DUMMY action code
+* Several dependency updates and package maintenance
+
+
 1.1.0 (2022-09-15)
 ------------------
 * Stoped internal deepcopy DICOM files, improving performance and reducing IO issues
