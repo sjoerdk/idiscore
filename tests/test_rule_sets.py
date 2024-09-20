@@ -123,4 +123,4 @@ def test_core_description():
 
     core = Core(profile=profile, bouncers=[RejectKOGSPS])
     test = core.description()
-    print(test)
+    assert test
