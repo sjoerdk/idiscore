@@ -2,8 +2,9 @@
 IDIS Core
 =========
 
-.. image:: https://github.com/sjoerdk/idiscore/workflows/build/badge.svg
-        :target: https://github.com/sjoerdk/idiscore/actions?query=workflow%3Abuild
+
+.. image:: https://github.com/sjoerdk/idiscore/actions/workflows/build.yml/badge.svg?branch=master
+        :target: https://github.com/sjoerdk/idiscore/actions/workflows/build.yml?query=branch%3Amaster
         :alt: Build Status
 
 .. image:: https://img.shields.io/pypi/v/idiscore.svg
@@ -13,15 +14,13 @@ IDIS Core
         :target: https://idiscore.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://codecov.io/gh/sjoerdk/idiscore/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/sjoerdk/idiscore
-
-.. image:: https://pyup.io/repos/github/sjoerdk/idiscore/shield.svg
-     :target: https://pyup.io/repos/github/sjoerdk/idiscore/
-     :alt: Updates
-
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/ambv/black
+
+.. image:: http://www.mypy-lang.org/static/mypy_badge.svg
+    :target: http://mypy-lang.org/
+    :alt: Checked with mypy
+
 
 
 Deidentification of DICOM images using Attribute Confidentiality Options
