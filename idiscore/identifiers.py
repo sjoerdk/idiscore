@@ -187,7 +187,7 @@ class RepeatingTag:
         else:
             return f"Unknown Repeater tag {self.tag}"
 
-    def number_of_wildcard_positions(self) -> int:
+    def number_of_matchable_tags(self) -> int:
         """Number of x's in this wildcard"""
         return self.tag.count("x")
 
@@ -235,7 +235,7 @@ class RepeatingGroup(TagIdentifier):
         return self.tag.name()
 
     def number_of_matchable_tags(self) -> int:
-        return 16 ** self.tag.number_of_wildcard_positions()
+        return 16 ** self.tag.number_of_matchable_tags()
 
     def as_python(self) -> str:
         """For special export. Python code that recreates this instance"""
