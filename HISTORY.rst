@@ -11,7 +11,7 @@ History
 
 1.1.0 (2022-09-15)
 ------------------
-* Stoped internal deepcopy DICOM files, improving performance and reducing IO issues
+* Stopped internal deepcopy DICOM files, improving performance and reducing IO issues
 * Adopted PEP517 for package management. Using poetry now
 * Packaging: push to pypi is now only done on github publish.
 
