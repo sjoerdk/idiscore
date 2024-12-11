@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "idiscore"
-version = "1.2.0alpha"
+version = "1.2.0"
 description = "Pure-python deidentification of DICOM images using Attribute Confidentiality Options"
 authors = ["sjoerdk <sjoerd.kerkstra@radboudumc.nl>"]
 license = "GPLv3"
