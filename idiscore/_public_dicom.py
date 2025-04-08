@@ -639,14 +639,14 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("300e0004"), ActionCodes.EMPTY),  # ReviewDate
         (SingleTag("300e0008"), ActionCodes.REMOVE_OR_EMPTY),  # ReviewerName
         (SingleTag("300e0005"), ActionCodes.EMPTY),  # ReviewTime
-        (SingleTag("3006004d"), ActionCodes.REMOVE),  # Unknown
-        (SingleTag("3006002d"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("3006004d"), ActionCodes.REMOVE),  # ROICreatorSequence
+        (SingleTag("3006002d"), ActionCodes.REMOVE),  # ROIDateTime
         (SingleTag("30060028"), ActionCodes.REMOVE),  # ROIDescription
         (SingleTag("30060038"), ActionCodes.REMOVE),  # ROIGenerationDescription
         (SingleTag("300600a6"), ActionCodes.EMPTY),  # ROIInterpreter
-        (SingleTag("3006004e"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("3006004e"), ActionCodes.REMOVE),  # ROIInterpreterSequence
         (SingleTag("30060026"), ActionCodes.EMPTY),  # ROIName
-        (SingleTag("3006002e"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("3006002e"), ActionCodes.REMOVE),  # ROIObservationDateTime
         (SingleTag("30060088"), ActionCodes.REMOVE),  # ROIObservationDescription
         (SingleTag("30060085"), ActionCodes.REMOVE),  # ROIObservationLabel
         (SingleTag("300a0615"), ActionCodes.EMPTY),  # RTAccessoryDeviceSlotID
@@ -793,7 +793,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00320033"), ActionCodes.REMOVE),  # StudyVerifiedTime
         (SingleTag("00440010"), ActionCodes.REMOVE),  # SubstanceAdministrationDateTime
         (SingleTag("00200200"), ActionCodes.UID),  # SynchronizationFrameOfReferenceUID
-        (SingleTag("300a0054"), ActionCodes.UID),  # Unknown
+        (SingleTag("300a0054"), ActionCodes.UID),  # TableTopPositionAlignmentUID
         (SingleTag("00182042"), ActionCodes.UID),  # TargetUID
         (SingleTag("0040a354"), ActionCodes.REMOVE),  # TelephoneNumberTrial
         (SingleTag("0040db0d"), ActionCodes.UID),  # TemplateExtensionCreatorUID
