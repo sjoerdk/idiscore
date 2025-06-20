@@ -38,7 +38,6 @@ class TagIdentifier:
     * Is uniquely defined by .key(). Instances with the same .key() will equate
       and key is a sufficient argument to recreate a new instance:
       Tag(tag.key()) == tag
-
     """
 
     def matches(self, element: DataElement) -> bool:
