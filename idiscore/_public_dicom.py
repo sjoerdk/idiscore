@@ -4,7 +4,7 @@
 Scraped from the following page:
 http://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html
 
-scrape date: 2024-09-19
+scrape date: 2025-06-24
 """
 
 from idiscore.dicom import ActionCodes
@@ -44,6 +44,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00380021"), ActionCodes.REMOVE),  # AdmittingTime
         (SingleTag("00001000"), ActionCodes.REMOVE),  # AffectedSOPInstanceUID
         (SingleTag("00102110"), ActionCodes.REMOVE),  # Allergies
+        (SingleTag("0040b034"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("006a0006"), ActionCodes.REMOVE),  # AnnotationGroupDescription
         (SingleTag("006a0005"), ActionCodes.DUMMY),  # AnnotationGroupLabel
         (SingleTag("006a0003"), ActionCodes.DUMMY),  # AnnotationGroupUID
@@ -188,6 +189,8 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("300a0013"), ActionCodes.UID),  # DoseReferenceUID
         (SingleTag("3010006e"), ActionCodes.UID),  # DosimetricObjectiveUID
         (SingleTag("00686226"), ActionCodes.DUMMY),  # EffectiveDateTime
+        (SingleTag("0040a034"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("0040a035"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("00420011"), ActionCodes.DUMMY),  # EncapsulatedDocument
         (SingleTag("00189517"), ActionCodes.REMOVE_OR_DUMMY),  # EndAcquisitionDateTime
         (SingleTag("30100037"), ActionCodes.REMOVE),  # EntityDescription
@@ -208,6 +211,7 @@ basic_profile = RawNemaRuleSet(
         ),  # EthicsCommitteeApprovalEffectivenessStartDate
         (SingleTag("00102160"), ActionCodes.REMOVE),  # EthnicGroup
         (SingleTag("00102161"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00102162"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("00189804"), ActionCodes.DUMMY),  # ExclusionStartDateTime
         (SingleTag("00404011"), ActionCodes.REMOVE),  # ExpectedCompletionDateTime
         (SingleTag("00080058"), ActionCodes.UID),  # FailedSOPInstanceUIDList
@@ -232,6 +236,9 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00189151"), ActionCodes.DUMMY),  # FrameReferenceDateTime
         (SingleTag("00189623"), ActionCodes.DUMMY),  # FunctionalSyncPulse
         (SingleTag("00181008"), ActionCodes.REMOVE),  # GantryID
+        (SingleTag("00100044"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00100045"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00100041"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("00181005"), ActionCodes.REMOVE),  # GeneratorID
         (SingleTag("00160076"), ActionCodes.REMOVE),  # GPSAltitude
         (SingleTag("00160075"), ActionCodes.REMOVE),  # GPSAltitudeRef
@@ -266,6 +273,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00160070"), ActionCodes.REMOVE),  # GPSVersionID
         (SingleTag("00700001"), ActionCodes.DUMMY),  # GraphicAnnotationSequence
         (SingleTag("0072000a"), ActionCodes.DUMMY),  # HangingProtocolCreationDateTime
+        (SingleTag("00081304"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("0040e004"), ActionCodes.REMOVE),  # HL7DocumentEffectiveTime
         (SingleTag("00404037"), ActionCodes.REMOVE),  # HumanPerformerName
         (SingleTag("00404036"), ActionCodes.REMOVE),  # HumanPerformerOrganization
@@ -377,6 +385,8 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00203405"), ActionCodes.REMOVE),  # ModifiedImageTime
         (SingleTag("00203401"), ActionCodes.REMOVE),  # ModifyingDeviceID
         (SingleTag("04000563"), ActionCodes.DUMMY),  # ModifyingSystem
+        (SingleTag("0040b03f"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("0040b03b"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("30080056"), ActionCodes.REMOVE_OR_DUMMY),  # MostRecentTreatmentDate
         (
             SingleTag("0018937b"),
@@ -388,6 +398,8 @@ basic_profile = RawNemaRuleSet(
             SingleTag("00401010"),
             ActionCodes.REMOVE,
         ),  # NamesOfIntendedRecipientsOfResults
+        (SingleTag("00100012"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00100013"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("00081000"), ActionCodes.REMOVE),  # NetworkID
         (SingleTag("04000552"), ActionCodes.REMOVE),  # NonconformingDataElementValue
         (
@@ -497,6 +509,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00401103"), ActionCodes.REMOVE),  # PersonTelephoneNumbers
         (SingleTag("00401101"), ActionCodes.DUMMY),  # PersonIdentificationCodeSequence
         (SingleTag("0040a123"), ActionCodes.DUMMY),  # PersonName
+        (SingleTag("00100011"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("00081048"), ActionCodes.REMOVE),  # PhysiciansOfRecord
         (
             SingleTag("00081049"),
@@ -526,6 +539,8 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00700083"), ActionCodes.REMOVE),  # PresentationCreationTime
         (SingleTag("00701101"), ActionCodes.UID),  # PresentationDisplayCollectionUID
         (SingleTag("00701102"), ActionCodes.UID),  # PresentationSequenceCollectionUID
+        (SingleTag("00081302"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00081301"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("30100061"), ActionCodes.REMOVE),  # PriorTreatmentDoseDescription
         (PrivateTags(), ActionCodes.REMOVE),  # Private Attributes
         (
@@ -533,6 +548,8 @@ basic_profile = RawNemaRuleSet(
             ActionCodes.REMOVE,
         ),  # ProcedureStepCancellationDateTime
         (SingleTag("0044000b"), ActionCodes.REMOVE),  # ProductExpirationDateTime
+        (SingleTag("00100015"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00100016"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("00181030"), ActionCodes.REMOVE_OR_DUMMY),  # ProtocolName
         (SingleTag("00081088"), ActionCodes.REMOVE),  # PyramidDescription
         (SingleTag("00200027"), ActionCodes.REMOVE),  # PyramidLabel
@@ -639,14 +656,14 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("300e0004"), ActionCodes.EMPTY),  # ReviewDate
         (SingleTag("300e0008"), ActionCodes.REMOVE_OR_EMPTY),  # ReviewerName
         (SingleTag("300e0005"), ActionCodes.EMPTY),  # ReviewTime
-        (SingleTag("3006004d"), ActionCodes.REMOVE),  # ROICreatorSequence
-        (SingleTag("3006002d"), ActionCodes.REMOVE),  # ROIDateTime
+        (SingleTag("3006004d"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("3006002d"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("30060028"), ActionCodes.REMOVE),  # ROIDescription
         (SingleTag("30060038"), ActionCodes.REMOVE),  # ROIGenerationDescription
         (SingleTag("300600a6"), ActionCodes.EMPTY),  # ROIInterpreter
-        (SingleTag("3006004e"), ActionCodes.REMOVE),  # ROIInterpreterSequence
+        (SingleTag("3006004e"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("30060026"), ActionCodes.EMPTY),  # ROIName
-        (SingleTag("3006002e"), ActionCodes.REMOVE),  # ROIObservationDateTime
+        (SingleTag("3006002e"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("30060088"), ActionCodes.REMOVE),  # ROIObservationDescription
         (SingleTag("30060085"), ActionCodes.REMOVE),  # ROIObservationLabel
         (SingleTag("300a0615"), ActionCodes.EMPTY),  # RTAccessoryDeviceSlotID
@@ -717,6 +734,8 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00321001"), ActionCodes.REMOVE),  # ScheduledStudyStartTime
         (SingleTag("00321010"), ActionCodes.REMOVE),  # ScheduledStudyStopDate
         (SingleTag("00321011"), ActionCodes.REMOVE),  # ScheduledStudyStopTime
+        (SingleTag("00081303"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("0040b036"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("0072005e"), ActionCodes.DUMMY),  # SelectorAEValue
         (SingleTag("0072005f"), ActionCodes.DUMMY),  # SelectorASValue
         (SingleTag("00720061"), ActionCodes.DUMMY),  # SelectorDAValue
@@ -738,6 +757,10 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00380062"), ActionCodes.REMOVE),  # ServiceEpisodeDescription
         (SingleTag("00380060"), ActionCodes.REMOVE),  # ServiceEpisodeID
         (SingleTag("300a01b2"), ActionCodes.REMOVE),  # SetupTechniqueDescription
+        (SingleTag("00100046"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00100042"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00100047"), ActionCodes.REMOVE),  # Unknown
+        (SingleTag("00100043"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("300a01a6"), ActionCodes.REMOVE),  # ShieldingDeviceDescription
         (SingleTag("004006fa"), ActionCodes.REMOVE),  # SlideIdentifier
         (SingleTag("001021a0"), ActionCodes.REMOVE),  # SmokingStatus
@@ -793,7 +816,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("00320033"), ActionCodes.REMOVE),  # StudyVerifiedTime
         (SingleTag("00440010"), ActionCodes.REMOVE),  # SubstanceAdministrationDateTime
         (SingleTag("00200200"), ActionCodes.UID),  # SynchronizationFrameOfReferenceUID
-        (SingleTag("300a0054"), ActionCodes.UID),  # TableTopPositionAlignmentUID
+        (SingleTag("300a0054"), ActionCodes.UID),  # Unknown
         (SingleTag("00182042"), ActionCodes.UID),  # TargetUID
         (SingleTag("0040a354"), ActionCodes.REMOVE),  # TelephoneNumberTrial
         (SingleTag("0040db0d"), ActionCodes.UID),  # TemplateExtensionCreatorUID
@@ -802,6 +825,7 @@ basic_profile = RawNemaRuleSet(
         (SingleTag("0040db06"), ActionCodes.REMOVE),  # TemplateVersion
         (SingleTag("40004000"), ActionCodes.REMOVE),  # TextComments
         (SingleTag("20300020"), ActionCodes.REMOVE),  # TextString
+        (SingleTag("00100014"), ActionCodes.REMOVE),  # Unknown
         (SingleTag("0040a122"), ActionCodes.DUMMY),  # Time
         (
             SingleTag("0040a112"),
@@ -1051,6 +1075,7 @@ retain_patient_characteristics = RawNemaRuleSet(
         (SingleTag("00102110"), ActionCodes.CLEAN),  # Allergies
         (SingleTag("00102160"), ActionCodes.KEEP),  # EthnicGroup
         (SingleTag("00102161"), ActionCodes.KEEP),  # Unknown
+        (SingleTag("00102162"), ActionCodes.KEEP),  # Unknown
         (SingleTag("00101010"), ActionCodes.KEEP),  # PatientAge
         (SingleTag("00100040"), ActionCodes.KEEP),  # PatientSex
         (SingleTag("00102203"), ActionCodes.KEEP),  # PatientSexNeutered
@@ -1060,6 +1085,10 @@ retain_patient_characteristics = RawNemaRuleSet(
         (SingleTag("001021c0"), ActionCodes.KEEP),  # PregnancyStatus
         (SingleTag("00400012"), ActionCodes.CLEAN),  # PreMedication
         (SingleTag("0072005f"), ActionCodes.KEEP),  # SelectorASValue
+        (SingleTag("00100046"), ActionCodes.KEEP),  # Unknown
+        (SingleTag("00100042"), ActionCodes.CLEAN),  # Unknown
+        (SingleTag("00100047"), ActionCodes.KEEP),  # Unknown
+        (SingleTag("00100043"), ActionCodes.KEEP),  # Unknown
         (SingleTag("001021a0"), ActionCodes.KEEP),  # SmokingStatus
         (SingleTag("00380050"), ActionCodes.CLEAN),  # SpecialNeeds
     ],
@@ -1074,6 +1103,7 @@ retain_full_dates = RawNemaRuleSet(
         (SingleTag("00080032"), ActionCodes.KEEP),  # AcquisitionTime
         (SingleTag("00380020"), ActionCodes.KEEP),  # AdmittingDate
         (SingleTag("00380021"), ActionCodes.KEEP),  # AdmittingTime
+        (SingleTag("0040b034"), ActionCodes.KEEP),  # Unknown
         (SingleTag("00440004"), ActionCodes.KEEP),  # ApprovalStatusDateTime
         (SingleTag("00440104"), ActionCodes.KEEP),  # AssertionDateTime
         (SingleTag("00440105"), ActionCodes.KEEP),  # AssertionExpirationDateTime
@@ -1111,6 +1141,8 @@ retain_full_dates = RawNemaRuleSet(
         (SingleTag("00380030"), ActionCodes.KEEP),  # DischargeDate
         (SingleTag("00380032"), ActionCodes.KEEP),  # DischargeTime
         (SingleTag("00686226"), ActionCodes.KEEP),  # EffectiveDateTime
+        (SingleTag("0040a034"), ActionCodes.KEEP),  # Unknown
+        (SingleTag("0040a035"), ActionCodes.KEEP),  # Unknown
         (SingleTag("00189517"), ActionCodes.KEEP),  # EndAcquisitionDateTime
         (
             SingleTag("00120087"),
@@ -1217,6 +1249,7 @@ retain_full_dates = RawNemaRuleSet(
         (SingleTag("00321001"), ActionCodes.KEEP),  # ScheduledStudyStartTime
         (SingleTag("00321010"), ActionCodes.KEEP),  # ScheduledStudyStopDate
         (SingleTag("00321011"), ActionCodes.KEEP),  # ScheduledStudyStopTime
+        (SingleTag("0040b036"), ActionCodes.KEEP),  # Unknown
         (SingleTag("00720061"), ActionCodes.KEEP),  # SelectorDAValue
         (SingleTag("00720063"), ActionCodes.KEEP),  # SelectorDTValue
         (SingleTag("0072006b"), ActionCodes.KEEP),  # SelectorTMValue
@@ -1273,6 +1306,7 @@ retain_modified_dates = RawNemaRuleSet(
         (SingleTag("00080032"), ActionCodes.CLEAN),  # AcquisitionTime
         (SingleTag("00380020"), ActionCodes.CLEAN),  # AdmittingDate
         (SingleTag("00380021"), ActionCodes.CLEAN),  # AdmittingTime
+        (SingleTag("0040b034"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("00440004"), ActionCodes.CLEAN),  # ApprovalStatusDateTime
         (SingleTag("00440104"), ActionCodes.CLEAN),  # AssertionDateTime
         (SingleTag("00440105"), ActionCodes.CLEAN),  # AssertionExpirationDateTime
@@ -1310,6 +1344,8 @@ retain_modified_dates = RawNemaRuleSet(
         (SingleTag("00380030"), ActionCodes.CLEAN),  # DischargeDate
         (SingleTag("00380032"), ActionCodes.CLEAN),  # DischargeTime
         (SingleTag("00686226"), ActionCodes.CLEAN),  # EffectiveDateTime
+        (SingleTag("0040a034"), ActionCodes.CLEAN),  # Unknown
+        (SingleTag("0040a035"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("00189517"), ActionCodes.CLEAN),  # EndAcquisitionDateTime
         (
             SingleTag("00120087"),
@@ -1416,6 +1452,7 @@ retain_modified_dates = RawNemaRuleSet(
         (SingleTag("00321001"), ActionCodes.CLEAN),  # ScheduledStudyStartTime
         (SingleTag("00321010"), ActionCodes.CLEAN),  # ScheduledStudyStopDate
         (SingleTag("00321011"), ActionCodes.CLEAN),  # ScheduledStudyStopTime
+        (SingleTag("0040b036"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("00720061"), ActionCodes.CLEAN),  # SelectorDAValue
         (SingleTag("00720063"), ActionCodes.CLEAN),  # SelectorDTValue
         (SingleTag("0072006b"), ActionCodes.CLEAN),  # SelectorTMValue
@@ -1517,6 +1554,8 @@ clean_descriptors = RawNemaRuleSet(
         (SingleTag("3010007f"), ActionCodes.CLEAN),  # FractionationNotes
         (SingleTag("300a0072"), ActionCodes.CLEAN),  # FractionGroupDescription
         (SingleTag("00209158"), ActionCodes.CLEAN),  # FrameComments
+        (SingleTag("00100045"), ActionCodes.CLEAN),  # Unknown
+        (SingleTag("00081304"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("00084000"), ActionCodes.CLEAN),  # IdentifyingComments
         (SingleTag("00204000"), ActionCodes.CLEAN),  # ImageComments
         (SingleTag("00402400"), ActionCodes.CLEAN),  # ImagingServiceRequestComments
@@ -1532,6 +1571,8 @@ clean_descriptors = RawNemaRuleSet(
         (SingleTag("00500021"), ActionCodes.CLEAN),  # LongDeviceDescription
         (SingleTag("0016002b"), ActionCodes.CLEAN),  # MakerNote
         (SingleTag("00102000"), ActionCodes.CLEAN),  # MedicalAlerts
+        (SingleTag("0040b03f"), ActionCodes.CLEAN),  # Unknown
+        (SingleTag("0040b03b"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("0018937b"), ActionCodes.CLEAN),  # MultienergyAcquisitionDescription
         (SingleTag("00102180"), ActionCodes.CLEAN),  # Occupation
         (SingleTag("00104000"), ActionCodes.CLEAN),  # PatientComments
@@ -1554,7 +1595,10 @@ clean_descriptors = RawNemaRuleSet(
         (SingleTag("300a000e"), ActionCodes.CLEAN),  # PrescriptionDescription
         (SingleTag("3010007b"), ActionCodes.CLEAN),  # PrescriptionNotes
         (SingleTag("30100081"), ActionCodes.CLEAN),  # PrescriptionNotesSequence
+        (SingleTag("00081302"), ActionCodes.CLEAN),  # Unknown
+        (SingleTag("00081301"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("30100061"), ActionCodes.CLEAN),  # PriorTreatmentDoseDescription
+        (SingleTag("00100016"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("00181030"), ActionCodes.CLEAN),  # ProtocolName
         (SingleTag("00081088"), ActionCodes.CLEAN),  # PyramidDescription
         (SingleTag("00200027"), ActionCodes.CLEAN),  # PyramidLabel
@@ -1603,6 +1647,7 @@ clean_descriptors = RawNemaRuleSet(
         (SingleTag("300a062a"), ActionCodes.CLEAN),  # RTToleranceSetLabel
         (SingleTag("30100056"), ActionCodes.CLEAN),  # RTTreatmentApproachLabel
         (SingleTag("00400007"), ActionCodes.CLEAN),  # ScheduledProcedureStepDescription
+        (SingleTag("00081303"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("00720066"), ActionCodes.CLEAN),  # SelectorLOValue
         (SingleTag("00720068"), ActionCodes.CLEAN),  # SelectorLTValue
         (SingleTag("0072006c"), ActionCodes.CLEAN),  # SelectorSHValue
@@ -1611,6 +1656,7 @@ clean_descriptors = RawNemaRuleSet(
         (SingleTag("0008103e"), ActionCodes.CLEAN),  # SeriesDescription
         (SingleTag("00380062"), ActionCodes.CLEAN),  # ServiceEpisodeDescription
         (SingleTag("300a01b2"), ActionCodes.CLEAN),  # SetupTechniqueDescription
+        (SingleTag("00100042"), ActionCodes.CLEAN),  # Unknown
         (SingleTag("300a01a6"), ActionCodes.CLEAN),  # ShieldingDeviceDescription
         (SingleTag("00400602"), ActionCodes.CLEAN),  # SpecimenDetailedDescription
         (SingleTag("00400600"), ActionCodes.CLEAN),  # SpecimenShortDescription
