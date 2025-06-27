@@ -39,7 +39,7 @@ Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/sjoerdk/idiscore/tarball/master
+    $ curl -OJL https://github.com/sjoerdk/idiscore/tarball/main
 
 Once you have a copy of the source, you can install it with:
 
@@ -49,4 +49,4 @@ Once you have a copy of the source, you can install it with:
 
 
 .. _Github repo: https://github.com/sjoerdk/idiscore
-.. _tarball: https://github.com/sjoerdk/idiscore/tarball/master
+.. _tarball: https://github.com/sjoerdk/idiscore/tarball/main

@@ -3,8 +3,8 @@ IDIS Core
 =========
 
 
-.. image:: https://github.com/sjoerdk/idiscore/actions/workflows/build.yml/badge.svg?branch=master
-        :target: https://github.com/sjoerdk/idiscore/actions/workflows/build.yml?query=branch%3Amaster
+.. image:: https://github.com/sjoerdk/idiscore/actions/workflows/build.yml/badge.svg?branch=main
+        :target: https://github.com/sjoerdk/idiscore/actions/workflows/build.yml?query=branch%3Amain
         :alt: Build Status
 
 .. image:: https://img.shields.io/pypi/v/idiscore.svg
