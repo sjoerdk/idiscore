@@ -2,6 +2,13 @@
 History
 =======
 
+1.3.0 (2025-06-27)
+------------------
+* Drops python 3.8, 3.9 support, moves to 3.12. Using MINOR version bump instead of more usual major because code changes are minimal and I want version 2.0 to signal a real change in paradigm, not just a python version bump.
+* Moves from pydicom 2 to pydicom 3
+* Updates DICOM Profiles based on updated NEMA table
+
+
 1.2.0 (2024-09-20)
 ------------------
 * Updates DICOM Profiles based on updated NEMA table
