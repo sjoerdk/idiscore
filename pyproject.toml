@@ -6,18 +6,19 @@ authors = ["sjoerdk <sjoerd.kerkstra@radboudumc.nl>"]
 license = "GPLv3"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-Jinja2 = "^3.1.2"
-Pillow = "^10.1.0"
-dicomgenerator = "^0.9.0"
+python = "^3.12"
+Jinja2 = "^3.1.6"
+Pillow = "^11.2.1"
+dicomgenerator = "^0.9.1"
+pydicom = "^3.0.1"
 
 [tool.poetry.scripts]
 idiscore = "idiscore.cli:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest-cov = "^5.0.0"
-pytest = "^8.3.3"
-coverage = "^7.6.1"
+pytest = "^8.4.1"
+coverage = "^7.9.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -27,12 +28,10 @@ build-backend = "poetry.core.masonry.api"
 legacy_tox_ini = """
 [tox]
 isolated_build = True
-envlist = py{37, 38, 39}
+envlist = py{312}
 [gh-actions]
 python =
-    3.7: py37
-    3.8: py38
-    3.9: py39
+    3.12: py312
 [testenv]
 allowlist_externals =
     poetry

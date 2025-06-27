@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import Callable, List, Optional
 
-from pydicom._storage_sopclass_uids import SecondaryCaptureImageStorage
 from pydicom.dataset import Dataset
+from pydicom.uid import SecondaryCaptureImageStorage
 
 from idiscore.dataset import RequiredDataset, RequiredTagNotFound
 from idiscore.exceptions import IDISCoreError

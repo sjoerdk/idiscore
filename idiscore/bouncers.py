@@ -1,13 +1,13 @@
 from functools import wraps
 
-from pydicom._storage_sopclass_uids import (
+from pydicom.dataset import Dataset
+from pydicom.uid import (
     ColorSoftcopyPresentationStateStorage,
     EncapsulatedCDAStorage,
     EncapsulatedPDFStorage,
     GrayscaleSoftcopyPresentationStateStorage,
     KeyObjectSelectionDocumentStorage,
 )
-from pydicom.dataset import Dataset
 
 from idiscore.dataset import RequiredDataset, RequiredTagNotFound
 from idiscore.exceptions import IDISCoreError

@@ -67,7 +67,7 @@ def a_path_to_dataset(a_dataset, tmp_path):
     dataset_path = tmp_path / "datasets" / "a_dataset.dcm"
     dataset_path.parent.mkdir()
 
-    a_dataset.save_as(filename=dataset_path, write_like_original=False)
+    a_dataset.save_as(dataset_path, write_like_original=False)
 
     return dataset_path
 

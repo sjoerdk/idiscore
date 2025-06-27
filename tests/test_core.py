@@ -96,7 +96,7 @@ def test_rule_precedence():
 def test_rule_set_human_readable(some_rules):
 
     as_string = RuleSet(some_rules).as_human_readable_list()
-    assert "PatientName - (0010, 0010)" in as_string
+    assert "PatientName - (0010,0010)" in as_string
     assert "Unknown Repeater tag" in as_string
 
 
