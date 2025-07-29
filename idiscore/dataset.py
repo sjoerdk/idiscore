@@ -40,13 +40,21 @@ class RequiredDataset(Dataset):
         try:
             return super().__getattr__(name)
         except AttributeError as e:
-            raise RequiredTagNotFound(f"Required tag not found: {e}") from e
+            raise RequiredTagNotFound(
+                f"Required tag not found: {e}. (Note: this might be due to pydicom "
+                f"lazy loading. For sanity, try a call to str(ds) to force "
+                f"loading)"
+            ) from e
 
     def __getitem__(self, key):
         try:
             return super().__getitem__(key)
         except KeyError as e:
-            raise RequiredTagNotFound(f"Required tag not found: {e}") from e
+            raise RequiredTagNotFound(
+                f"Required tag not found: {e}. (Note: this might be due to pydicom "
+                f"lazy loading. For sanity, try a call to str(ds) to force "
+                f"loading)"
+            ) from e
 
 
 class RequiredTagNotFound(IDISCoreError):
