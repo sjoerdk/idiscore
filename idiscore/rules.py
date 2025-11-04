@@ -52,7 +52,7 @@ class RuleSet:
 
         # keep single tag rules separately for more efficient matching
         self._single_tag_rules_dict = {
-            x.identifier.key(): x for x in rules if self.is_single_tag_rule(x)
+            x.identifier.key().lower(): x for x in rules if self.is_single_tag_rule(x)
         }
 
         # wildcard rules
@@ -128,11 +128,11 @@ class RuleSet:
 
     @staticmethod
     def tag_to_key(tag: BaseTag) -> str:
-        """Represent tag as single 8 char hex string like '00100010'
+        """Represent tag as single lower-case 8 char hex string like '00100f1d'
 
         This is the format used as dict key internally
         """
-        return f"{tag.group:04x}{tag.element:04x}"
+        return f"{tag.group:04x}{tag.element:04x}".lower()
 
     def as_human_readable_list(self) -> str:
         """All rules in this set sorted by tag name"""
