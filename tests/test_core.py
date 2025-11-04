@@ -1,9 +1,11 @@
 """Tests for `idiscore` package."""
 import pytest
-from dicomgenerator.generators import DataElementFactory as DatEF
+from dicomgenerator.generators import DataElementFactory as DatEF, quick_dataset
 from pydicom.tag import Tag
+from pydicom.uid import CTImageStorage
 
 from idiscore.core import Core, Profile
+from idiscore.defaults import create_default_core
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.operators import Clean, Hash, Keep, Remove
 from idiscore.rules import Rule, RuleSet
@@ -122,3 +124,22 @@ def test_core_deidentify_safe_private(a_dataset, a_safe_private_definition):
     deltas = extract_signature(deidentifier=core, dataset=a_dataset)
     assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "REMOVED"
     assert {x.tag: x for x in deltas}[Tag("00b11001")].status == "REMOVED"
+
+
+def test_deidentify_uids():
+    """Recreates issue from #145"""
+
+    core = create_default_core()  # create an idiscore instance
+    values = {
+        "SOPInstanceUID": "111.1",
+        "StudyInstanceUID": "222.2",
+        "SeriesInstanceUID": "333.3",
+    }
+    ds = quick_dataset(**(values | {"SOPClassUID": CTImageStorage}))
+    for name, value in values.items():
+        assert ds[name].value == value
+
+    ds_after = core.deidentify(ds)  # remove patient information
+
+    for name, value in values.items():
+        assert ds_after[name].value != value
