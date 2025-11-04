@@ -34,7 +34,9 @@ class PIILocation:
     """
 
     def __init__(
-        self, areas: List[SquareArea], criterion: Callable[[Dataset], bool] = None
+        self,
+        areas: List[SquareArea],
+        criterion: Optional[Callable[[Dataset], bool]] = None,
     ):
         """
 

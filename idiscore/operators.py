@@ -189,8 +189,8 @@ class Clean(Operator):
 
     def __init__(
         self,
-        safe_private: SafePrivateDefinition = None,
-        delta_provider: TimeDeltaProvider = None,
+        safe_private: Optional[SafePrivateDefinition] = None,
+        delta_provider: Optional[TimeDeltaProvider] = None,
     ):
         """
 
@@ -311,7 +311,7 @@ class HashUID(Operator):
     name = "HashUID"
     nema_action_code = ActionCodes.CLEAN
 
-    def __init__(self, root_uid: str = None):
+    def __init__(self, root_uid: Optional[str] = None):
         """
 
         Parameters

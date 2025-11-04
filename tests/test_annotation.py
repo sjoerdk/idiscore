@@ -38,7 +38,7 @@ def test_annotation_serialization():
 
     loaded = Annotation.from_json_dict(json.loads(json_str))
     assert annotation.explanation == loaded.explanation
-    assert type(annotation) == type(loaded)
+    assert type(annotation) is type(loaded)
 
 
 def test_annotated_dataset_serialization():

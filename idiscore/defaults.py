@@ -1,4 +1,6 @@
 """Default implementations of idiscore objects and convenience functions"""
+from typing import Optional
+
 from idiscore.bouncers import RejectEncapsulatedImageStorage, RejectNonStandardDicom
 from idiscore.core import Core, Profile
 from idiscore.dicom import ActionCodes
@@ -14,8 +16,8 @@ from idiscore.rule_sets import DICOMRuleSets
 
 
 def create_default_core(
-    safe_private_definition: SafePrivateDefinition = None,
-    location_list: PIILocationList = None,
+    safe_private_definition: Optional[SafePrivateDefinition] = None,
+    location_list: Optional[PIILocationList] = None,
 ) -> Core:
     """A default deidentification core with the following profile:
 
@@ -36,6 +38,9 @@ def create_default_core(
         information
 
     """
+    if not safe_private_definition:
+        safe_private_definition = SafePrivateDefinition(blocks=[])
+
     sets = get_dicom_rule_sets(safe_private_definition)
     profile = Profile(  # Choose which rule sets to use
         name="idiscore default profile",
@@ -54,7 +59,7 @@ def create_default_core(
 
 
 def get_dicom_rule_sets(
-    safe_private_definition: SafePrivateDefinition = None,
+    safe_private_definition: Optional[SafePrivateDefinition] = None,
 ) -> DICOMRuleSets:
     """Create the standard DICOM rule sets
 
@@ -76,7 +81,7 @@ def get_dicom_rule_sets(
 
 def create_core(
     profile: Profile,
-    location_list: PIILocationList = None,
+    location_list: Optional[PIILocationList] = None,
 ) -> Core:
     """A deidentification core with defaults
 

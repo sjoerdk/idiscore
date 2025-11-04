@@ -57,7 +57,7 @@ class Profile:
     def __str__(self):
         return f'Profile "{self.name}"'
 
-    def flatten(self, additional_rule_sets: List[RuleSet] = None) -> RuleSet:
+    def flatten(self, additional_rule_sets: Optional[List[RuleSet]] = None) -> RuleSet:
         """Collapse all rule sets into one, ensuring only one rule per DICOM tag
         If a sets disagree, later sets (higher index in the list) take precedence.
 
@@ -126,8 +126,8 @@ class Core(Deidentifier):
     def __init__(
         self,
         profile: Profile,
-        insertions: List[DataElement] = None,
-        bouncers: List[Bouncer] = None,
+        insertions: Optional[List[DataElement]] = None,
+        bouncers: Optional[List[Bouncer]] = None,
         pixel_processor: Optional[PixelProcessor] = None,
     ):
         """
@@ -191,7 +191,7 @@ class Core(Deidentifier):
 
         for element in dataset:
             if element.VR == VRs.Sequence.short_name:  # recurse into sequences
-                dataset.add(  # add will overwrite existing
+                dataset.add(  # add will overwrite existing  # noqa: B909
                     DataElement(
                         tag=element.tag,
                         VR=element.VR,

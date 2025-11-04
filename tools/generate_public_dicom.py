@@ -33,7 +33,7 @@ class Table:
     There seems to be no really lightweight implementation for this?
     """
 
-    def __init__(self, headers: List[str], rows: List[Dict] = None):
+    def __init__(self, headers: List[str], rows: Optional[List[Dict]] = None):
         """Headers and each row should have the same length"""
         if not rows:
             rows = []
@@ -72,7 +72,7 @@ class ConfidentialityProfileTable(Table):
         "Clean Graph. Opt.",
     ]
 
-    def __init__(self, headers: List[str], rows: List[Dict] = None):
+    def __init__(self, headers: List[str], rows: Optional[List[Dict]] = None):
         if not headers == self.expected_header_names:
             raise ValueError(
                 f"Header names for this table seem to be different than "
