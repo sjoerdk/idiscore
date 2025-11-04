@@ -2,7 +2,7 @@
 name = "idiscore"
 version = "1.4.0"
 description = "Pure-python deidentification of DICOM images using Attribute Confidentiality Options"
-authors = ["sjoerdk <sjoerd.kerkstra@radboudumc.nl>"]
+authors = [{ name = "sjoerdk", email = "sjoerd.kerkstra@radboudumc.nl" }]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
