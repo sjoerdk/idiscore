@@ -104,5 +104,5 @@ ENV/
 # Pycharm
 .idea
 
-# poetry lock not wanted for this lib
-poetry.lock
+# uv lock not wanted for this lib
+uv.lock
