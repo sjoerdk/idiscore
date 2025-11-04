@@ -172,7 +172,7 @@ class RepeatingTag:
             raise ValueError("Tag should be 8 characters long")
         # check whether this is a valid hex string if you discount the x's
         try:
-            int(f'0x{tag.replace("x","0")}', 0)
+            int(f'0x{tag.replace("x", "0")}', 0)
         except ValueError as e:
             raise ValueError('Non "x" parts of this tag are not hexadecimal') from e
 
@@ -196,7 +196,7 @@ class RepeatingTag:
         RepeatingTag('0010,xx10').as_mask() -> 0xffff00ff
         RepeatingTag('50xx,xxxx').as_mask() -> 0xff000000
         """
-        hex_string = f"0x{''.join(map(lambda x: '0' if x=='x' else 'f', self.tag))}"
+        hex_string = f"0x{''.join(map(lambda x: '0' if x == 'x' else 'f', self.tag))}"
         return int(hex_string, 0)
 
     def static_component(self) -> int:

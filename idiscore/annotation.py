@@ -326,7 +326,7 @@ class Scrambler:
             element.value = replacement
             self.replacements[(element.VR, value)] = replacement
 
-            logger.debug(f"Replacing '{truncate(value,200)}' with '{replacement}'")
+            logger.debug(f"Replacing '{truncate(value, 200)}' with '{replacement}'")
         else:
             element.value = previous_replacement
 
