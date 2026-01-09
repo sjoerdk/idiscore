@@ -1,9 +1,14 @@
 """Tests for `idiscore` package."""
+from io import BytesIO
+
 import pytest
 from dicomgenerator.generators import DataElementFactory as DatEF, quick_dataset
+from pydicom import dcmread
+from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.tag import Tag
 from pydicom.uid import CTImageStorage
 
+from dicomgenerator.templates import CTDatasetFactory
 from idiscore.core import Core, Profile
 from idiscore.defaults import create_default_core
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
@@ -143,3 +148,38 @@ def test_deidentify_uids():
 
     for name, value in values.items():
         assert ds_after[name].value != value
+
+
+def test_file_meta_processing():
+    """Exposes issue #147. Any element in file_meta (0002,xxxx) tags is not processed"""
+    # generate realistic example: a dicom file that has been written to disk and
+    # loaded again.
+
+    dicom_file = BytesIO()
+    ds: Dataset = CTDatasetFactory()
+    ds.is_little_endian = True
+    ds.is_implicit_VR = False
+    ds.file_meta = FileMetaDataset()
+    ds.file_meta.TransferSyntaxUID = "1.2.840.10008.1.2.1"
+    ds.save_as(dicom_file, enforce_file_format=True)
+
+    dicom_file.seek(0)
+    original = dcmread(dicom_file)
+    value_before = original.file_meta.MediaStorageSOPInstanceUID
+
+    # Create core that only hashes MediaStorageSOPInstanceUID
+    profile = Profile(
+        rule_sets=[
+            RuleSet(
+                rules=[Rule(SingleTag("MediaStorageSOPInstanceUID"), Hash())],
+                name="test_ruleset",
+            )
+        ]
+    )
+    core = Core(profile)
+
+    processed = core.deidentify(original)
+    value_after = processed.file_meta.MediaStorageSOPInstanceUID
+
+    # now this should hash MediaStorageSOPInstanceUID
+    assert value_before != value_after
