@@ -186,33 +186,50 @@ class Core(Deidentifier):
         Notes
         -----
         This will modify the input Dataset instance. Modification in-place to minimize
-        memory footprint
+        memory footprint.
         """
 
+        # at top level of file, process file_meta tags. Mainly for processing
+        # MediaStorageSOPInstanceUID (0002,0003)
+        if hasattr(dataset, "file_meta"):
+            for meta_element in dataset.file_meta:
+                self.apply_rules_to_element(dataset.file_meta, meta_element, rules)
+
         for element in dataset:
-            if element.VR == VRs.Sequence.short_name:  # recurse into sequences
-                dataset.add(  # add will overwrite existing  # noqa: B909
-                    DataElement(
-                        tag=element.tag,
-                        VR=element.VR,
-                        value=Sequence(
-                            [
-                                self.apply_rules(rules, sub_dataset)
-                                for sub_dataset in element
-                            ]
-                        ),
-                    )
-                )
-            elif rule := rules.get_rule(element):  # non-sequence
-                try:
-                    new = rule.operation.apply(element, dataset)
-                    dataset.add(new)
-                except ElementShouldBeRemoved:  # Operator signals removal
-                    del dataset[element.tag]
-            else:  # no rule found. Leave this element unchanged
-                pass
+            self.apply_rules_to_element(dataset, element, rules)
 
         return dataset
+
+    def apply_rules_to_element(self, dataset, element, rules):
+        """Apply any matching rule to a single element in dataset
+
+        Notes
+        -----
+        This will modify the input Dataset instance. Modification in-place to minimize
+        memory footprint.
+
+        """
+        if element.VR == VRs.Sequence.short_name:  # recurse into sequences
+            dataset.add(  # add will overwrite existing  # noqa: B909
+                DataElement(
+                    tag=element.tag,
+                    VR=element.VR,
+                    value=Sequence(
+                        [
+                            self.apply_rules(rules, sub_dataset)
+                            for sub_dataset in element
+                        ]
+                    ),
+                )
+            )
+        elif rule := rules.get_rule(element):  # non-sequence
+            try:
+                new = rule.operation.apply(element, dataset)
+                dataset.add(new)
+            except ElementShouldBeRemoved:  # Operator signals removal
+                del dataset[element.tag]
+        else:  # no rule found. Leave this element unchanged
+            pass
 
     def apply_pixel_processor(self, dataset):
         """Paint parts of image data black if required
