@@ -1,5 +1,8 @@
 # History
 
+## 1.4.1 (2026-01-16)
+* Fixes bug #147. File_meta / 0002 elements are now processed according to rules, and no longer ignored
+
 ## 1.4.0 (2025-11-04)
 * Moves to python 3.12. Drops python 3.10
 * Moves to uv for package management, drops poetry.
