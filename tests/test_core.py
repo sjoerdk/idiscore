@@ -13,6 +13,7 @@ from idiscore.core import Core, Profile
 from idiscore.defaults import create_default_core
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.operators import Clean, Hash, Keep, Remove
+from idiscore.private_processing import SafePrivateDefinition, SafePrivateBlock
 from idiscore.rules import Rule, RuleSet
 from idiscore.validation import extract_signature
 
@@ -155,15 +156,10 @@ def test_file_meta_processing():
     # generate realistic example: a dicom file that has been written to disk and
     # loaded again.
 
-    dicom_file = BytesIO()
     ds: Dataset = CTDatasetFactory()
-    ds.is_little_endian = True
-    ds.is_implicit_VR = False
-    ds.file_meta = FileMetaDataset()
-    ds.file_meta.TransferSyntaxUID = "1.2.840.10008.1.2.1"
-    ds.save_as(dicom_file, enforce_file_format=True)
 
-    dicom_file.seek(0)
+    dicom_file = create_dummy_disk_file(ds)
+
     original = dcmread(dicom_file)
     value_before = original.file_meta.MediaStorageSOPInstanceUID
 
@@ -183,3 +179,65 @@ def test_file_meta_processing():
 
     # now this should hash MediaStorageSOPInstanceUID
     assert value_before != value_after
+
+
+def create_dummy_disk_file(ds):
+    """Save dataset to BytesIO. This mimics a DICOM file written to disk.
+
+    Note: the transfer syntax and storage SOP class are just random and might not be
+    valid. I just want ot make the save work at the moment.
+    """
+    dicom_file = BytesIO()
+    ds.is_little_endian = True
+    ds.is_implicit_VR = False
+    ds.file_meta = FileMetaDataset()
+    ds.file_meta.TransferSyntaxUID = "1.2.840.10008.1.2.1"
+    ds.file_meta.MediaStorageSOPClassUID = "1.2.3"
+    ds.file_meta.MediaStorageSOPInstanceUID = "4.5.6"
+    ds.save_as(dicom_file, enforce_file_format=True)
+    dicom_file.seek(0)
+    return dicom_file
+
+
+def test_deferred_elements_processing():
+    """Exposes very nasty bug #149. Somewhere inside the deidentify() method, private
+    tags with VR UN (Unknown) are lost. But if you look at the dataset in any editor
+    during debugging, you trigger __attr__ access, and the bug disappears.
+    """
+
+    a_safe_private_definition = SafePrivateDefinition(
+        blocks=[
+            SafePrivateBlock(
+                tags=["000b[a_company]00", "000b[a_company]01"],
+                criterion=lambda x: True,
+            )
+        ]
+    )
+
+    core = create_default_core(safe_private_definition=a_safe_private_definition)
+
+    def process_with_print(ds_in):
+        print(ds_in)
+        deid = core.deidentify(ds_in)
+        return deid
+
+    def process_without_print(ds_in):
+        deid = core.deidentify(ds_in)
+        return deid
+
+    def load_dataset():
+        ds = Dataset()
+        block = ds.private_block(0x000B, "a_company", create=True)
+        block.add_new(0x01, "UN", b"12325")
+        file = create_dummy_disk_file(ds)
+        ds = dcmread(file)
+        ds.SOPClassUID = "1.2.840.10008.5.1.4.1.1.1"
+        return ds
+
+    ds_after_print = process_with_print(load_dataset())
+    ds_after_noprint = process_without_print(load_dataset())
+
+    print(f"safe private value after_print = '{ds_after_print.get(0x000b1001)}'")
+    print(f"safe private value after_noprint = '{ds_after_noprint.get(0x000b1001)}'")
+
+    assert str(ds_after_print.get(0x000B1001)) == str(ds_after_noprint.get(0x000B1001))
