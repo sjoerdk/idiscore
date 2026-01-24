@@ -201,43 +201,45 @@ def create_dummy_disk_file(ds):
 
 def test_deferred_elements_processing():
     """Exposes very nasty bug #149. Somewhere inside the deidentify() method, private
-    tags with VR UN (Unknown) are lost. But if you look at the dataset in any editor
-    during debugging, you trigger __attr__ access, and the bug disappears.
+    tags with VR UN (Unknown) are lost.
+
+    Notes
+    -----
+    This bug is very hard to debug because it involves pydicom deferred / lazy loading.
+    This means that certain attributes of certain DICOM DataElements are not loaded
+    initially. They are loaded as soon as any access to __attr__ is made. This has the
+    effect that viewing any of these objects in a standard IDE debug window will make
+    the bug disappear. Calling str() on the Dataset instance will make the bug
+    disappear. Printing certain values will make the bug disappear.
     """
 
-    a_safe_private_definition = SafePrivateDefinition(
-        blocks=[
-            SafePrivateBlock(
-                tags=["000b[a_company]00", "000b[a_company]01"],
-                criterion=lambda x: True,
-            )
-        ]
-    )
-
-    core = create_default_core(safe_private_definition=a_safe_private_definition)
-
-    def process_with_print(ds_in):
-        print(ds_in)
-        deid = core.deidentify(ds_in)
-        return deid
-
-    def process_without_print(ds_in):
-        deid = core.deidentify(ds_in)
-        return deid
-
     def load_dataset():
+        """Create a minimal dataset that is read from disk, meaning pydicom will use
+        deferred loading on unknown bytes elements
+        """
         ds = Dataset()
         block = ds.private_block(0x000B, "a_company", create=True)
-        block.add_new(0x01, "UN", b"12325")
+        block.add_new(0x01, "UN", b"12325")  # add private tag '00b[a_company]01'
         file = create_dummy_disk_file(ds)
         ds = dcmread(file)
         ds.SOPClassUID = "1.2.840.10008.5.1.4.1.1.1"
         return ds
 
-    ds_after_print = process_with_print(load_dataset())
-    ds_after_noprint = process_without_print(load_dataset())
+    # create a core that has 000b[a_company]01 in its safe-private defintion
+    core = create_default_core(
+        safe_private_definition=SafePrivateDefinition(
+            blocks=[
+                SafePrivateBlock(
+                    tags=["000b[a_company]00", "000b[a_company]01"],
+                    criterion=lambda x: True,
+                )
+            ]
+        )
+    )
 
-    print(f"safe private value after_print = '{ds_after_print.get(0x000b1001)}'")
-    print(f"safe private value after_noprint = '{ds_after_noprint.get(0x000b1001)}'")
-
-    assert str(ds_after_print.get(0x000B1001)) == str(ds_after_noprint.get(0x000B1001))
+    # load the dataset containing 000b[a_company]01 from disk (deferred loading happens)
+    ds = load_dataset()
+    # deidentify with 000b[a_company]01 in the safe list
+    ds_after = core.deidentify(ds)
+    # the private element 000b[a_company]01 should still be in the processed dataset
+    assert ds_after.get(0x000B1001)
