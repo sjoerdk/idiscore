@@ -195,8 +195,20 @@ class Core(Deidentifier):
             for meta_element in dataset.file_meta:
                 self.apply_rules_to_element(dataset.file_meta, meta_element, rules)
 
+        # For all DataElements that match rules, collect new DataElements or
+        # remove signals
+        # elements_with_matching_rules = [x for x in dataset if has_match(x)]
+        # these all need to be copied!
+        # how to deal with nested tags?
+        # for element in dataset:
+
+        #    self.obtain_operation(dataset, element, rules)
+
+        # then: apply
+
         for element in dataset:
             self.apply_rules_to_element(dataset, element, rules)
+        # apply all results
 
         return dataset
 
