@@ -108,28 +108,73 @@ def test_rule_set_human_readable(some_rules):
     assert "Unknown Repeater tag" in as_string
 
 
-def test_core_deidentify_safe_private(a_dataset, a_safe_private_definition):
+def test_core_deidentify_safe_private():
     """Private elements marked as safe should not be removed by Clean()"""
 
-    assert Tag("00b10010") in a_dataset  # a private creator tag
-    assert Tag("00b11001") in a_dataset  # and a private tag
+    def get_dataset():
+        # Set up a dataset with a single private creator and two private elements
+        ds = Dataset()
+        block = ds.private_block(0x00B1, "a_producer", create=True)
+        block.add_new(0x01, "UN", b"value")  # add private tag '00b1[a_producer]01'
+        block.add_new(0x02, "LO", 1)  # add private tag '00b1[a_producer]02'
+        return ds
 
-    # A core instance that should clean() private tags, but one tag is deemed safe
+    ds = get_dataset()
+    # sanity check, these elements should have been created
+    assert Tag("00b10010") in ds  # a private creator tag
+    assert Tag("00b11001") in ds  # and a private tag
+    assert Tag("00b11002") in ds  # and another
+
+    ds.Modality = "CT"
+    # A core instance that should clean() private tags. One tag is deemed safe on
+    # CT datasets
     ruleset = RuleSet(
-        [Rule(PrivateTags(), Clean(safe_private=a_safe_private_definition))]
-    )
+        [
+            Rule(
+                PrivateTags(),
+                Clean(
+                    safe_private=SafePrivateDefinition(
+                        blocks=[
+                            SafePrivateBlock(
+                                tags=["00b1[a_producer]01"],
+                                criterion=lambda x: x.Modality == "CT",
+                            )
+                        ]
+                    )
+                ),
+            )
+        ]
+    )  # this nesting is nasty
     core = Core(profile=Profile([ruleset]))
 
-    # One tag should be kept
-    deltas = extract_signature(deidentifier=core, dataset=a_dataset)
-    assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "REMOVED"
-    assert {x.tag: x for x in deltas}[Tag("00b11001")].status == "UNCHANGED"
+    """
+    # deidentifying should warn about not removing the private creator tag
+    with pytest.warns(Warning, match="Not removing private.*"):
+        deltas = extract_signature(deidentifier=core, dataset=ds)
 
-    # but only so long as dataset has modality = CT
-    a_dataset.Modality = "US"
-    deltas = extract_signature(deidentifier=core, dataset=a_dataset)
-    assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "REMOVED"
+    # Tag not named as safe should have been removed
+    assert {x.tag: x for x in deltas}[Tag("00b11002")].status == "REMOVED"
+    # Tag named as safe should have been kept
+    assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "UNCHANGED"
+    # Private creator tag should have been kept (with warning). It is not
+    # named as safe, but is required for the tag above.
+    assert {x.tag: x for x in deltas}[Tag("00b11001")].status == "UNCHANGED"
+    """
+
+    # but only so long as dataset has modality is CT. Now this is no longer true
+    ds = get_dataset()
+    ds.Modality = "US"
+
+    # after = core.deidentify(ds)
+
+    # test = 1
+
+    deltas = extract_signature(deidentifier=core, dataset=ds)
+
+    # nothing is not deemed safe. Clean() should remove all, including private creator
     assert {x.tag: x for x in deltas}[Tag("00b11001")].status == "REMOVED"
+    assert {x.tag: x for x in deltas}[Tag("00b11002")].status == "REMOVED"
+    assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "REMOVED"
 
 
 def test_deidentify_uids():
@@ -225,7 +270,7 @@ def test_deferred_elements_processing():
         ds.SOPClassUID = "1.2.840.10008.5.1.4.1.1.1"
         return ds
 
-    # create a core that has 000b[a_company]01 in its safe-private defintion
+    # create a core that has 000b[a_company]01 in its safe-private definition
     core = create_default_core(
         safe_private_definition=SafePrivateDefinition(
             blocks=[

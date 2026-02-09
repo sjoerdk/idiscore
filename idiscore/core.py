@@ -1,4 +1,5 @@
-from typing import List, Optional
+import warnings
+from typing import List, Optional, Union, Iterable, Tuple
 
 from dicomgenerator.dicom import VRs
 from pydicom.dataelem import DataElement
@@ -22,6 +23,9 @@ from idiscore.templates import (
     profile_description_rst,
     profile_description_txt,
 )
+
+# Used for holding a change to a DataElement (change or remove)
+Mutation = Union[DataElement, ElementShouldBeRemoved]
 
 
 class Profile:
@@ -169,6 +173,7 @@ class Core(Deidentifier):
         >>> original_dataset == deidentified  # True
 
         """
+
         self.apply_bouncers(dataset)  # should this dataset be rejected outright?
         dataset = self.apply_pixel_processor(dataset)  # clean image data if needed
 
@@ -179,6 +184,73 @@ class Core(Deidentifier):
             deidentified.add(element)
 
         return deidentified
+
+    def collect_mutations(self, dataset, rules):
+        """Determine mutation for each element in dataset, return non-empty mutations"""
+
+        all_mutations = (
+            (x, self.determine_mutation(dataset, x, rules)) for x in dataset
+        )
+        return (x for x in all_mutations if x[1] is not None)
+
+    def determine_mutation(
+        self, dataset: Dataset, element: DataElement, rules: RuleSet
+    ) -> Union[None, Mutation]:
+        """Find out whether to change, remove or keep the given element.
+
+        Returns
+        -------
+        DataElement
+            element should be changed to this
+        ElementShouldBeRemoved
+            element should be removed.
+        None
+            element should be kept as-is.
+
+
+        Notes
+        -----
+        This will modify the input Dataset instance. Modification in-place to minimize
+        memory footprint.
+
+        """
+        if element.VR == VRs.Sequence.short_name:  # recurse into sequences
+
+            new = DataElement(
+                tag=element.tag,
+                VR=element.VR,
+                value=Sequence(
+                    [self.apply_rules(rules, sub_dataset) for sub_dataset in element]
+                ),
+            )
+            return new
+
+        elif rule := rules.get_rule(element):  # non-sequence
+            try:
+                new = rule.operation.apply(element, dataset)
+                return new
+            except ElementShouldBeRemoved as e:  # Operator signals removal
+                return e  # Using Exception instance a signal object.. Smelly?
+
+        else:  # no rule found. Leave this element unchanged.
+            return None  # explicit return as it signals 'keep this element'
+
+    @staticmethod
+    def get_private_block_from_creator(ds, private_creator_elem):
+        """Get a private block from an existing private creator element."""
+        group = private_creator_elem.tag.group
+        private_creator_name = private_creator_elem.value
+        return ds.private_block(group, private_creator_name, create=False)
+
+    @staticmethod
+    def get_private_elements_for_block(ds, block):
+        """Get all private elements by checking each possible offset."""
+        private_elems = []
+        for offset in range(0xFF):  # 0x00 to 0xFF
+            if offset in block:
+                private_elems.append(block[offset])
+
+        return private_elems
 
     def apply_rules(self, rules: RuleSet, dataset: Dataset) -> Dataset:
         """Apply rules to each element in dataset, recursing into sequence elements
@@ -192,56 +264,85 @@ class Core(Deidentifier):
         # at top level of file, process file_meta tags. Mainly for processing
         # MediaStorageSOPInstanceUID (0002,0003)
         if hasattr(dataset, "file_meta"):
-            for meta_element in dataset.file_meta:
-                self.apply_rules_to_element(dataset.file_meta, meta_element, rules)
+            mutations = self.collect_mutations(dataset.file_meta, rules)
+            self.apply_mutations(mutations, dataset.file_meta)
 
-        # For all DataElements that match rules, collect new DataElements or
-        # remove signals
-        # elements_with_matching_rules = [x for x in dataset if has_match(x)]
-        # these all need to be copied!
-        # how to deal with nested tags?
-        # for element in dataset:
-
-        #    self.obtain_operation(dataset, element, rules)
-
-        # then: apply
-
-        for element in dataset:
-            self.apply_rules_to_element(dataset, element, rules)
-        # apply all results
+        # collect and apply all changes
+        mutations = self.collect_mutations(dataset, rules)
+        self.apply_mutations(mutations, dataset)
 
         return dataset
 
-    def apply_rules_to_element(self, dataset, element, rules):
-        """Apply any matching rule to a single element in dataset
+    @classmethod
+    def apply_mutations(
+        cls, mutations: Iterable[Tuple[DataElement, Mutation]], dataset: Dataset
+    ):
+        """Apply all mutations to the given dataset.
+
+        Existing elements in data set will be overwritten by mutated ones. If an
+        element does not exist, it will be overwritten.
+        """
+
+        # exclude private_creators
+        private_creator_mutations = []
+        for (original, mutation) in mutations:
+            if original.tag.is_private_creator:  # process this later
+                private_creator_mutations.append((original, mutation))
+            elif isinstance(mutation, DataElement):
+                dataset.add(mutation)  # add overwrites existing
+            elif isinstance(mutation, ElementShouldBeRemoved):
+                del dataset[original.tag]
+            else:
+                raise IDISCoreError(
+                    f"Expected new element or remove signal, " f"got {mutation}"
+                )
+
+        cls.apply_private_creator_mutations(
+            mutations=private_creator_mutations, dataset=dataset
+        )
+
+    @classmethod
+    def apply_private_creator_mutations(
+        cls, mutations: Iterable[Tuple[DataElement, Mutation]], dataset: Dataset
+    ):
+        """Apply all mutations to the given private creator tags
+
+        Do not apply illegal private creator tag changes
+
+        If a private creator would be removed but there are still private tags that
+        reference it, cancel removal. This prevents creating invalid DICOM
+        see https://github.com/sjoerdk/idiscore/issues/149#issuecomment-3868214042
+        for reasoning.
 
         Notes
         -----
-        This will modify the input Dataset instance. Modification in-place to minimize
-        memory footprint.
-
+        Lots of instance creation going on here. Candidate for optimization.
         """
-        if element.VR == VRs.Sequence.short_name:  # recurse into sequences
-            dataset.add(  # add will overwrite existing  # noqa: B909
-                DataElement(
-                    tag=element.tag,
-                    VR=element.VR,
-                    value=Sequence(
-                        [
-                            self.apply_rules(rules, sub_dataset)
-                            for sub_dataset in element
-                        ]
-                    ),
+
+        for (original, mutation) in mutations:
+            if isinstance(mutation, DataElement):
+                raise IDISCoreError(
+                    f"Rules seem to suggest altering private creator"
+                    f"tag {original} into {mutation}. This would is too "
+                    f"strange to allow."
                 )
-            )
-        elif rule := rules.get_rule(element):  # non-sequence
-            try:
-                new = rule.operation.apply(element, dataset)
-                dataset.add(new)
-            except ElementShouldBeRemoved:  # Operator signals removal
-                del dataset[element.tag]
-        else:  # no rule found. Leave this element unchanged
-            pass
+            elif isinstance(mutation, ElementShouldBeRemoved):
+                block = cls.get_private_block_from_creator(dataset, original)
+                all = cls.get_private_elements_for_block(dataset, block)
+                if all:
+                    # removing this would mangle the private block. Don't.
+                    warnings.warn(
+                        f"Not removing private creator tag {original} as there"
+                        f" are still {len(all)} private tags that reference "
+                        f"it: {[x for x in all]}",
+                        stacklevel=2,
+                    )
+                else:
+                    del dataset[original.tag]
+            else:
+                raise IDISCoreError(
+                    f"Expected new element or remove signal, " f"got {mutation}"
+                )
 
     def apply_pixel_processor(self, dataset):
         """Paint parts of image data black if required

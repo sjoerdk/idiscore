@@ -155,6 +155,14 @@ def check(
     return results
 
 
+def deepcopy_fix(dataset):
+    """Regular deepcopy has a bug in pydicom v3.0.1. This is a temporary fix for that"""
+    dataset_copy = deepcopy(dataset)
+    for key in dataset_copy._private_blocks.keys():
+        dataset_copy._private_blocks[key].dataset = dataset_copy
+    return dataset_copy
+
+
 def extract_signature(deidentifier: Deidentifier, dataset: Dataset) -> List[Delta]:
     """Specify exactly what happens to each tag when deidentifying
 
@@ -163,8 +171,9 @@ def extract_signature(deidentifier: Deidentifier, dataset: Dataset) -> List[Delt
     List[Delta]
         The change that occurred in each element of dataset
     """
-    dataset_copy = deepcopy(dataset)  # deepcopy to compare before and after
-    after = deidentifier.deidentify(dataset=dataset_copy)
+
+    # deepcopy to compare before and after
+    after = deidentifier.deidentify(dataset=deepcopy_fix(dataset))
 
     deltas = []
     for element in dataset:  # go over all original elements to find changes
