@@ -1,6 +1,6 @@
 [project]
 name = "idiscore"
-version = "1.4.1"
+version = "1.4.2"
 description = "Pure-python deidentification of DICOM images using Attribute Confidentiality Options"
 authors = [{ name = "sjoerdk", email = "sjoerd.kerkstra@radboudumc.nl" }]
 readme = "README.md"

@@ -1,5 +1,8 @@
 # History
 
+## 1.4.2 (2026-02-09)
+* Fixes bug #149. disk-loaded, lazy-loaded, bytes-type VR private elements are no longer removed if in safe_allow list
+
 ## 1.4.1 (2026-01-16)
 * Fixes bug #147. File_meta / 0002 elements are now processed according to rules, and no longer ignored
 
