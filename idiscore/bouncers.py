@@ -1,5 +1,7 @@
 from functools import wraps
+from typing import Union
 
+from dicomcriterion import Criterion
 from pydicom.dataset import Dataset
 from pydicom.uid import (
     ColorSoftcopyPresentationStateStorage,
@@ -128,6 +130,46 @@ class RejectEncapsulatedImageStorage(Bouncer):
                 f"This dataset has is for encapsulated image data (SOPClassUID "
                 f'"{dataset.SOPClassUID}"), which often contains patient'
                 f"information. Too risky"
+            )
+
+
+class ProtocolFilterBouncer(Bouncer):
+    """Bouncer based on a Criterion, which can be initialized with a string
+
+    Example
+    -------
+    ProtocolFilterBouncer("Modality.equals('US') and BurnedInAnnotation.equals("True"))
+
+    """
+
+    def __init__(self, criterion: Union[Criterion, str], justification: str):
+        """
+
+        Parameters
+        ----------
+        criterion: Criterion or str
+            Criterion instance, or string. If string, a Criterion instance is created
+        justification: str
+            Human-readable reason for this bouncer. Why should matching data be
+            rejected?
+
+        Raises
+        ------
+        CriterionError
+            If criterion string input could not be parsed
+
+        """
+        if isinstance(criterion, str):  # cast from str for convenience
+            criterion = Criterion(criterion)
+        self.criterion = criterion
+        self.justification = justification
+
+    def inspect(self, dataset):
+        matched = self.criterion.evaluate(dataset)
+        if matched:
+            raise BouncerException(
+                f"Rejected by bouncer. Dataset matched {self.criterion}."
+                f" Justification: {self.justification}"
             )
 
 

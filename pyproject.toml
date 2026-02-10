@@ -6,6 +6,7 @@ authors = [{ name = "sjoerdk", email = "sjoerd.kerkstra@radboudumc.nl" }]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "dicomcriterion>=0.1.0",
     "dicomgenerator>=0.9.1",
     "jinja2>=3.1.6",
     "pydicom>=3.0.1",

@@ -9,9 +9,17 @@ from pydicom.tag import Tag
 from pydicom.uid import CTImageStorage
 
 from dicomgenerator.templates import CTDatasetFactory
+
+from idiscore.bouncers import ProtocolFilterBouncer
 from idiscore.core import Core, Profile
 from idiscore.defaults import create_default_core
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
+from idiscore.image_processing import (
+    PIILocation,
+    SquareArea,
+    PIILocationList,
+    PixelProcessor,
+)
 from idiscore.operators import Clean, Hash, Keep, Remove
 from idiscore.private_processing import SafePrivateDefinition, SafePrivateBlock
 from idiscore.rules import Rule, RuleSet
@@ -147,27 +155,9 @@ def test_core_deidentify_safe_private():
     )  # this nesting is nasty
     core = Core(profile=Profile([ruleset]))
 
-    """
-    # deidentifying should warn about not removing the private creator tag
-    with pytest.warns(Warning, match="Not removing private.*"):
-        deltas = extract_signature(deidentifier=core, dataset=ds)
-
-    # Tag not named as safe should have been removed
-    assert {x.tag: x for x in deltas}[Tag("00b11002")].status == "REMOVED"
-    # Tag named as safe should have been kept
-    assert {x.tag: x for x in deltas}[Tag("00b10010")].status == "UNCHANGED"
-    # Private creator tag should have been kept (with warning). It is not
-    # named as safe, but is required for the tag above.
-    assert {x.tag: x for x in deltas}[Tag("00b11001")].status == "UNCHANGED"
-    """
-
     # but only so long as dataset has modality is CT. Now this is no longer true
     ds = get_dataset()
     ds.Modality = "US"
-
-    # after = core.deidentify(ds)
-
-    # test = 1
 
     deltas = extract_signature(deidentifier=core, dataset=ds)
 
@@ -288,3 +278,54 @@ def test_deferred_elements_processing():
     ds_after = core.deidentify(ds)
     # the private element 000b[a_company]01 should still be in the processed dataset
     assert ds_after.get(0x000B1001)
+
+
+def test_bouncer_pixel_processing_interplay():
+    """Asserts correct behaviour of bouncers and pixel processor together
+    see https://github.com/sjoerdk/idiscore/issues/152
+    """
+    # create a dataset with pixel data and burnedininfo = True, or non existant
+    dataset_a = CTDatasetFactory()
+    dataset_a.BurnedInAnnotations = True
+
+    # create a bouncer that refuses this dataset
+    bouncer = ProtocolFilterBouncer(
+        criterion="Modality.equals('CT') and not BurnedInAnnotation.equals('False')",
+        justification="CT is not to be trusted without explicit burned in "
+        "annotation = False",
+    )
+
+    # create a pixel filter that fixes this
+
+    # todo: remove PIILocation list. its not a useful object.. just use list
+    processor = PixelProcessor(
+        location_list=PIILocationList(
+            [
+                PIILocation(
+                    areas=[SquareArea(5, 10, 4, 12), SquareArea(0, 0, 20, 3)],
+                    criterion=lambda x: x.Modality
+                    == "CT",  # TODO: replace this by dicomcriterion
+                )
+            ]
+        )
+    )
+
+    # add these to a deidentifier
+    core = Core(
+        profile=Profile(
+            rule_sets=[
+                RuleSet(
+                    rules=[Rule(SingleTag("PatientID"), Hash())],
+                    name="test_ruleset",
+                )
+            ]
+        ),
+        bouncers=[bouncer],
+        pixel_processor=processor,
+    )
+
+    # run dataset through deidentifier
+    result = core.deidentify(dataset_a)
+
+    # check whether dataset gets through
+    assert result
