@@ -9,11 +9,9 @@ from pydicom.uid import ExplicitVRLittleEndian
 from idiscore.image_processing import (
     PIILocation,
     PIILocationList,
-    PixelDataProcessorException,
     PixelProcessor,
     SquareArea,
 )
-from tests.factories import quick_dataset
 
 
 @pytest.fixture
@@ -62,44 +60,3 @@ def test_basic_image_processing(a_dataset_with_transfer_syntax):
     # outside the blocks
     assert not is_different(before, after, 21, 1)
     assert not is_different(before, after, 20, 10)
-
-
-def test_needs_cleaning():
-    """Verify that DICOM files that do not need cleaning are not cleaned"""
-    processor = PixelProcessor(location_list=PIILocationList([]))
-    assert processor.needs_cleaning(quick_dataset(Modality="US")) is True
-    assert (
-        processor.needs_cleaning(quick_dataset(Modality="CT", SOPClassUID="123"))
-        is False
-    )
-    assert (
-        processor.needs_cleaning(quick_dataset(Modality="SC", BurnedInAnnotation="No"))
-        is False
-    )
-    assert (
-        processor.needs_cleaning(quick_dataset(Modality="SC", BurnedInAnnotation="Yes"))
-        is True
-    )
-
-
-@pytest.mark.parametrize(
-    "dataset",
-    [Dataset(), quick_dataset(Modality="CT")],  # No Modality  # no SOPClassUID
-)
-def test_needs_cleaning_exceptions(dataset):
-    """Verify cannot determine whether this needs cleaning"""
-    with pytest.raises(PixelDataProcessorException):
-        PixelProcessor(PIILocationList([])).needs_cleaning(dataset)
-
-
-def test_process_pixel_data_exception():
-    """A suspicious dataset that cannot be cleaned should raise exception"""
-
-    processor = PixelProcessor(location_list=PIILocationList([]))
-    with pytest.raises(PixelDataProcessorException) as e:
-        processor.clean_pixel_data(CTDatasetFactory(Modality="US"))
-
-    assert "could not find any location to clean" in str(e.value)
-
-    # but this should not raise exceptions because its not suspicious
-    processor.clean_pixel_data(CTDatasetFactory())

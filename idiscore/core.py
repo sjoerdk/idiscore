@@ -7,7 +7,12 @@ from pydicom.dataset import Dataset
 from pydicom.sequence import Sequence
 
 from idiscore import __version__
-from idiscore.bouncers import Bouncer, BouncerException
+from idiscore.bouncers import (
+    Bouncer,
+    DatasetRejected,
+    BouncerError,
+    determine_bouncer_results,
+)
 from idiscore.dataset import RequiredTagNotFound
 from idiscore.exceptions import IDISCoreError
 from idiscore.image_processing import (
@@ -173,9 +178,17 @@ class Core(Deidentifier):
         >>> original_dataset == deidentified  # True
 
         """
+        # Check bouncers. Ones that might change after pixel cleaning are returned
+        try:
+            maybe_allow = determine_bouncer_results(self.bouncers, dataset)
+        except (DatasetRejected, BouncerError) as e:
+            raise DeidentificationError from e
 
-        self.apply_bouncers(dataset)  # should this dataset be rejected outright?
-        dataset = self.apply_pixel_processor(dataset)  # clean image data if needed
+        if maybe_allow:
+            # one or more bouncers that currently reject might allow after pixel clean
+            dataset = self.apply_pixel_processor(dataset)
+        # check again
+        self.apply_bouncers(maybe_allow, dataset)
 
         deidentified = self.apply_rules(rules=self.profile.flatten(), dataset=dataset)
 
@@ -353,7 +366,7 @@ class Core(Deidentifier):
             When dataset can not be processed
         """
 
-        if self.pixel_processor and self.pixel_processor.needs_cleaning(dataset):
+        if self.pixel_processor:
             try:
                 dataset = self.pixel_processor.clean_pixel_data(dataset)
             except PixelDataProcessorException as e:
@@ -392,13 +405,14 @@ class Core(Deidentifier):
             # if applicable, safe private
         )
 
-    def apply_bouncers(self, dataset):
+    @staticmethod
+    def apply_bouncers(bouncers, dataset):
         """Check all bouncers to see whether dataset should be rejected"""
 
-        for bouncer in self.bouncers:
+        for bouncer in bouncers:
             try:
                 bouncer.inspect(dataset)
-            except BouncerException as e:
+            except (DatasetRejected, BouncerError) as e:
                 raise DeidentificationError(e) from e
 
 

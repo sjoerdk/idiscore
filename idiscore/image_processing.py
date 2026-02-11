@@ -3,9 +3,7 @@ from dataclasses import dataclass
 from typing import Callable, List, Optional
 
 from pydicom.dataset import Dataset
-from pydicom.uid import SecondaryCaptureImageStorage
 
-from idiscore.dataset import RequiredDataset, RequiredTagNotFound
 from idiscore.exceptions import IDISCoreError
 
 
@@ -108,52 +106,6 @@ class PixelProcessor:
         """
         self.locations = location_list.locations
 
-    @staticmethod
-    def needs_cleaning(dataset: Dataset) -> bool:
-        """Whether this dataset should be rejected as unsafe without cleaning
-
-        Made this into a separate method as for many DICOM datasets you can
-        reasonably skip image processing altogether.
-
-        Raises
-        ------
-        PixelDataProcessorException
-            When it cannot be determined whether this dataset needs cleaning
-            or not. Usually due to missing DICOM elements
-
-        """
-
-        def says_no_burned_in_info(dataset_in: RequiredDataset) -> bool:
-            """Dataset_in explicitly states that it has no burned in information"""
-            try:
-                return dataset_in.BurnedInAnnotation in ["NO", "No", "no"]
-            except RequiredTagNotFound:
-                return False  # not found so no specific burned in info disclaimer
-
-        def is_suspicious(dataset_in: RequiredDataset) -> bool:
-            return (
-                dataset.Modality in ["US", "SC"]
-                or dataset.SOPClassUID == SecondaryCaptureImageStorage
-            )
-
-        dataset = RequiredDataset(dataset)  # catch missing keys later
-
-        # Cleaning might be needed in the the following cases:
-        try:
-            if not is_suspicious(dataset):
-                return False
-            else:
-                if says_no_burned_in_info(dataset):
-                    return False  # if dataset says it's clean we believe it
-                else:
-                    return True
-
-        except RequiredTagNotFound as e:
-            raise PixelDataProcessorException(
-                f"Missing DICOM element. I can not determine whether to clean "
-                f"the pixels or not. Original error: {e}"
-            ) from e
-
     def get_locations(self, dataset: Dataset) -> List[PIILocation]:
         """Get all locations with person information in the current dataset
 
@@ -168,18 +120,11 @@ class PixelProcessor:
             raise PixelDataProcessorException(e) from e
 
     def clean_pixel_data(self, dataset: Dataset) -> Dataset:
-        """Remove pixel data that needs cleaning and mark the dataset as safe
+        """Try to remove pixel data and mark the dataset as safe.
 
-        If this dataset does not look suspicious it will not be returned unchanged
-
-        Raises
-        ------
-        PixelDataProcessorException
-            If pixel data needs cleaning but no information can be found
-
+        If no pre-determined PI locations can be found, returns the dataset
+        unaltered. This function does not raise exceptions
         """
-        if not self.needs_cleaning(dataset):
-            return dataset  # nothing needs to be done
 
         # find all locations that contain PII
         areas = [
@@ -187,21 +132,7 @@ class PixelProcessor:
         ]
 
         if not areas:
-            summary = {
-                x: dataset.get(x)
-                for x in [
-                    "Modality",
-                    "Manufacturer",
-                    "ManufacturerModelName",
-                    "Rows",
-                    "Columns",
-                    "ImageType",
-                ]
-            }
-            raise PixelDataProcessorException(
-                f"Image data is suspicious, but I could not find any location to "
-                f"clean. You should probably add an image location for {summary}"
-            )
+            pass
         else:
             pixel_array = dataset.pixel_array
             for area in areas:

@@ -6,11 +6,11 @@ from dicomgenerator.generators import DataElementFactory as DatEF, quick_dataset
 from pydicom import dcmread
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.tag import Tag
-from pydicom.uid import CTImageStorage
+from pydicom.uid import CTImageStorage, ExplicitVRLittleEndian
 
 from dicomgenerator.templates import CTDatasetFactory
 
-from idiscore.bouncers import ProtocolFilterBouncer
+from idiscore.bouncers import CriterionBouncer
 from idiscore.core import Core, Profile
 from idiscore.defaults import create_default_core
 from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
@@ -286,14 +286,17 @@ def test_bouncer_pixel_processing_interplay():
     """
     # create a dataset with pixel data and burnedininfo = True, or non existant
     dataset_a = CTDatasetFactory()
+    dataset_a.file_meta = Dataset()
+    dataset_a.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
     dataset_a.BurnedInAnnotations = True
 
     # create a bouncer that refuses this dataset
-    bouncer = ProtocolFilterBouncer(
-        criterion="Modality.equals('CT') and not BurnedInAnnotation.equals('False')",
+    bouncer = CriterionBouncer(
+        criterion="Modality.equals('CT') and not BurnedInAnnotation.equals('NO')",
         justification="CT is not to be trusted without explicit burned in "
         "annotation = False",
     )
+    bouncer2 = CriterionBouncer("Modality.equals('US')", "US data is not trusted")
 
     # create a pixel filter that fixes this
 
@@ -309,6 +312,9 @@ def test_bouncer_pixel_processing_interplay():
             ]
         )
     )
+    # TODO: How to filter which datasets get pixel_processed? For US
+    # and no filter you want an error and bounce. But for CT and no filter it's fine.
+    # How to indicate the CT just does not need pixel processing?
 
     # add these to a deidentifier
     core = Core(
@@ -320,7 +326,7 @@ def test_bouncer_pixel_processing_interplay():
                 )
             ]
         ),
-        bouncers=[bouncer],
+        bouncers=[bouncer, bouncer2],
         pixel_processor=processor,
     )
 
