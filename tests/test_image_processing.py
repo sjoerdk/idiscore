@@ -35,7 +35,7 @@ def test_basic_image_processing(a_dataset_with_transfer_syntax):
         criterion=Criterion("Modality.equals('US')"),
     )
 
-    processor = PixelProcessor(location_list=[location])
+    processor = PixelProcessor(locations=[location])
 
     before = copy(dataset.pixel_array)
     after = processor.clean_pixel_data(dataset=dataset).pixel_array

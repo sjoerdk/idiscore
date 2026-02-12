@@ -77,15 +77,15 @@ class PixelProcessor:
     * Actually performing the blackout
     """
 
-    def __init__(self, location_list: List[PIILocation]):
+    def __init__(self, locations: List[PIILocation]):
         """
 
         Parameters
         ----------
-        location_list: List[PIILocation]
+        locations: List[PIILocation]
             all potential locations containing personally identifiable information
         """
-        self.locations = location_list
+        self.locations = locations
 
     def get_locations(self, dataset: Dataset) -> List[PIILocation]:
         """Get all locations with person information in the current dataset
