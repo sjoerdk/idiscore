@@ -76,7 +76,7 @@ Here is an example of passing both lists to an idiscore instance:
 ..  code-block:: python
 
     from idiscore.defaults import create_default_core
-    from idiscore.image_processing import PIILocation, PIILocationList, SquareArea
+    from idiscore.image_processing import PIILocation, SquareArea
     from idiscore.private_processing import SafePrivateBlock, SafePrivateDefinition
 
     safe_private = SafePrivateDefinition(
@@ -92,8 +92,7 @@ Here is an example of passing both lists to an idiscore instance:
                 tags=["00b1[othercreator]11", "00b1[othercreator]12"],
                 comment='Some more test tags, without a criterion')])
 
-    location_list = PIILocationList(
-        [PIILocation(
+    location_list = [PIILocation(
             areas=[SquareArea(5, 10, 4, 12),
                    SquareArea(0, 0, 20, 3)],
             criterion=lambda x: x.Rows == 265 and x.Columns == 512
@@ -102,7 +101,7 @@ Here is an example of passing both lists to an idiscore instance:
             areas=[SquareArea(0, 200, 4, 12)],
             criterion=lambda x: x.Rows == 265 and x.Columns == 712
          )]
-    )
+
 
     core = create_default_core(safe_private_definition=safe_private,
                            location_list=location_list)

@@ -1,7 +1,7 @@
 """How mark safe private tags and known PII locations"""
 
 from idiscore.defaults import create_default_core
-from idiscore.image_processing import PIILocation, PIILocationList, SquareArea
+from idiscore.image_processing import PIILocation, SquareArea
 from idiscore.private_processing import SafePrivateBlock, SafePrivateDefinition
 
 safe_private = SafePrivateDefinition(
@@ -23,18 +23,17 @@ safe_private = SafePrivateDefinition(
     ]
 )
 
-location_list = PIILocationList(
-    [
-        PIILocation(
-            areas=[SquareArea(5, 10, 4, 12), SquareArea(0, 0, 20, 3)],
-            criterion=lambda x: x.Rows == 265 and x.Columns == 512,
-        ),
-        PIILocation(
-            areas=[SquareArea(0, 200, 4, 12)],
-            criterion=lambda x: x.Rows == 265 and x.Columns == 712,
-        ),
-    ]
-)
+location_list = [
+    PIILocation(
+        areas=[SquareArea(5, 10, 4, 12), SquareArea(0, 0, 20, 3)],
+        criterion=lambda x: x.Rows == 265 and x.Columns == 512,
+    ),
+    PIILocation(
+        areas=[SquareArea(0, 200, 4, 12)],
+        criterion=lambda x: x.Rows == 265 and x.Columns == 712,
+    ),
+]
+
 
 core = create_default_core(
     safe_private_definition=safe_private, location_list=location_list

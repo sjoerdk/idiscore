@@ -8,7 +8,6 @@ from pydicom.uid import ExplicitVRLittleEndian
 
 from idiscore.image_processing import (
     PIILocation,
-    PIILocationList,
     PixelProcessor,
     SquareArea,
 )
@@ -35,7 +34,7 @@ def test_basic_image_processing(a_dataset_with_transfer_syntax):
         criterion=lambda x: x.Modality == "US",
     )
 
-    processor = PixelProcessor(location_list=PIILocationList([location]))
+    processor = PixelProcessor(location_list=[location])
 
     before = copy(dataset.pixel_array)
     after = processor.clean_pixel_data(dataset=dataset).pixel_array

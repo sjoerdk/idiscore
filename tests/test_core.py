@@ -17,7 +17,6 @@ from idiscore.identifiers import PrivateTags, RepeatingGroup, SingleTag
 from idiscore.image_processing import (
     PIILocation,
     SquareArea,
-    PIILocationList,
     PixelProcessor,
 )
 from idiscore.operators import Clean, Hash, Keep, Remove
@@ -302,15 +301,13 @@ def test_bouncer_pixel_processing_interplay():
 
     # todo: remove PIILocation list. its not a useful object.. just use list
     processor = PixelProcessor(
-        location_list=PIILocationList(
-            [
-                PIILocation(
-                    areas=[SquareArea(5, 10, 4, 12), SquareArea(0, 0, 20, 3)],
-                    criterion=lambda x: x.Modality
-                    == "CT",  # TODO: replace this by dicomcriterion
-                )
-            ]
-        )
+        location_list=[
+            PIILocation(
+                areas=[SquareArea(5, 10, 4, 12), SquareArea(0, 0, 20, 3)],
+                criterion=lambda x: x.Modality
+                == "CT",  # TODO: replace this by dicomcriterion
+            )
+        ]
     )
     # TODO: How to filter which datasets get pixel_processed? For US
     # and no filter you want an error and bounce. But for CT and no filter it's fine.

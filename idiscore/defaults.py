@@ -1,10 +1,10 @@
 """Default implementations of idiscore objects and convenience functions"""
-from typing import Optional
+from typing import Optional, List
 
 from idiscore.bouncers import RejectEncapsulatedImageStorage, RejectNonStandardDicom
 from idiscore.core import Core, Profile
 from idiscore.dicom import ActionCodes
-from idiscore.image_processing import PIILocationList, PixelProcessor
+from idiscore.image_processing import PixelProcessor, PIILocation
 from idiscore.insertions import (
     PATIENT_IDENTITY_REMOVED,
     get_deidentification_method,
@@ -17,7 +17,7 @@ from idiscore.rule_sets import DICOMRuleSets
 
 def create_default_core(
     safe_private_definition: Optional[SafePrivateDefinition] = None,
-    location_list: Optional[PIILocationList] = None,
+    location_list: Optional[List[PIILocation]] = None,
 ) -> Core:
     """A default deidentification core with the following profile:
 
@@ -32,14 +32,16 @@ def create_default_core(
     ----------
     safe_private_definition: SafePrivateDefinition, optional
         Which private tags are safe to keep. Defaults to keeping none
-    location_list: PIILocationList, optional
-        Definition of where to remove burnt in information from images.
+    location_list: List[PIILocation], optional
+        Definitions of where to remove burnt in information from images.
         Defaults to simply rejecting all datasets that might have burnt in
         information
 
     """
     if not safe_private_definition:
         safe_private_definition = SafePrivateDefinition(blocks=[])
+    if not location_list:
+        location_list = []
 
     sets = get_dicom_rule_sets(safe_private_definition)
     profile = Profile(  # Choose which rule sets to use
@@ -81,7 +83,7 @@ def get_dicom_rule_sets(
 
 def create_core(
     profile: Profile,
-    location_list: Optional[PIILocationList] = None,
+    location_list: List[PIILocation],
 ) -> Core:
     """A deidentification core with defaults
 
@@ -92,7 +94,7 @@ def create_core(
     ----------
     profile: Profile,
         The deidentification profile to use
-    location_list: PIILocationList, optionalPrivateTag
+    location_list:
         Definition of where to remove burnt in information from images.
         Defaults to simply rejecting all datasets that might have burnt in
         information

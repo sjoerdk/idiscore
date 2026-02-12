@@ -65,23 +65,6 @@ class PIILocation:
             return self.criterion(dataset)
 
 
-class PIILocationList:
-    """Defines where in images there might by Personally Identifiable information"""
-
-    def __init__(self, locations: Optional[List[PIILocation]] = None):
-        """
-
-        Parameters
-        ----------
-        locations: List[PIILocation], optional
-            Information on all potentials locations containing personally
-            identifiable information. Defaults to empty list
-        """
-        if locations is None:
-            locations = []
-        self.locations = locations
-
-
 class PixelProcessor:
     """Finds and removes burned-in sensitive information in images
 
@@ -94,17 +77,15 @@ class PixelProcessor:
     * Actually performing the blackout
     """
 
-    def __init__(self, location_list: PIILocationList):
+    def __init__(self, location_list: List[PIILocation]):
         """
 
         Parameters
         ----------
-        location_list: PIILocationList
-            Information on all potentials locations containing personally
-            identifiable information
-
+        location_list: List[PIILocation]
+            all potential locations containing personally identifiable information
         """
-        self.locations = location_list.locations
+        self.locations = location_list
 
     def get_locations(self, dataset: Dataset) -> List[PIILocation]:
         """Get all locations with person information in the current dataset
