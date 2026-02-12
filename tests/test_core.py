@@ -3,6 +3,7 @@ from io import BytesIO
 
 import pytest
 from dicomgenerator.generators import DataElementFactory as DatEF, quick_dataset
+from dicomcriterion import Criterion
 from pydicom import dcmread
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.tag import Tag
@@ -304,8 +305,7 @@ def test_bouncer_pixel_processing_interplay():
         location_list=[
             PIILocation(
                 areas=[SquareArea(5, 10, 4, 12), SquareArea(0, 0, 20, 3)],
-                criterion=lambda x: x.Modality
-                == "CT",  # TODO: replace this by dicomcriterion
+                criterion=Criterion("Modality.equals('CT')"),
             )
         ]
     )

@@ -2,6 +2,7 @@ from copy import copy
 
 import pytest
 from dicomgenerator.templates import CTDatasetFactory
+from dicomcriterion import Criterion
 from numpy.core.multiarray import ndarray
 from pydicom.dataset import Dataset
 from pydicom.uid import ExplicitVRLittleEndian
@@ -31,7 +32,7 @@ def test_basic_image_processing(a_dataset_with_transfer_syntax):
 
     location = PIILocation(
         areas=[SquareArea(5, 10, 4, 12), SquareArea(0, 0, 20, 3)],
-        criterion=lambda x: x.Modality == "US",
+        criterion=Criterion("Modality.equals('US')"),
     )
 
     processor = PixelProcessor(location_list=[location])

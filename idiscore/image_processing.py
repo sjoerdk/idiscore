@@ -1,7 +1,9 @@
 """Classes and methods for working with image part of a DICOM dataset"""
 from dataclasses import dataclass
-from typing import Callable, List, Optional
+from typing import List, Optional
 
+from dicomcriterion import Criterion
+from dicomcriterion.exceptions import EvaluationError
 from pydicom.dataset import Dataset
 
 from idiscore.exceptions import IDISCoreError
@@ -31,21 +33,17 @@ class PIILocation:
     * Determine whether it applies to a given Dataset
     """
 
-    def __init__(
-        self,
-        areas: List[SquareArea],
-        criterion: Optional[Callable[[Dataset], bool]] = None,
-    ):
+    def __init__(self, areas: List[SquareArea], criterion: Optional[Criterion]):
         """
 
         Parameters
         ----------
         areas: List[SquareArea]
             The
-        criterion: Callable[[Dataset], bool], optional
-            Function that return True if this PIILocation exists in the given dataset
-            May return CriterionException if a True or False answer cannot be given.
-            Defaults to always returning True.
+        criterion: Optional[Criterion]
+            If this criterion matches, the PIILocations exist in the given dataset.
+            For example Manufacturer.equals('a_company') and
+            ManufacturerModelName.equals('Model_A2')
         """
         self.areas = areas
         self.criterion = criterion
@@ -61,8 +59,10 @@ class PIILocation:
         """
         if not self.criterion:
             return True
-        else:
-            return self.criterion(dataset)
+        try:
+            return self.criterion.evaluate(dataset)
+        except EvaluationError as e:
+            raise CriterionException() from e
 
 
 class PixelProcessor:
