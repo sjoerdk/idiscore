@@ -182,7 +182,7 @@ class Core(Deidentifier):
         try:
             maybe_allow = determine_bouncer_results(self.bouncers, dataset)
         except (DatasetRejected, BouncerError) as e:
-            raise DeidentificationError from e
+            raise DeidentificationError(e) from e
 
         if maybe_allow:
             # one or more bouncers that currently reject might allow after pixel clean
