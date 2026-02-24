@@ -143,3 +143,9 @@ $ python3 -m pre-commit install
 ```
 
 This will run black and flake8 automatically before any commit
+
+To manually check code formatting and quality use
+```
+pre-commit run --all-files
+```
+This should run without issues
