@@ -46,13 +46,16 @@ class BijectiveDummyFileGenerator():
         
         return new_dummy
 
+generator_patients = BijectiveDummyFileGenerator("patients.csv")
+generator_study_instance_uid = BijectiveDummyFileGenerator("study_instance_uid.csv")
+generator_accession_number = BijectiveDummyFileGenerator("accession_number.csv")
 
 # Custom rules that will hash the patient name and remove all curve data
 my_ruleset = RuleSet(
     rules=[
-        Rule(SingleTag("PatientID"), ReplaceAndStore()),
-        Rule(SingleTag("StudyInstanceUID"), ReplaceAndStore()),
-        Rule(SingleTag("AccessionNumber"), ReplaceAndStore()),
+        Rule(SingleTag("PatientID"), ReplaceAndStore(generator_patients)),
+        Rule(SingleTag("StudyInstanceUID"), ReplaceAndStore(generator_study_instance_uid)),
+        Rule(SingleTag("AccessionNumber"), ReplaceAndStore(generator_accession_number)),
     ],
     name="My Custom RuleSet",
 )
