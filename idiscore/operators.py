@@ -413,11 +413,6 @@ class BijectiveDummyGenerator(ABC):
         """Logic to store the mapping of the original value."""
         pass
 
-    @abstractmethod
-    def generate_dummy(self, element: DataElement, dataset: Optional[Dataset] = None) -> DataElement:
-        """Logic to create the replacement value."""
-        pass
-
 class ReplaceAndStore(Operator):
     """ Replace element with a dummy that can be traced back to original value using sidecar generator """
 
@@ -431,9 +426,8 @@ class ReplaceAndStore(Operator):
     def apply(
         self, element: DataElement, dataset: Optional[Dataset] = None
     ) -> DataElement:
-        # ABC guarantees that these functions exist
-        self.generator.store_value(element, dataset)
-        return self.generator.generate_dummy(element, dataset)
+        # ABC guarantees that this function exists
+        return self.generator.store_value(element, dataset)
 
 
 
