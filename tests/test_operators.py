@@ -1,5 +1,6 @@
 """Tests for `idiscore` package."""
 from typing import List
+from unittest.mock import MagicMock
 
 import pytest
 from dicomgenerator.dicom import VRs
@@ -7,7 +8,14 @@ from dicomgenerator.generators import DataElementFactory
 from factory import random
 from pydicom.dataset import Dataset
 
-from idiscore.operators import Clean, Hash, HashUID, SetFixedValue, TimeDeltaProvider
+from idiscore.operators import (
+    Clean,
+    Hash,
+    HashUID,
+    ReplaceAndReuse,
+    SetFixedValue,
+    TimeDeltaProvider,
+)
 
 
 @pytest.fixture
@@ -180,3 +188,28 @@ def test_set_fixed_value():
     # should be able to change the value after initialization
     fixed_value.value = 1
     assert fixed_value.apply(DataElementFactory(tag="StudyDescription")).value == 1
+
+
+def test_replace_and_reuse_integration():
+    """Test that ReplaceAndReuse calls the dummy generator exactly once."""
+
+    # 1. Setup the Mock Generator
+    # We mock the generator because ReplaceAndReuse is just the "middleman"
+    mock_gen = MagicMock()
+
+    # Create the element we expect the generator to return
+    expected_dummy = DataElementFactory(tag="PatientName", value="ANONYMOUS^1")
+    mock_gen.generate_dummy.return_value = expected_dummy
+
+    # Initialize the operator with our mock
+    operator = ReplaceAndReuse(generator=mock_gen)
+
+    # 2. Create the input element using your factory
+    input_element = DataElementFactory(tag="PatientName", value="DOE^JOHN")
+
+    # 3. Execute the apply method
+    operator.apply(input_element)
+
+    # 4. Assertions
+    # Check that the generator was actually called with the input element
+    mock_gen.generate_dummy.assert_called_once_with(input_element, None)
