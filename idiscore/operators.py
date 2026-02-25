@@ -14,6 +14,7 @@ from idiscore.dicom import ActionCodes
 from idiscore.exceptions import IDISCoreError
 from idiscore.private_processing import SafePrivateDefinition
 from idiscore.settings import IDIS_CORE_ROOT_UID
+from abc import ABC, abstractmethod
 
 
 class Operator:
@@ -402,6 +403,38 @@ class SetFixedValue(Operator):
         self, element: DataElement, dataset: Optional[Dataset] = None
     ) -> DataElement:
         return DataElement(tag=element.tag, VR=element.VR, value=self.value)
+
+
+class DummyGenerator(ABC):
+    """
+    Abstract base class for a dummy generator
+    (for example, could be instantiated to talk to a database for storage)
+    """
+
+    @abstractmethod
+    def generate_dummy(self, element: DataElement, dataset: Optional[Dataset] = None):
+        """Logic to store the mapping of the original value."""
+        pass
+
+
+class ReplaceAndReuse(Operator):
+    """
+    Replace element with a dummy that can be traced back to original value
+    using sidecar generator
+    """
+
+    name = "ReplaceAndReuse"
+    nema_action_code = ActionCodes.DUMMY
+
+    # 'generator' must be a subclass of DummyGenerator
+    def __init__(self, generator: DummyGenerator):
+        self.generator = generator
+
+    def apply(
+        self, element: DataElement, dataset: Optional[Dataset] = None
+    ) -> DataElement:
+        # ABC guarantees that this function exists
+        return self.generator.generate_dummy(element, dataset)
 
 
 class ElementShouldBeRemoved(IDISCoreError):
