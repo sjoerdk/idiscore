@@ -171,8 +171,8 @@ class Core(Deidentifier):
 
         Warnings
         --------
-        Input dataset is passed by reference so will be modified. The output
-        of this function is the same object as the input
+        Input dataset is passed by reference so will be modified. The output dataset
+        of this function is the same object as the input dataset
         >>> original_dataset
         >>> deidentified = core.deidentify(original_dataset)
         >>> original_dataset == deidentified  # True
@@ -182,17 +182,18 @@ class Core(Deidentifier):
         try:
             maybe_allow = determine_bouncer_results(self.bouncers, dataset)
         except (DatasetRejected, BouncerError) as e:
+            # Reject this now to save expensive processing
             raise DeidentificationError(e) from e
 
-        if maybe_allow:
-            # one or more bouncers that currently reject might allow after pixel clean
-            dataset = self.apply_pixel_processor(dataset)
-        # check again
+        # Bouncers passed, or might pass after pixel processing. Run this now
+        # and check bouncers again
+        dataset = self.apply_pixel_processor(dataset)
         self.apply_bouncers(maybe_allow, dataset)
 
+        # All good. Start modifying metadata
         deidentified = self.apply_rules(rules=self.profile.flatten(), dataset=dataset)
 
-        # add tags if needed
+        # Add tags if needed
         for element in self.insertions:
             deidentified.add(element)
 
