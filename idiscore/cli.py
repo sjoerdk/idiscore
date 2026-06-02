@@ -10,7 +10,8 @@ from pathlib import Path
 
 import click
 from dicomgenerator.export import export
-from dicomgenerator.tools import replace_pixel_data
+from dicomgenerator.pixeldata import replace_pixel_data
+
 
 from idiscore import logs
 from idiscore.annotation import (
