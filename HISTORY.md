@@ -1,4 +1,6 @@
 # History
+## 1.5.0 (2026-02-25)
+* Adds ReplaceAndReuse Operator that calls separate generator function for dummy value. See #151 
 
 ## 1.4.2 (2026-02-09)
 * Fixes bug #149. disk-loaded, lazy-loaded, bytes-type VR private elements are no longer removed if in safe_allow list
