@@ -1,4 +1,7 @@
 # History
+## 1.6.0 (2026-06-02)
+* Simplifies working with lists of PII locations. Fixes bug introduced in v1.5.0 where Pixel processing could be skipped for certain bouncer configurations.
+
 ## 1.5.0 (2026-02-25)
 * Adds ReplaceAndReuse Operator that calls separate generator function for dummy value. See #151 
 
